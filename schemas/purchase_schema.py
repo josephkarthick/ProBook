@@ -7,16 +7,15 @@ from datetime import date
 class PurchaseItemCreate(BaseModel):
 
     item_id: int
-    qty: Decimal
-    rate: Decimal
-    gst_rate: Decimal = 0
+    quantity: Decimal
+    price: Decimal
+    gst_rate: Decimal
 
 
 class PurchaseBillCreate(BaseModel):
 
     vendor_id: int
     bill_date: date
-
     items: List[PurchaseItemCreate]
 
 

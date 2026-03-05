@@ -31,7 +31,7 @@ from routers.ui.ledger_ui_router import router as ledger_ui_router
 from routers.ui.trial_balance_ui_router import router as trial_balance_ui_router
 from routers.ui.profit_loss_ui_router import router as profit_loss_ui_router
 from routers.ui.balance_sheet_ui_router import router as balance_sheet_ui_router
-
+from routers.ui.purchase_ui_router import router as purchase_ui_router
 
 
 app = FastAPI()
@@ -86,6 +86,9 @@ app.include_router(ledger_ui_router)
 app.include_router(trial_balance_ui_router)
 app.include_router(profit_loss_ui_router)
 app.include_router(balance_sheet_ui_router)
+app.include_router(purchase_ui_router)
+
+
 # =========================
 # Home Page
 # =========================

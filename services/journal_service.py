@@ -53,3 +53,57 @@ def create_journal(db: Session, data: JournalEntryCreate, company_id: int):
     db.refresh(journal)
 
     return journal
+
+def create_purchase_journal(db, bill):
+
+    from models.journal_entry import JournalEntry
+    from models.journal_line import JournalLine
+    from models.accounts import Account
+
+    purchase_account = db.query(Account)\
+        .filter(Account.name == "Purchase")\
+        .first()
+
+    gst_account = db.query(Account)\
+        .filter(Account.name == "GST Input")\
+        .first()
+
+    payable_account = db.query(Account)\
+        .filter(Account.name == "Accounts Payable")\
+        .first()
+
+    journal = JournalEntry(
+
+        company_id=bill.company_id,
+        reference_no=bill.bill_no,
+        date=bill.bill_date,
+        narration="Purchase Bill",
+        status="POSTED"
+
+    )
+
+    db.add(journal)
+    db.flush()
+
+    db.add(JournalLine(
+        journal_id=journal.id,
+        account_id=purchase_account.id,
+        debit=bill.total_amount,
+        credit=0
+    ))
+
+    db.add(JournalLine(
+        journal_id=journal.id,
+        account_id=gst_account.id,
+        debit=bill.tax_amount,
+        credit=0
+    ))
+
+    db.add(JournalLine(
+        journal_id=journal.id,
+        account_id=payable_account.id,
+        debit=0,
+        credit=bill.grand_total
+    ))
+
+    db.commit()    

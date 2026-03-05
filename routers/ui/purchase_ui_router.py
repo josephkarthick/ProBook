@@ -1,21 +1,25 @@
-from fastapi import APIRouter, Depends, Request
-from sqlalchemy.orm import Session
-from database import get_db
-from schemas.purchase_schema import PurchaseBillCreate
-from services.purchase_service import create_purchase_bill
-from core.company_utils import get_current_company_id
-from schemas.item_schema import ItemCreate
+from fastapi import APIRouter, Request
+from fastapi.responses import HTMLResponse
+from core.template_engine import render_template
 
-router = APIRouter(prefix="/purchases", tags=["Purchases"])
+router = APIRouter()
 
-    
-@router.post("/")
-def create_item_api(
-    data: ItemCreate,
-    request: Request,
-    db: Session = Depends(get_db)
-):
 
-    company_id = get_current_company_id(request)
+# Purchase Bill Page
+@router.get("/purchase/create", response_class=HTMLResponse)
+def purchase_create_page(request: Request):
 
-    return create_item(db, data, company_id)    
+    return render_template(
+        "ProBook/Purchase/purchase_bill.html",
+        request
+    )
+
+
+# Purchase List Page (optional for later)
+@router.get("/purchase/bills", response_class=HTMLResponse)
+def purchase_list_page(request: Request):
+
+    return render_template(
+        "ProBook/Purchase/purchase_list.html",
+        request
+    )

@@ -3,76 +3,75 @@ from decimal import Decimal
 
 from models.purchase_bill import PurchaseBill
 from models.purchase_bill_item import PurchaseBillItem
-from decimal import Decimal
-from models.purchase_bill import PurchaseBill
-from models.purchase_bill_item import PurchaseBillItem
 
-def generate_purchase_bill_no(db, company_id):
+from models.item import Item
+from services.journal_service import create_purchase_journal
 
-    last_bill = (
-        db.query(PurchaseBill)
-        .filter(PurchaseBill.company_id == company_id)
-        .order_by(PurchaseBill.id.desc())
+
+def generate_bill_no(db, company_id):
+
+    last = db.query(PurchaseBill)\
+        .filter(PurchaseBill.company_id == company_id)\
+        .order_by(PurchaseBill.id.desc())\
         .first()
-    )
 
-    if not last_bill:
+    if not last:
         return "PB-00001"
 
-    last_number = int(last_bill.bill_no.split("-")[1])
+    number = int(last.bill_no.split("-")[1]) + 1
 
-    new_number = last_number + 1
-
-    return f"PB-{new_number:05d}"
-    
+    return f"PB-{number:05d}"
 
 
-def create_purchase_bill(db, data, company_id):
+def create_purchase_bill(db: Session, data, company_id):
 
-    bill_no = generate_purchase_bill_no(db, company_id)
+    bill_no = generate_bill_no(db, company_id)
 
     total_amount = Decimal("0")
     tax_amount = Decimal("0")
 
-    purchase = PurchaseBill(
+    bill = PurchaseBill(
         company_id=company_id,
         vendor_id=data.vendor_id,
         bill_no=bill_no,
         bill_date=data.bill_date
     )
 
-    db.add(purchase)
+    db.add(bill)
     db.flush()
 
     for item in data.items:
 
-        amount = item.qty * item.rate
+        subtotal = item.quantity * item.price
+        tax = subtotal * item.gst_rate / 100
+        total = subtotal + tax
 
-        gst = amount * item.gst_rate / Decimal("100")
-
-        total = amount + gst
-
-        line = PurchaseBillItem(
-            purchase_id=purchase.id,
+        bill_item = PurchaseBillItem(
+        
+            purchase_id=bill.id,
             item_id=item.item_id,
-            qty=item.qty,
-            rate=item.rate,
-            amount=amount,
+            qty=item.quantity,
+            rate=item.price,
+            amount=subtotal,
             gst_rate=item.gst_rate,
-            gst_amount=gst,
+            gst_amount=tax,
             total=total
         )
 
-        total_amount += amount
-        tax_amount += gst
+        db.add(bill_item)
 
-        db.add(line)
+        total_amount += subtotal
+        tax_amount += tax
 
-    purchase.total_amount = total_amount
-    purchase.tax_amount = tax_amount
-    purchase.grand_total = total_amount + tax_amount
+    bill.total_amount = total_amount
+    bill.tax_amount = tax_amount
+    bill.grand_total = total_amount + tax_amount
+    bill.status = "POSTED"
 
     db.commit()
-    db.refresh(purchase)
+    db.refresh(bill)
 
-    return purchase    
+    # 🔥 AUTO ACCOUNTING ENTRY
+    create_purchase_journal(db, bill)
+
+    return bill
