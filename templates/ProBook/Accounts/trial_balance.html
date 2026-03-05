@@ -1,0 +1,183 @@
+{% extends "ProBook/Base/base.html" %}
+{% block title %}Trial Balance | ProBook{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<!-- PAGE HEADER -->
+
+<div class="d-flex align-items-sm-center flex-sm-row flex-column gap-3 mb-4">
+
+<div class="flex-grow-1">
+<h3 class="mb-0">Trial Balance</h3>
+</div>
+
+<div>
+<button class="btn btn-primary" onclick="loadTrialBalance()">
+<i class="icon-refresh"></i> Refresh
+</button>
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div class="card-body">
+
+<div class="table-responsive">
+
+<table class="table table-bordered">
+
+<thead>
+
+<tr>
+
+<th>Account</th>
+<th width="200">Debit</th>
+<th width="200">Credit</th>
+
+</tr>
+
+</thead>
+
+<tbody id="trialBody">
+
+<tr>
+<td colspan="3" class="text-center text-muted">
+Loading trial balance...
+</td>
+</tr>
+
+</tbody>
+
+<tfoot>
+
+<tr class="fw-bold">
+
+<td class="text-end">TOTAL</td>
+
+<td id="totalDebit">0.00</td>
+
+<td id="totalCredit">0.00</td>
+
+</tr>
+
+</tfoot>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* ==========================
+CHECK ACTIVE COMPANY
+========================== */
+
+async function checkCompany(){
+
+const res = await fetch("/api/companies/active")
+const data = await res.json()
+
+if(!data.company_id){
+
+alert("Please select a company first")
+
+window.location.href="/company"
+
+return false
+
+}
+
+return true
+
+}
+
+
+/* ==========================
+LOAD TRIAL BALANCE
+========================== */
+
+async function loadTrialBalance(){
+
+const res = await fetch("/trial-balance/")
+const data = await res.json()
+
+const body = document.getElementById("trialBody")
+
+body.innerHTML = ""
+
+let totalDebit = 0
+let totalCredit = 0
+
+if(!data.length){
+
+body.innerHTML = `
+<tr>
+<td colspan="3" class="text-center text-muted">
+No data found
+</td>
+</tr>
+`
+
+return
+
+}
+
+data.forEach(row => {
+
+const debit = Number(row.debit || 0)
+const credit = Number(row.credit || 0)
+
+totalDebit += debit
+totalCredit += credit
+
+body.innerHTML += `
+
+<tr>
+
+<td>${row.name}</td>
+
+<td>${debit.toFixed(2)}</td>
+
+<td>${credit.toFixed(2)}</td>
+
+</tr>
+
+`
+
+})
+
+
+document.getElementById("totalDebit").innerText = totalDebit.toFixed(2)
+document.getElementById("totalCredit").innerText = totalCredit.toFixed(2)
+
+}
+
+
+/* ==========================
+INIT
+========================== */
+
+document.addEventListener("DOMContentLoaded", async function(){
+
+const ok = await checkCompany()
+
+if(!ok) return
+
+loadTrialBalance()
+
+})
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{% block title %}ProBook POS{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/plugins/lucide/lucide.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/plugins/simplebar/simplebar.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/plugins/select2/css/select2.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/plugins/daterangepicker/daterangepicker.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='assets/css/style.css') }}">
+</head>
+
+<body>
+
+<div class="main-wrapper">
+
+    {% include "ProBook/Navbar/navbar.html" %}
+    {% include "ProBook/Sidebar/sidebar.html" %}
+	
+
+    <div class="page-wrapper">
+        {% block content %}{% endblock %}
+    </div>
+
+</div>
+
+<!-- JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ url_for('static', path='assets/js/jquery-3.7.1.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/simplebar/simplebar.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/select2/js/select2.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/js/moment.min.js') }}"></script>
+<script src="{{ url_for('static', path='assets/plugins/daterangepicker/daterangepicker.js') }}"></script>
+<script src="{{ url_for('static', path='assets/js/script.js') }}"></script>
+
+{% block scripts %}{% endblock %}
+
+
+
+</body>
+</html>

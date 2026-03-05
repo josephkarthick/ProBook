@@ -1,0 +1,305 @@
+{% extends "ProBook/Base/base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+<div class="card">
+
+<div class="card-header d-flex justify-content-between">
+<h4>Vendors</h4>
+
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#vendorModal">
+Add Vendor
+</button>
+</div>
+
+
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>Code</th>
+<th>Name</th>
+<th>Phone</th>
+<th>Email</th>
+<th>GST</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody id="vendorTable">
+
+{% for v in vendors %}
+
+<tr id="vendor-{{v.id}}">
+
+<td>{{v.vendor_code}}</td>
+<td>{{v.name}}</td>
+<td>{{v.phone}}</td>
+<td>{{v.email}}</td>
+<td>{{v.gst_number}}</td>
+
+<td>
+
+<button class="btn btn-sm btn-danger"
+onclick="deleteVendor({{v.id}})">
+Delete
+</button>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+</div>
+</div>
+
+
+<!-- ========================= -->
+<!-- Vendor Modal -->
+<!-- ========================= -->
+
+<div class="modal fade" id="vendorModal">
+
+<div class="modal-dialog">
+<div class="modal-content">
+
+<div class="modal-header">
+<h5>Add Vendor</h5>
+<button class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<form id="vendorForm">
+
+<div class="modal-body">
+
+<div class="mb-3">
+<label>Vendor Code</label>
+<input class="form-control" name="vendor_code" required>
+</div>
+
+<div class="mb-3">
+<label>Name</label>
+<input class="form-control" name="name" required>
+</div>
+
+<div class="mb-3">
+<label>Phone</label>
+<input class="form-control" name="phone">
+</div>
+
+<div class="mb-3">
+<label>Email</label>
+<input class="form-control" name="email">
+</div>
+
+<div class="mb-3">
+<label>GST</label>
+<input class="form-control" name="gst_number">
+</div>
+
+<div class="mb-3">
+<label>Address</label>
+<textarea class="form-control" name="address"></textarea>
+</div>
+
+<div class="mb-3">
+<label>City</label>
+<input class="form-control" name="city">
+</div>
+
+<div class="mb-3">
+<label>State</label>
+<input class="form-control" name="state">
+</div>
+
+<div class="mb-3">
+<label>Pincode</label>
+<input class="form-control" name="pincode">
+</div>
+
+
+
+</div>
+
+<div class="modal-footer">
+<button class="btn btn-primary">Save</button>
+</div>
+
+</form>
+
+</div>
+</div>
+</div>
+
+
+
+<script>
+
+// =======================
+// CREATE VENDOR
+// =======================
+
+document.getElementById("vendorForm").addEventListener("submit", async function(e){
+
+e.preventDefault()
+
+const formData = new FormData(this)
+
+const payload = {
+
+vendor_code: formData.get("vendor_code"),
+name: formData.get("name"),
+phone: formData.get("phone"),
+email: formData.get("email"),
+gst_number: formData.get("gst_number"),
+address: formData.get("address"),
+city: formData.get("city"),
+state: formData.get("state"),
+pincode: formData.get("pincode")
+
+}
+
+try{
+
+const res = await fetch("/vendors/",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+credentials:"same-origin",
+body: JSON.stringify(payload)
+})
+
+const data = await res.json()
+
+if(res.ok){
+
+// Close modal
+const modal = bootstrap.Modal.getInstance(document.getElementById('vendorModal'))
+modal.hide()
+
+// Add new row to table
+addVendorRow(data)
+
+// Clear form
+document.getElementById("vendorForm").reset()
+
+Swal.fire({
+icon: "success",
+title: "Vendor Created",
+text: "Vendor added successfully",
+timer: 1500,
+showConfirmButton: false
+})
+
+}else{
+
+Swal.fire({
+icon: "error",
+title: "Error",
+text: data.detail || "Vendor creation failed"
+})
+
+}
+
+}catch(err){
+
+Swal.fire({
+icon: "error",
+title: "Server Error",
+text: "Please try again later"
+})
+
+}
+
+})
+
+
+// =======================
+// ADD ROW TO TABLE
+// =======================
+
+function addVendorRow(v){
+
+const table = document.getElementById("vendorTable")
+
+const row = document.createElement("tr")
+row.id = `vendor-${v.id}`
+
+row.innerHTML = `
+<td>${v.vendor_code}</td>
+<td>${v.name}</td>
+<td>${v.phone || ""}</td>
+<td>${v.email || ""}</td>
+<td>${v.gst_number || ""}</td>
+<td>
+<button class="btn btn-sm btn-danger"
+onclick="deleteVendor(${v.id})">
+Delete
+</button>
+</td>
+`
+
+table.prepend(row)
+
+}
+
+
+// =======================
+// DELETE VENDOR
+// =======================
+
+async function deleteVendor(id){
+
+const confirm = await Swal.fire({
+title: "Delete Vendor?",
+text: "This action cannot be undone",
+icon: "warning",
+showCancelButton: true,
+confirmButtonColor: "#d33",
+confirmButtonText: "Delete"
+})
+
+if(!confirm.isConfirmed) return
+
+const res = await fetch(`/vendors/${id}`,{
+method:"DELETE",
+credentials:"same-origin"
+})
+
+if(res.ok){
+
+document.getElementById(`vendor-${id}`).remove()
+
+Swal.fire({
+icon: "success",
+title: "Deleted",
+text: "Vendor removed successfully",
+timer: 1500,
+showConfirmButton: false
+})
+
+}else{
+
+Swal.fire({
+icon: "error",
+title: "Delete Failed"
+})
+
+}
+
+}
+
+</script>
+
+{% endblock %}

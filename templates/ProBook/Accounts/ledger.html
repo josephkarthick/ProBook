@@ -1,0 +1,238 @@
+{% extends "ProBook/Base/base.html" %}
+{% block title %}Ledger | ProBook{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<!-- PAGE HEADER -->
+
+<div class="d-flex align-items-sm-center flex-sm-row flex-column gap-3 mb-4">
+
+<div class="flex-grow-1">
+<h3 class="mb-0">Ledger</h3>
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div class="card-body">
+
+<!-- FILTERS -->
+
+<div class="row mb-3">
+
+<div class="col-md-4">
+
+<label>Account</label>
+
+<select class="form-select" id="accountSelect"></select>
+
+</div>
+
+<div class="col-md-3">
+
+<label>From Date</label>
+
+<input type="date" class="form-control" id="fromDate">
+
+</div>
+
+<div class="col-md-3">
+
+<label>To Date</label>
+
+<input type="date" class="form-control" id="toDate">
+
+</div>
+
+<div class="col-md-2 d-flex align-items-end">
+
+<button class="btn btn-primary w-100" onclick="loadLedger()">
+Load
+</button>
+
+</div>
+
+</div>
+
+
+<!-- LEDGER TABLE -->
+
+<div class="table-responsive">
+
+<table class="table table-bordered">
+
+<thead>
+
+<tr>
+
+<th>Date</th>
+<th>Description</th>
+<th>Debit</th>
+<th>Credit</th>
+<th>Balance</th>
+
+</tr>
+
+</thead>
+
+<tbody id="ledgerBody">
+
+<tr>
+<td colspan="5" class="text-center text-muted">
+Select account to view ledger
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+let accounts = []
+
+/* ==========================
+CHECK ACTIVE COMPANY
+========================== */
+
+async function checkCompany(){
+
+const res = await fetch("/api/companies/active")
+const data = await res.json()
+
+if(!data.company_id){
+
+alert("Please select a company first")
+
+window.location.href="/company"
+
+return false
+
+}
+
+return true
+
+}
+
+
+/* ==========================
+LOAD ACCOUNTS
+========================== */
+
+async function loadAccounts(){
+
+const res = await fetch("/accounts/")
+accounts = await res.json()
+
+const select = document.getElementById("accountSelect")
+
+select.innerHTML = `<option value="">Select Account</option>`
+
+accounts.forEach(a => {
+
+select.innerHTML += `
+<option value="${a.id}">
+${a.name}
+</option>
+`
+
+})
+
+}
+
+
+/* ==========================
+LOAD LEDGER
+========================== */
+
+async function loadLedger(){
+
+const account_id = document.getElementById("accountSelect").value
+
+if(!account_id){
+
+alert("Please select account")
+
+return
+
+}
+
+const res = await fetch(`/ledger/${account_id}`)
+const data = await res.json()
+
+const body = document.getElementById("ledgerBody")
+
+body.innerHTML = ""
+
+if(!data.length){
+
+body.innerHTML = `
+<tr>
+<td colspan="5" class="text-center text-muted">
+No transactions found
+</td>
+</tr>
+`
+
+return
+
+}
+
+let balance = 0
+
+data.forEach(row => {
+
+balance += Number(row.debit) - Number(row.credit)
+
+body.innerHTML += `
+
+<tr>
+
+<td>${row.date}</td>
+
+<td>${row.description || ''}</td>
+
+<td>${Number(row.debit).toFixed(2)}</td>
+
+<td>${Number(row.credit).toFixed(2)}</td>
+
+<td>${balance.toFixed(2)}</td>
+
+</tr>
+
+`
+
+})
+
+}
+
+
+/* ==========================
+INIT
+========================== */
+
+document.addEventListener("DOMContentLoaded", async function(){
+
+const ok = await checkCompany()
+
+if(!ok) return
+
+await loadAccounts()
+
+})
+
+</script>
+
+{% endblock %}

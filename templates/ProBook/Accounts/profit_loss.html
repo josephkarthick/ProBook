@@ -1,0 +1,162 @@
+{% extends "ProBook/Base/base.html" %}
+{% block title %}Profit & Loss | ProBook{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex align-items-sm-center flex-sm-row flex-column gap-3 mb-4">
+
+<div class="flex-grow-1">
+<h3 class="mb-0">Profit & Loss</h3>
+</div>
+
+<div>
+<button class="btn btn-primary" onclick="loadPL()">
+Refresh
+</button>
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div class="card-body">
+
+<div class="table-responsive">
+
+<table class="table table-bordered">
+
+<thead>
+
+<tr>
+<th>Account</th>
+<th width="200">Amount</th>
+</tr>
+
+</thead>
+
+<tbody id="plBody">
+
+<tr>
+<td colspan="2" class="text-center text-muted">
+Loading data...
+</td>
+</tr>
+
+</tbody>
+
+<tfoot>
+
+<tr class="fw-bold">
+
+<td class="text-end">Net Profit</td>
+
+<td id="netProfit">0.00</td>
+
+</tr>
+
+</tfoot>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* CHECK COMPANY */
+
+async function checkCompany(){
+
+const res = await fetch("/api/companies/active")
+const data = await res.json()
+
+if(!data.company_id){
+
+alert("Please select company")
+
+window.location.href="/company"
+
+return false
+
+}
+
+return true
+
+}
+
+
+/* LOAD P&L */
+
+async function loadPL(){
+
+const res = await fetch("/profit-loss/")
+const data = await res.json()
+
+const body = document.getElementById("plBody")
+
+body.innerHTML=""
+
+let total=0
+
+if(!data.length){
+
+body.innerHTML=`
+<tr>
+<td colspan="2" class="text-center text-muted">
+No data found
+</td>
+</tr>
+`
+
+return
+}
+
+data.forEach(row=>{
+
+const amount = Number(row.amount || 0)
+
+total += amount
+
+body.innerHTML+=`
+
+<tr>
+
+<td>${row.name}</td>
+
+<td>${amount.toFixed(2)}</td>
+
+</tr>
+
+`
+
+})
+
+document.getElementById("netProfit").innerText = total.toFixed(2)
+
+}
+
+
+/* INIT */
+
+document.addEventListener("DOMContentLoaded",async function(){
+
+const ok = await checkCompany()
+
+if(!ok) return
+
+loadPL()
+
+})
+
+</script>
+
+{% endblock %}

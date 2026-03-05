@@ -1,0 +1,215 @@
+{% extends "ProBook/Base/base.html" %}
+{% block title %}Balance Sheet | ProBook{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex align-items-sm-center flex-sm-row flex-column gap-3 mb-4">
+
+<div class="flex-grow-1">
+<h3 class="mb-0">Balance Sheet</h3>
+</div>
+
+<div>
+<button class="btn btn-primary" onclick="loadBalanceSheet()">
+Refresh
+</button>
+</div>
+
+</div>
+
+
+<div class="row">
+
+<!-- ASSETS -->
+
+<div class="col-md-6">
+
+<div class="card">
+
+<div class="card-header">
+<h5>Assets</h5>
+</div>
+
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead>
+
+<tr>
+<th>Account</th>
+<th width="150">Amount</th>
+</tr>
+
+</thead>
+
+<tbody id="assetBody"></tbody>
+
+<tfoot>
+
+<tr class="fw-bold">
+<td>Total Assets</td>
+<td id="totalAssets">0.00</td>
+</tr>
+
+</tfoot>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- LIABILITIES -->
+
+<div class="col-md-6">
+
+<div class="card">
+
+<div class="card-header">
+<h5>Liabilities & Equity</h5>
+</div>
+
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead>
+
+<tr>
+<th>Account</th>
+<th width="150">Amount</th>
+</tr>
+
+</thead>
+
+<tbody id="liabilityBody"></tbody>
+
+<tfoot>
+
+<tr class="fw-bold">
+<td>Total Liabilities</td>
+<td id="totalLiabilities">0.00</td>
+</tr>
+
+</tfoot>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* CHECK COMPANY */
+
+async function checkCompany(){
+
+const res = await fetch("/api/companies/active")
+const data = await res.json()
+
+if(!data.company_id){
+
+alert("Please select company")
+
+window.location.href="/company"
+
+return false
+
+}
+
+return true
+
+}
+
+
+/* LOAD BALANCE SHEET */
+
+async function loadBalanceSheet(){
+
+const res = await fetch("/balance-sheet/")
+const data = await res.json()
+
+const assets = data.assets || []
+const liabilities = data.liabilities || []
+
+const assetBody = document.getElementById("assetBody")
+const liabilityBody = document.getElementById("liabilityBody")
+
+assetBody.innerHTML=""
+liabilityBody.innerHTML=""
+
+let totalAssets = 0
+let totalLiabilities = 0
+
+
+assets.forEach(a=>{
+
+const amount = Number(a.amount || 0)
+
+totalAssets += amount
+
+assetBody.innerHTML += `
+
+<tr>
+<td>${a.name}</td>
+<td>${amount.toFixed(2)}</td>
+</tr>
+
+`
+
+})
+
+
+liabilities.forEach(l=>{
+
+const amount = Number(l.amount || 0)
+
+totalLiabilities += amount
+
+liabilityBody.innerHTML += `
+
+<tr>
+<td>${l.name}</td>
+<td>${amount.toFixed(2)}</td>
+</tr>
+
+`
+
+})
+
+
+document.getElementById("totalAssets").innerText = totalAssets.toFixed(2)
+document.getElementById("totalLiabilities").innerText = totalLiabilities.toFixed(2)
+
+}
+
+
+/* INIT */
+
+document.addEventListener("DOMContentLoaded", async function(){
+
+const ok = await checkCompany()
+
+if(!ok) return
+
+loadBalanceSheet()
+
+})
+
+</script>
+
+{% endblock %}

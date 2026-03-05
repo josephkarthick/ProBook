@@ -1,0 +1,146 @@
+{% set current_path = request.url.path %}
+{% set active_tab = None %}
+
+<div class="two-col-sidebar" id="two-col-sidebar">
+<div class="sidebar sidebar-twocol">
+
+<!-- LEFT MINI ICONS -->
+<div class="twocol-mini">
+<a href="/" class="logo-small">
+<img src="{{ url_for('static', path='assets/img/logo-small.svg') }}">
+</a>
+
+<div class="sidebar-left">
+<div class="nav flex-column align-items-center sidebar-nav" role="tablist">
+
+{% for parent in menus %}
+
+    {% for child in parent.submenu or [] %}
+        {% if current_path == child.url %}
+            {% set active_tab = parent.id %}
+        {% endif %}
+    {% endfor %}
+
+{% endfor %}
+
+{% if not active_tab and menus|length > 0 %}
+    {% set active_tab = menus[0].id %}
+{% endif %}
+
+{% for parent in menus %}
+<a href="#"
+   class="nav-link {% if parent.id == active_tab %}active{% endif %}"
+   data-bs-toggle="tab"
+   data-bs-target="#tab-{{ parent.id }}">
+    <i class="{{ parent.icon }}"></i>
+</a>
+{% endfor %}
+
+</div>
+</div>
+</div>
+
+<!-- RIGHT SIDE -->
+<div class="sidebar-right">
+
+<div class="sidebar-logo mb-3">
+
+<div class="dropdown">
+<button class="btn btn-secondary dropdown-toggle w-100"
+type="button"
+data-bs-toggle="dropdown">
+
+<span id="activeCompanyName">
+{{ active_company.name if active_company and active_company.name else "Select Company" }}
+</span>
+
+</button>
+
+<ul class="dropdown-menu w-100" id="companyDropdown">
+<li class="dropdown-item text-muted">Loading...</li>
+</ul>
+</div>
+
+<hr>
+
+<button class="sidenav-toggle-btn btn border-0 p-0 active" id="toggle_btn">
+<i class="icon-panel-right-open fs-16"></i>
+</button>
+
+</div>
+
+<div class="sidebar-scroll">
+<div class="tab-content">
+
+{% for parent in menus %}
+
+<div class="tab-pane fade {% if parent.id == active_tab %}show active{% endif %}"
+id="tab-{{ parent.id }}">
+
+<ul>
+
+<li class="menu-title">
+<span>{{ parent.title }}</span>
+</li>
+
+{% for child in parent.submenu %}
+<li>
+<a href="{{ child.url }}"
+class="{% if current_path == child.url %}active{% endif %}">
+<i class="{{ child.icon }}"></i>
+<span>{{ child.title }}</span>
+</a>
+</li>
+{% endfor %}
+
+</ul>
+
+</div>
+
+{% endfor %}
+
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+const dropdown = document.getElementById("companyDropdown");
+if (!dropdown) return;
+
+fetch("/api/companies/")
+.then(res => res.json())
+.then(companies => {
+
+dropdown.innerHTML = "";
+
+companies.forEach(company => {
+
+const li = document.createElement("li");
+const a = document.createElement("a");
+
+a.className = "dropdown-item";
+a.href = "#";
+a.innerText = company.name;
+
+a.onclick = function () {
+fetch(`/api/companies/switch/${company.id}`, {
+method: "POST",
+credentials: "same-origin"
+}).then(() => location.reload());
+};
+
+li.appendChild(a);
+dropdown.appendChild(li);
+
+});
+
+})
+.catch(err => console.log("Error:", err));
+
+});
+</script>
