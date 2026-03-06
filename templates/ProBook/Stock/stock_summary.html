@@ -1,0 +1,147 @@
+{% extends "ProBook/Base/base.html" %}
+
+{% block title %}Stock Summary | ProBook{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex justify-content-between mb-4">
+
+<h3>Stock Summary</h3>
+
+<button class="btn btn-primary" onclick="loadStock()">
+Refresh
+</button>
+
+</div>
+
+
+<div class="card">
+<div class="card-body">
+
+<div class="table-responsive">
+
+<table class="table table-bordered">
+
+<thead>
+
+<tr>
+
+<th>Item</th>
+<th>Stock Qty</th>
+<th>Avg Cost</th>
+<th>Stock Value</th>
+
+</tr>
+
+</thead>
+
+<tbody id="stockBody">
+
+<tr>
+<td colspan="4" class="text-center text-muted">
+Loading stock...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+</div>
+
+</div>
+
+
+<script>
+
+/* ======================
+CHECK COMPANY
+====================== */
+
+async function checkCompany(){
+
+const res = await fetch("/api/companies/active")
+const data = await res.json()
+
+if(!data.company_id){
+
+alert("Please select company first")
+window.location.href="/company"
+return false
+
+}
+
+return true
+
+}
+
+
+/* ======================
+LOAD STOCK SUMMARY
+====================== */
+
+async function loadStock(){
+
+const res = await fetch("/stock/summary")
+const data = await res.json()
+
+const body = document.getElementById("stockBody")
+
+body.innerHTML = ""
+
+if(!data.length){
+
+body.innerHTML = `
+<tr>
+<td colspan="4" class="text-center text-muted">
+No stock available
+</td>
+</tr>
+`
+
+return
+
+}
+
+data.forEach(row=>{
+
+body.innerHTML += `
+
+<tr>
+
+<td>${row.item_name}</td>
+<td>${Number(row.qty).toFixed(2)}</td>
+<td>${Number(row.avg_cost).toFixed(2)}</td>
+<td>${Number(row.stock_value).toFixed(2)}</td>
+
+</tr>
+
+`
+
+})
+
+}
+
+
+/* ======================
+INIT
+====================== */
+
+document.addEventListener("DOMContentLoaded", async function(){
+
+const ok = await checkCompany()
+
+if(!ok) return
+
+loadStock()
+
+})
+
+</script>
+
+{% endblock %}

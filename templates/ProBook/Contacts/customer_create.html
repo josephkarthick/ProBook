@@ -1,0 +1,93 @@
+{% extends "ProBook/Base/base.html" %}
+{% block title %}Create Customer{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<h3 class="mb-4">Create Customer</h3>
+
+<div class="card">
+<div class="card-body">
+
+<div class="row mb-3">
+
+<div class="col-md-6">
+<label>Name</label>
+<input class="form-control" id="name">
+</div>
+
+<div class="col-md-6">
+<label>Phone</label>
+<input class="form-control" id="phone">
+</div>
+
+</div>
+
+<div class="row mb-3">
+
+<div class="col-md-6">
+<label>Email</label>
+<input class="form-control" id="email">
+</div>
+
+<div class="col-md-6">
+<label>GST Number</label>
+<input class="form-control" id="gst">
+</div>
+
+</div>
+
+<div class="mb-3">
+
+<label>Address</label>
+<textarea class="form-control" id="address"></textarea>
+
+</div>
+
+<button class="btn btn-success" onclick="createCustomer()">
+Save Customer
+</button>
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+async function createCustomer(){
+
+const res = await fetch("/customers/",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+name:document.getElementById("name").value,
+phone:document.getElementById("phone").value,
+email:document.getElementById("email").value,
+address:document.getElementById("address").value,
+gst_number:document.getElementById("gst").value
+
+})
+
+})
+
+if(res.ok){
+
+alert("Customer created")
+
+window.location.href="/customers"
+
+}
+
+}
+
+</script>
+
+{% endblock %}

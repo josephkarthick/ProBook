@@ -1,0 +1,83 @@
+{% extends "ProBook/Base/base.html" %}
+{% block title %}Customers{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex justify-content-between mb-4">
+
+<h3>Customers</h3>
+
+<a href="/customer-create" class="btn btn-primary">
+Add Customer
+</a>
+
+</div>
+
+<div class="card">
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>Name</th>
+<th>Phone</th>
+<th>Email</th>
+<th>GST</th>
+</tr>
+</thead>
+
+<tbody id="customerBody">
+
+<tr>
+<td colspan="4" class="text-center text-muted">
+Loading customers...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+async function loadCustomers(){
+
+const res = await fetch("/customers/")
+const data = await res.json()
+
+const body = document.getElementById("customerBody")
+
+body.innerHTML=""
+
+data.forEach(c=>{
+
+body.innerHTML+=`
+
+<tr>
+
+<td>${c.name}</td>
+<td>${c.phone || ''}</td>
+<td>${c.email || ''}</td>
+<td>${c.gst_number || ''}</td>
+
+</tr>
+
+`
+
+})
+
+}
+
+document.addEventListener("DOMContentLoaded",loadCustomers)
+
+</script>
+
+{% endblock %}

@@ -3,7 +3,66 @@ from models.journal_entry import JournalEntry
 from models.journal_line import JournalLine
 from models.accounts import Account
 from schemas.journal_schema import JournalEntryCreate
+from models.journal_entry import JournalEntry
+from models.journal_line import JournalLine
+from models.accounts import Account
+from datetime import date
 
+
+def create_sales_journal(db, invoice):
+
+    # Find required accounts
+    receivable = db.query(Account)\
+        .filter(Account.customer_id == invoice.customer_id)\
+        .first()
+    sales = db.query(Account).filter(Account.name == "Sales").first()
+    gst = db.query(Account).filter(Account.name == "GST Payable").first()
+
+    if not receivable or not sales or not gst:
+        raise Exception("Required accounts not found")
+
+    journal = JournalEntry(
+
+        company_id=invoice.company_id,
+
+        reference_no=invoice.invoice_no,
+
+        date=invoice.invoice_date,
+
+        narration=f"Sales Invoice {invoice.invoice_no}"
+
+    )
+
+    db.add(journal)
+    db.flush()
+
+    # Debit Accounts Receivable
+    db.add(JournalLine(
+        journal_id=journal.id,
+        account_id=receivable.id,
+        debit=invoice.grand_total,
+        credit=0
+    ))
+
+    # Credit Sales
+    db.add(JournalLine(
+        journal_id=journal.id,
+        account_id=sales.id,
+        debit=0,
+        credit=invoice.total_amount
+    ))
+
+    # Credit GST
+    if invoice.tax_amount > 0:
+
+        db.add(JournalLine(
+            journal_id=journal.id,
+            account_id=gst.id,
+            debit=0,
+            credit=invoice.tax_amount
+        ))
+
+    db.commit()
 
 def create_journal(db: Session, data: JournalEntryCreate, company_id: int):
 

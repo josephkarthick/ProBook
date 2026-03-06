@@ -3,13 +3,22 @@ from fastapi.responses import HTMLResponse
 
 from core.template_engine import render_template
 
-router = APIRouter()
+router = APIRouter(tags=["Stock UI"])
 
 
-@router.get("/stock-report", response_class=HTMLResponse)
-def stock_report_page(request: Request):
+@router.get("/stock-summary")
+def stock_summary_page(request: Request):
 
     return render_template(
-        "ProBook/Stock/stock_report.html",
+        "ProBook/Stock/stock_summary.html",
         request
     )
+
+
+@router.get("/stock-ledger")
+def stock_ledger_page(request: Request):
+
+    return render_template(
+        "ProBook/Stock/stock_ledger.html",
+        request
+    )    

@@ -9,6 +9,7 @@ from services.menu_service import get_menus
 # Models (ensure tables are registered)
 from models.company import Company
 from models.menu import Menu
+from models.customer import Customer
 # Routers
 from routers.company_router import router as company_router
 from routers.account_router import router as account_router
@@ -36,6 +37,10 @@ from routers.stock_router import router as stock_router
 from routers.ui.stock_ui_router import router as stock_ui_router
 from routers.ui.company_ui_router import router as company_ui_router
 from routers.ui.vendor_ui_router import router as vendor_ui_router
+from routers.sales_router import router as sales_router
+from routers.ui.sales_ui_router import router as sales_ui_router
+
+
 
 
 
@@ -96,6 +101,9 @@ app.include_router(stock_router)
 app.include_router(stock_ui_router)
 app.include_router(company_ui_router)
 app.include_router(vendor_ui_router)
+app.include_router(sales_router)
+app.include_router(sales_ui_router)
+
 
 
 # =========================
