@@ -1,0 +1,95 @@
+{% extends "ProBook/Base/base.html" %}
+
+{% block title %}Stock Report{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex justify-content-between mb-4">
+<h3>Stock Report</h3>
+</div>
+
+<div class="card">
+
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead>
+
+<tr>
+<th>Item</th>
+<th width="150">Quantity</th>
+<th width="200">Value</th>
+</tr>
+
+</thead>
+
+<tbody id="stockBody">
+
+<tr>
+<td colspan="3" class="text-center text-muted">
+Loading stock...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+async function loadStock(){
+
+const res = await fetch("/stock/summary")
+
+const data = await res.json()
+
+let body = document.getElementById("stockBody")
+
+body.innerHTML=""
+
+if(!data.length){
+
+body.innerHTML=`
+<tr>
+<td colspan="3" class="text-center text-muted">
+No stock available
+</td>
+</tr>
+`
+
+return
+
+}
+
+data.forEach(s=>{
+
+body.innerHTML+=`
+
+<tr>
+
+<td>${s.item_name}</td>
+<td>${s.qty}</td>
+<td>${s.value.toFixed(2)}</td>
+
+</tr>
+
+`
+
+})
+
+}
+
+document.addEventListener("DOMContentLoaded",loadStock)
+
+</script>
+
+{% endblock %}

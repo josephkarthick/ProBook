@@ -1,10 +1,9 @@
 from sqlalchemy.orm import Session
 from decimal import Decimal
 
+from services.stock_service import add_stock_purchase
 from models.purchase_bill import PurchaseBill
 from models.purchase_bill_item import PurchaseBillItem
-
-from models.item import Item
 from services.journal_service import create_purchase_journal
 
 
@@ -38,27 +37,40 @@ def create_purchase_bill(db: Session, data, company_id):
     )
 
     db.add(bill)
-    db.flush()
+    db.flush()  # get bill.id
 
     for item in data.items:
 
-        subtotal = item.quantity * item.price
-        tax = subtotal * item.gst_rate / 100
+        qty = Decimal(item.quantity)
+        price = Decimal(item.price)
+        gst_rate = Decimal(item.gst_rate)
+
+        subtotal = qty * price
+        tax = subtotal * gst_rate / Decimal("100")
         total = subtotal + tax
 
         bill_item = PurchaseBillItem(
-        
             purchase_id=bill.id,
             item_id=item.item_id,
-            qty=item.quantity,
-            rate=item.price,
+            qty=qty,
+            rate=price,
             amount=subtotal,
-            gst_rate=item.gst_rate,
+            gst_rate=gst_rate,
             gst_amount=tax,
             total=total
         )
 
         db.add(bill_item)
+
+        # 🔥 Inventory update
+        add_stock_purchase(
+            db,
+            company_id,
+            bill.id,
+            item.item_id,
+            qty,
+            price
+        )
 
         total_amount += subtotal
         tax_amount += tax
@@ -68,10 +80,10 @@ def create_purchase_bill(db: Session, data, company_id):
     bill.grand_total = total_amount + tax_amount
     bill.status = "POSTED"
 
+    # 🔥 Accounting entry
+    create_purchase_journal(db, bill)
+
     db.commit()
     db.refresh(bill)
-
-    # 🔥 AUTO ACCOUNTING ENTRY
-    create_purchase_journal(db, bill)
 
     return bill
