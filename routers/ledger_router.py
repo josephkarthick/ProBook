@@ -26,3 +26,26 @@ def account_ledger(
         from_date,
         to_date
     )
+    
+    @router.get("/{account_id}")
+def get_ledger(account_id: int, db: Session = Depends(get_db)):
+
+    rows = (
+        db.query(JournalLine)
+        .join(JournalEntry, JournalEntry.id == JournalLine.journal_id)
+        .filter(JournalLine.account_id == account_id)
+        .order_by(JournalEntry.date)
+        .all()
+    )
+
+    result = []
+
+    for r in rows:
+        result.append({
+            "date": r.journal.date,
+            "description": r.journal.reference_no,
+            "debit": float(r.debit),
+            "credit": float(r.credit)
+        })
+
+    return result

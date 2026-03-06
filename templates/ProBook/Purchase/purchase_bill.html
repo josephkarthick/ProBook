@@ -17,7 +17,6 @@ Save Bill
 
 
 <div class="card">
-
 <div class="card-body">
 
 <div class="row mb-4">
@@ -38,18 +37,14 @@ Save Bill
 <table class="table table-bordered" id="purchaseTable">
 
 <thead>
-
 <tr>
-
 <th width="250">Item</th>
 <th width="100">Qty</th>
 <th width="120">Price</th>
 <th width="100">GST %</th>
 <th width="150">Total</th>
 <th width="50"></th>
-
 </tr>
-
 </thead>
 
 <tbody></tbody>
@@ -61,7 +56,6 @@ Save Bill
 <button class="btn btn-sm btn-primary" onclick="addRow()">
 + Add Item
 </button>
-
 
 <hr>
 
@@ -93,10 +87,11 @@ Save Bill
 </div>
 
 </div>
-
 </div>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 
@@ -114,18 +109,20 @@ const data = await res.json()
 
 if(!data.company_id){
 
-alert("Please select company first")
-
+Swal.fire({
+icon:"warning",
+title:"Company Required",
+text:"Please select a company first"
+}).then(()=>{
 window.location.href="/company"
+})
 
 return false
-
 }
 
 return true
 
 }
-
 
 /* ------------------------
 LOAD VENDORS
@@ -152,7 +149,6 @@ ${v.name}
 
 }
 
-
 /* ------------------------
 LOAD ITEMS
 ------------------------- */
@@ -163,7 +159,6 @@ const res = await fetch("/api/items")
 items = await res.json()
 
 }
-
 
 /* ------------------------
 ADD ROW
@@ -184,7 +179,7 @@ row.innerHTML = `
 <option value="">Select Item</option>
 
 ${items.map(i=>`
-<option value="${i.id}" data-gst="${i.gst_rate}">
+<option value="${i.id}" data-gst="${i.gst_rate}" data-price="${i.purchase_price}">
 ${i.name}
 </option>
 `).join("")}
@@ -239,6 +234,29 @@ tbody.appendChild(row)
 
 }
 
+/* ------------------------
+AUTO ITEM PRICE + GST
+------------------------- */
+
+document.addEventListener("change", function(e){
+
+if(e.target.classList.contains("item-select")){
+
+const option = e.target.selectedOptions[0]
+
+const price = option.dataset.price || 0
+const gst = option.dataset.gst || 0
+
+const row = e.target.closest("tr")
+
+row.querySelector(".price").value = price
+row.querySelector(".gst").value = gst
+
+calculateRow(row.querySelector(".qty"))
+
+}
+
+})
 
 /* ------------------------
 REMOVE ROW
@@ -247,11 +265,9 @@ REMOVE ROW
 function removeRow(btn){
 
 btn.closest("tr").remove()
-
 calculateTotals()
 
 }
-
 
 /* ------------------------
 CALCULATE ROW
@@ -274,7 +290,6 @@ row.querySelector(".rowTotal").innerText = total.toFixed(2)
 calculateTotals()
 
 }
-
 
 /* ------------------------
 TOTAL CALCULATION
@@ -306,7 +321,6 @@ document.getElementById("grandTotal").innerText = (subtotal + taxTotal).toFixed(
 
 }
 
-
 /* ------------------------
 SAVE PURCHASE
 ------------------------- */
@@ -318,7 +332,22 @@ const billDate = document.getElementById("billDate").value
 
 if(!vendor){
 
-alert("Please select vendor")
+Swal.fire({
+icon:"warning",
+title:"Vendor Required",
+text:"Please select a vendor"
+})
+
+return
+}
+
+if(!billDate){
+
+Swal.fire({
+icon:"warning",
+title:"Bill Date Required",
+text:"Please select bill date"
+})
 
 return
 }
@@ -350,7 +379,11 @@ gst_rate:gst
 
 if(billItems.length === 0){
 
-alert("Add items first")
+Swal.fire({
+icon:"warning",
+title:"No Items",
+text:"Please add items to purchase bill"
+})
 
 return
 }
@@ -377,17 +410,29 @@ const data = await res.json()
 
 if(!res.ok){
 
-alert(data.detail || "Failed to save purchase")
+Swal.fire({
+icon:"error",
+title:"Error",
+text:data.detail || "Failed to save purchase"
+})
 
 return
 }
 
-alert("Purchase bill created successfully")
+Swal.fire({
+icon:"success",
+title:"Purchase Saved",
+text:"Purchase bill created successfully",
+timer:1500,
+showConfirmButton:false
+})
 
-location.reload()
+document.querySelector("#purchaseTable tbody").innerHTML=""
+addRow()
+
+calculateTotals()
 
 }
-
 
 /* ------------------------
 INIT
@@ -396,7 +441,6 @@ INIT
 document.addEventListener("DOMContentLoaded", async function(){
 
 const ok = await checkCompany()
-
 if(!ok) return
 
 await loadVendors()

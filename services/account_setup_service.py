@@ -62,6 +62,15 @@ def create_default_accounts(db: Session, company_id: int):
         is_system=True
     )
 
+    Account(
+        company_id=company_id,
+        name="Input GST",
+        account_type="ASSET",
+        parent_id=current_assets.id,
+        is_group=False,
+        is_system=True
+    ),    
+
     fixed_assets = Account(
         company_id=company_id,
         name="Fixed Assets",
@@ -121,47 +130,52 @@ def create_default_accounts(db: Session, company_id: int):
     # SYSTEM LEDGERS
     # -------------------------
     system_ledgers = [
-
+    
         # Assets
         Account(company_id=company_id, name="Cash",
                 account_type="ASSET",
                 parent_id=current_assets.id, is_group=False, is_system=True),
-
+    
         Account(company_id=company_id, name="Bank",
                 account_type="ASSET",
                 parent_id=current_assets.id, is_group=False, is_system=True),
-
+    
         Account(company_id=company_id, name="Accounts Receivable",
                 account_type="ASSET",
                 parent_id=current_assets.id, is_group=False, is_system=True),
-
+    
         Account(company_id=company_id, name="Inventory",
                 account_type="ASSET",
                 parent_id=current_assets.id, is_group=False, is_system=True),
-
+    
+        # 🔹 GST Input
+        Account(company_id=company_id, name="Input GST",
+                account_type="ASSET",
+                parent_id=current_assets.id, is_group=False, is_system=True),
+    
         # Liabilities
         Account(company_id=company_id, name="Accounts Payable",
                 account_type="LIABILITY",
                 parent_id=current_liabilities.id, is_group=False, is_system=True),
-
+    
         Account(company_id=company_id, name="GST Payable",
                 account_type="LIABILITY",
                 parent_id=current_liabilities.id, is_group=False, is_system=True),
-
+    
         # Income
         Account(company_id=company_id, name="Sales",
                 account_type="INCOME",
                 parent_id=direct_income.id, is_group=False, is_system=True),
-
+    
         # Expense
         Account(company_id=company_id, name="Purchase",
                 account_type="EXPENSE",
                 parent_id=direct_expense.id, is_group=False, is_system=True),
-
+    
         Account(company_id=company_id, name="Cost of Goods Sold",
                 account_type="EXPENSE",
                 parent_id=direct_expense.id, is_group=False, is_system=True),
-
+    
         # Equity
         Account(company_id=company_id, name="Capital",
                 account_type="EQUITY",

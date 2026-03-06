@@ -34,7 +34,8 @@ from routers.ui.balance_sheet_ui_router import router as balance_sheet_ui_router
 from routers.ui.purchase_ui_router import router as purchase_ui_router
 from routers.stock_router import router as stock_router
 from routers.ui.stock_ui_router import router as stock_ui_router
-
+from routers.ui.company_ui_router import router as company_ui_router
+from routers.ui.vendor_ui_router import router as vendor_ui_router
 
 
 
@@ -93,6 +94,8 @@ app.include_router(balance_sheet_ui_router)
 app.include_router(purchase_ui_router)
 app.include_router(stock_router)
 app.include_router(stock_ui_router)
+app.include_router(company_ui_router)
+app.include_router(vendor_ui_router)
 
 
 # =========================

@@ -1,0 +1,145 @@
+{% extends "ProBook/Base/base.html" %}
+
+{% block title %}Purchase Bills{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex justify-content-between mb-4">
+
+<h3>Purchase Bills</h3>
+
+<a href="/purchase-create" class="btn btn-primary">
+Create Purchase
+</a>
+
+</div>
+
+<div class="card">
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th width="120">Bill No</th>
+<th width="140">Date</th>
+<th>Vendor</th>
+<th width="150">Total</th>
+<th width="120">Status</th>
+</tr>
+</thead>
+
+<tbody id="purchaseBody">
+
+<tr>
+<td colspan="5" class="text-center text-muted">
+Loading purchases...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+
+/* =========================
+LOAD PURCHASE BILLS
+========================= */
+
+async function loadPurchases(){
+
+try{
+
+const res = await fetch("/purchases/")
+
+if(!res.ok){
+throw new Error("Failed to load purchases")
+}
+
+const data = await res.json()
+
+const body = document.getElementById("purchaseBody")
+
+body.innerHTML=""
+
+if(!data.length){
+
+body.innerHTML=`
+<tr>
+<td colspan="5" class="text-center text-muted">
+No purchase bills found
+</td>
+</tr>
+`
+
+return
+}
+
+data.forEach(p=>{
+
+body.innerHTML+=`
+
+<tr>
+
+<td>
+<a href="/purchase-view/${p.id}">
+${p.bill_no}
+</a>
+</td>
+
+<td>${p.bill_date ?? ''}</td>
+
+<td>${p.vendor_name ?? ''}</td>
+
+<td class="text-end">
+${Number(p.grand_total || 0).toFixed(2)}
+</td>
+
+<td>
+<span class="badge bg-success">
+${p.status || 'POSTED'}
+</span>
+</td>
+
+</tr>
+
+`
+
+})
+
+}catch(err){
+
+Swal.fire({
+icon:"error",
+title:"Error",
+text:"Unable to load purchase bills"
+})
+
+}
+
+}
+
+
+/* =========================
+PAGE INIT
+========================= */
+
+document.addEventListener("DOMContentLoaded",function(){
+
+loadPurchases()
+
+})
+
+</script>
+
+{% endblock %}

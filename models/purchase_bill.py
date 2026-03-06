@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Date, Numeric, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from database import Base
-
+from sqlalchemy.orm import relationship
 
 class PurchaseBill(Base):
 
@@ -36,3 +36,5 @@ class PurchaseBill(Base):
         back_populates="purchase",
         cascade="all, delete-orphan"
     )
+
+    vendor = relationship("Vendor")    

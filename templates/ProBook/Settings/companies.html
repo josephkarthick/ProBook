@@ -1,183 +1,237 @@
 {% extends "ProBook/Base/base.html" %}
-{% block title %}Companies | VaisKart{% endblock %}
+
+{% block title %}Companies{% endblock %}
+
 {% block content %}
 
 <div class="content">
 
-    <div class="d-flex justify-content-between mb-4">
-        <h3>Companies</h3>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#companyModal">
-            Add Company
-        </button>
-    </div>
+<div class="d-flex justify-content-between mb-4">
 
-    <div class="card">
-        <div class="card-body">
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th width="120">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="companyBody">
-                    <tr>
-                        <td colspan="4" class="text-center text-muted">
-                            Loading...
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+<h3>Company Management</h3>
+
+<button class="btn btn-primary"
+data-bs-toggle="modal"
+data-bs-target="#companyModal">
+
+<i class="icon-plus"></i> Add Company
+
+</button>
 
 </div>
 
-<!-- Modal -->
+
+<div class="card">
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>Name</th>
+<th>Code</th>
+<th>Email</th>
+<th>Phone</th>
+<th width="120">Action</th>
+</tr>
+</thead>
+
+<tbody id="companyTable">
+
+<tr>
+<td colspan="5" class="text-center text-muted">
+Loading companies...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+</div>
+
+</div>
+
+
+
+<!-- CREATE COMPANY MODAL -->
+
 <div class="modal fade" id="companyModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
 
-            <div class="modal-header">
-                <h5 class="modal-title">Company</h5>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+<div class="modal-dialog">
 
-            <div class="modal-body">
+<div class="modal-content">
 
-                <input type="hidden" id="companyId">
-
-                <div class="mb-3">
-                    <label>Name</label>
-                    <input type="text" id="companyName" class="form-control">
-                </div>
-
-                <div class="mb-3">
-                    <label>Email</label>
-                    <input type="email" id="companyEmail" class="form-control">
-                </div>
-
-                <div class="mb-3">
-                    <label>Phone</label>
-                    <input type="text" id="companyPhone" class="form-control">
-                </div>
-
-                <div class="mb-3">
-                    <label>Address</label>
-                    <textarea id="companyAddress" class="form-control"></textarea>
-                </div>
-
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-success" onclick="saveCompany()">Save</button>
-            </div>
-
-        </div>
-    </div>
+<div class="modal-header">
+<h5 class="modal-title">Create Company</h5>
+<button class="btn-close" data-bs-dismiss="modal"></button>
 </div>
+
+
+<div class="modal-body">
+
+<div class="mb-3">
+<label>Company Name</label>
+<input type="text" id="name" class="form-control">
+</div>
+
+<div class="mb-3">
+<label>Company Code</label>
+<input type="text" id="code" class="form-control">
+</div>
+
+<div class="mb-3">
+<label>Email</label>
+<input type="email" id="email" class="form-control">
+</div>
+
+<div class="mb-3">
+<label>Phone</label>
+<input type="text" id="phone" class="form-control">
+</div>
+
+<div class="mb-3">
+<label>GST Number</label>
+<input type="text" id="gst_number" class="form-control">
+</div>
+
+</div>
+
+
+<div class="modal-footer">
+
+<button class="btn btn-light"
+data-bs-dismiss="modal">
+
+Cancel
+
+</button>
+
+<button class="btn btn-success"
+onclick="createCompany()">
+
+Create
+
+</button>
+
+</div>
+
+</div>
+</div>
+
+</div>
+
+
 
 <script>
 
-async function loadCompanies() {
-    const res = await fetch("/companies/");
-    const data = await res.json();
+/* =========================
+LOAD COMPANIES
+========================= */
 
-    const body = document.getElementById("companyBody");
-    body.innerHTML = "";
+async function loadCompanies(){
 
-    data.forEach(c => {
-        body.innerHTML += `
-            <tr>
-                <td>${c.name}</td>
-                <td>${c.email || ''}</td>
-                <td>${c.phone || ''}</td>
-                <td>
-                    <span class="badge bg-success">
-                        ${c.status}
-                    </span>
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-info me-1"
-                        onclick="editCompany(${c.id})">
-                        <i class="icon-pencil"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger"
-                        onclick="deleteCompany(${c.id})">
-                        <i class="icon-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-    });
+const res = await fetch("/api/companies/")
+const companies = await res.json()
+
+const table = document.getElementById("companyTable")
+
+table.innerHTML = ""
+
+companies.forEach(c => {
+
+table.innerHTML += `
+<tr>
+
+<td>${c.name}</td>
+<td>${c.code}</td>
+<td>${c.email || ""}</td>
+<td>${c.phone || ""}</td>
+
+<td>
+
+<button class="btn btn-sm btn-success"
+onclick="switchCompany(${c.id})">
+
+Use
+
+</button>
+
+</td>
+
+</tr>
+`
+
+})
+
 }
 
-async function saveCompany() {
 
-    const id = document.getElementById("companyId").value;
 
-    const payload = {
-        name: document.getElementById("companyName").value,
-        email: document.getElementById("companyEmail").value,
-        phone: document.getElementById("companyPhone").value,
-        address: document.getElementById("companyAddress").value
-    };
+/* =========================
+CREATE COMPANY
+========================= */
 
-    if (id) {
-        await fetch(`/companies/${id}`, {
-            method: "PUT",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(payload)
-        });
-    } else {
-        await fetch("/companies/", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(payload)
-        });
-    }
+async function createCompany(){
 
-    bootstrap.Modal.getInstance(document.getElementById("companyModal")).hide();
-    loadCompanies();
+const payload = {
+
+name: document.getElementById("name").value,
+code: document.getElementById("code").value,
+email: document.getElementById("email").value,
+phone: document.getElementById("phone").value,
+gst_number: document.getElementById("gst_number").value
+
 }
 
-async function editCompany(id) {
-    const res = await fetch(`/companies/`);
-    const companies = await res.json();
-    const c = companies.find(x => x.id === id);
+const res = await fetch("/api/companies/",{
 
-    document.getElementById("companyId").value = c.id;
-    document.getElementById("companyName").value = c.name;
-    document.getElementById("companyEmail").value = c.email;
-    document.getElementById("companyPhone").value = c.phone;
-    document.getElementById("companyAddress").value = c.address;
+method:"POST",
 
-    new bootstrap.Modal(document.getElementById("companyModal")).show();
+headers:{
+"Content-Type":"application/json"
+},
+
+body: JSON.stringify(payload)
+
+})
+
+if(res.ok){
+
+bootstrap.Modal.getInstance(
+document.getElementById("companyModal")
+).hide()
+
+loadCompanies()
+
 }
 
-async function deleteCompany(id) {
-    if (!confirm("Delete this company?")) return;
-    await fetch(`/companies/${id}`, { method: "DELETE" });
-    loadCompanies();
 }
 
-document.addEventListener("DOMContentLoaded", loadCompanies);
 
-async function editCompany(id) {
-    const res = await fetch(`/companies/${id}`);
-    const c = await res.json();
 
-    document.getElementById("companyId").value = c.id;
-    document.getElementById("companyName").value = c.name;
-    document.getElementById("companyEmail").value = c.email || '';
-    document.getElementById("companyPhone").value = c.phone || '';
-    document.getElementById("companyAddress").value = c.address || '';
+/* =========================
+SWITCH COMPANY
+========================= */
 
-    new bootstrap.Modal(document.getElementById("companyModal")).show();
+async function switchCompany(id){
+
+await fetch(`/api/companies/switch/${id}`,{
+method:"POST"
+})
+
+location.reload()
+
 }
+
+
+
+/* =========================
+INIT
+========================= */
+
+document.addEventListener("DOMContentLoaded", loadCompanies)
 
 </script>
 

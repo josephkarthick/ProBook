@@ -64,9 +64,15 @@ def create_purchase_journal(db, bill):
         .filter(Account.name == "Purchase")\
         .first()
 
-    gst_account = db.query(Account)\
-        .filter(Account.name == "GST Input")\
-        .first()
+    gst_account = db.query(Account).filter(
+        Account.name == "Input GST",
+        Account.company_id == bill.company_id
+    ).first()
+    
+    if not gst_account:
+        raise Exception("Input GST account not found for this company")
+        
+        
 
     payable_account = db.query(Account)\
         .filter(Account.name == "Accounts Payable")\
