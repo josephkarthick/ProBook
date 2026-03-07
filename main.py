@@ -5,6 +5,7 @@ from fastapi.responses import RedirectResponse
 from database import engine, Base
 from core.template_engine import render_template
 
+
 # Routers
 from routers.auth_router import router as auth_router
 from models.user import User
@@ -39,6 +40,8 @@ from routers.ui.customer_ui_router import router as customer_ui_router
 from routers.customer_router import router as customer_router
 
 app = FastAPI()
+
+uvicorn main:app --host 0.0.0.0 --port 10000
 
 app.add_middleware(
     SessionMiddleware,
