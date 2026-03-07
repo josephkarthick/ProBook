@@ -26,13 +26,14 @@ Add Customer
 <th>Phone</th>
 <th>Email</th>
 <th>GST</th>
+<th width="150">Actions</th>
 </tr>
 </thead>
 
 <tbody id="customerBody">
 
 <tr>
-<td colspan="4" class="text-center text-muted">
+<td colspan="5" class="text-center text-muted">
 Loading customers...
 </td>
 </tr>
@@ -46,37 +47,101 @@ Loading customers...
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
 
 async function loadCustomers(){
 
-const res = await fetch("/customers/")
+const res = await fetch("/api/customers/")
 const data = await res.json()
 
 const body = document.getElementById("customerBody")
 
 body.innerHTML=""
 
+if(data.length === 0){
+
+body.innerHTML=`
+<tr>
+<td colspan="5" class="text-center text-muted">
+No customers found
+</td>
+</tr>
+`
+return
+}
+
 data.forEach(c=>{
 
 body.innerHTML+=`
-
 <tr>
 
 <td>${c.name}</td>
-<td>${c.phone || ''}</td>
-<td>${c.email || ''}</td>
-<td>${c.gst_number || ''}</td>
+<td>${c.phone || ""}</td>
+<td>${c.email || ""}</td>
+<td>${c.gst_number || ""}</td>
+
+<td>
+
+<a href="/customer-edit/${c.id}" class="btn btn-sm btn-light me-1" title="Edit">
+<i class="icon-pencil"></i>
+</a>
+
+<button class="btn btn-sm btn-light text-danger"
+onclick="deleteCustomer(${c.id})" title="Delete">
+<i class="icon-trash"></i>
+</button>
+
+</td>
 
 </tr>
-
 `
 
 })
 
 }
 
-document.addEventListener("DOMContentLoaded",loadCustomers)
+
+async function deleteCustomer(id){
+
+const confirm = await Swal.fire({
+title:"Delete Customer?",
+text:"This action cannot be undone",
+icon:"warning",
+showCancelButton:true,
+confirmButtonText:"Yes Delete"
+})
+
+if(!confirm.isConfirmed) return
+
+const res = await fetch(`/api/customers/${id}`,{
+method:"DELETE"
+})
+
+if(res.ok){
+
+Swal.fire({
+icon:"success",
+title:"Customer Deleted",
+timer:1500,
+showConfirmButton:false
+})
+
+loadCustomers()
+
+}else{
+
+Swal.fire({
+icon:"error",
+title:"Delete failed"
+})
+
+}
+
+}
+
+document.addEventListener("DOMContentLoaded", loadCustomers)
 
 </script>
 

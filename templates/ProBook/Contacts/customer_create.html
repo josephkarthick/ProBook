@@ -13,7 +13,7 @@
 <div class="row mb-3">
 
 <div class="col-md-6">
-<label>Name</label>
+<label>Name *</label>
 <input class="form-control" id="name">
 </div>
 
@@ -39,10 +39,8 @@
 </div>
 
 <div class="mb-3">
-
 <label>Address</label>
 <textarea class="form-control" id="address"></textarea>
-
 </div>
 
 <button class="btn btn-success" onclick="createCustomer()">
@@ -54,11 +52,29 @@ Save Customer
 
 </div>
 
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
 
 async function createCustomer(){
 
-const res = await fetch("/customers/",{
+const name = document.getElementById("name").value.trim()
+
+if(!name){
+
+Swal.fire({
+icon:"warning",
+title:"Name Required",
+text:"Please enter customer name"
+})
+
+return
+}
+
+try{
+
+const res = await fetch("/api/customers/",{
 
 method:"POST",
 
@@ -68,21 +84,48 @@ headers:{
 
 body:JSON.stringify({
 
-name:document.getElementById("name").value,
-phone:document.getElementById("phone").value,
-email:document.getElementById("email").value,
-address:document.getElementById("address").value,
-gst_number:document.getElementById("gst").value
+name: name,
+phone: document.getElementById("phone").value,
+email: document.getElementById("email").value,
+address: document.getElementById("address").value,
+gst_number: document.getElementById("gst").value
 
 })
 
 })
+
+const data = await res.json()
 
 if(res.ok){
 
-alert("Customer created")
+Swal.fire({
+icon:"success",
+title:"Customer Created",
+timer:1500,
+showConfirmButton:false
+})
 
+setTimeout(()=>{
 window.location.href="/customers"
+},1500)
+
+}else{
+
+Swal.fire({
+icon:"error",
+title:"Error",
+text:data.detail || "Failed to create customer"
+})
+
+}
+
+}catch(err){
+
+Swal.fire({
+icon:"error",
+title:"Server Error",
+text:"Please try again later"
+})
 
 }
 

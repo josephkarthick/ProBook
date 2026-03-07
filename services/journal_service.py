@@ -11,12 +11,20 @@ from datetime import date
 
 def create_sales_journal(db, invoice):
 
-    # Find required accounts
-    receivable = db.query(Account)\
-        .filter(Account.customer_id == invoice.customer_id)\
-        .first()
-    sales = db.query(Account).filter(Account.name == "Sales").first()
-    gst = db.query(Account).filter(Account.name == "GST Payable").first()
+    receivable = db.query(Account).filter(
+        Account.name == "Accounts Receivable",
+        Account.company_id == invoice.company_id
+    ).first()
+
+    sales = db.query(Account).filter(
+        Account.name == "Sales",
+        Account.company_id == invoice.company_id
+    ).first()
+
+    gst = db.query(Account).filter(
+        Account.name == "GST Payable",
+        Account.company_id == invoice.company_id
+    ).first()
 
     if not receivable or not sales or not gst:
         raise Exception("Required accounts not found")
@@ -24,19 +32,16 @@ def create_sales_journal(db, invoice):
     journal = JournalEntry(
 
         company_id=invoice.company_id,
-
         reference_no=invoice.invoice_no,
-
         date=invoice.invoice_date,
-
-        narration=f"Sales Invoice {invoice.invoice_no}"
-
+        narration=f"Sales Invoice {invoice.invoice_no}",
+        status="POSTED"
     )
 
     db.add(journal)
     db.flush()
 
-    # Debit Accounts Receivable
+    # DR Accounts Receivable
     db.add(JournalLine(
         journal_id=journal.id,
         account_id=receivable.id,
@@ -44,7 +49,7 @@ def create_sales_journal(db, invoice):
         credit=0
     ))
 
-    # Credit Sales
+    # CR Sales
     db.add(JournalLine(
         journal_id=journal.id,
         account_id=sales.id,
@@ -52,9 +57,8 @@ def create_sales_journal(db, invoice):
         credit=invoice.total_amount
     ))
 
-    # Credit GST
+    # CR GST
     if invoice.tax_amount > 0:
-
         db.add(JournalLine(
             journal_id=journal.id,
             account_id=gst.id,
@@ -115,36 +119,30 @@ def create_journal(db: Session, data: JournalEntryCreate, company_id: int):
 
 def create_purchase_journal(db, bill):
 
-    from models.journal_entry import JournalEntry
-    from models.journal_line import JournalLine
-    from models.accounts import Account
-
-    purchase_account = db.query(Account)\
-        .filter(Account.name == "Purchase")\
-        .first()
+    purchase_account = db.query(Account).filter(
+        Account.name == "Purchase",
+        Account.company_id == bill.company_id
+    ).first()
 
     gst_account = db.query(Account).filter(
         Account.name == "Input GST",
         Account.company_id == bill.company_id
     ).first()
-    
-    if not gst_account:
-        raise Exception("Input GST account not found for this company")
-        
-        
 
-    payable_account = db.query(Account)\
-        .filter(Account.name == "Accounts Payable")\
-        .first()
+    payable_account = db.query(Account).filter(
+        Account.name == "Accounts Payable",
+        Account.company_id == bill.company_id
+    ).first()
+
+    if not purchase_account or not gst_account or not payable_account:
+        raise Exception("Required accounts not found")
 
     journal = JournalEntry(
-
         company_id=bill.company_id,
         reference_no=bill.bill_no,
         date=bill.bill_date,
         narration="Purchase Bill",
         status="POSTED"
-
     )
 
     db.add(journal)
@@ -171,4 +169,4 @@ def create_purchase_journal(db, bill):
         credit=bill.grand_total
     ))
 
-    db.commit()    
+    db.commit()

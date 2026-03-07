@@ -1,0 +1,108 @@
+{% extends "ProBook/Base/base.html" %}
+
+{% block title %}View Invoice{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex justify-content-between mb-4">
+
+<h3>Invoice {{ invoice.invoice_no }}</h3>
+
+<div>
+
+<a href="/sales-print/{{ invoice.id }}" class="btn btn-secondary">
+Print
+</a>
+
+<a href="/sales" class="btn btn-light">
+Back
+</a>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div class="card-body">
+
+<p><b>Date:</b> {{ invoice.invoice_date }}</p>
+
+<p><b>Customer:</b>
+{{ invoice.customer.name if invoice.customer else '' }}
+</p>
+
+
+<table class="table table-bordered mt-4">
+
+<thead>
+
+<tr>
+<th>Item</th>
+<th>Qty</th>
+<th>Price</th>
+<th>Total</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for item in items %}
+
+<tr>
+
+<td>{{ item.item.name if item.item else '' }}</td>
+
+<td>{{ item.qty }}</td>
+
+<td>{{ item.price }}</td>
+
+<td>{{ item.total }}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+
+<div class="row justify-content-end mt-4">
+
+<div class="col-md-4">
+
+<table class="table">
+
+<tr>
+<th>Subtotal</th>
+<td>{{ invoice.total_amount }}</td>
+</tr>
+
+<tr>
+<th>GST</th>
+<td>{{ invoice.tax_amount }}</td>
+</tr>
+
+<tr class="fw-bold">
+<th>Grand Total</th>
+<td>{{ invoice.grand_total }}</td>
+</tr>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}

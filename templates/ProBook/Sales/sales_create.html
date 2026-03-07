@@ -1,18 +1,16 @@
 {% extends "ProBook/Base/base.html" %}
-{% block title %}Sales Invoice{% endblock %}
+{% block title %}Sales Invoice | ProBook{% endblock %}
 
 {% block content %}
 
 <div class="content">
 
 <div class="d-flex justify-content-between mb-4">
-
 <h3>Sales Invoice</h3>
 
-<button class="btn btn-success" onclick="saveSale()">
+<button class="btn btn-success" onclick="saveSales()">
 Save Invoice
 </button>
-
 </div>
 
 <div class="card">
@@ -26,22 +24,23 @@ Save Invoice
 </div>
 
 <div class="col-md-3">
-<label>Date</label>
+<label>Invoice Date</label>
 <input type="date" id="invoiceDate" class="form-control">
 </div>
 
 </div>
 
+
 <table class="table table-bordered" id="salesTable">
 
 <thead>
 <tr>
-<th>Item</th>
-<th>Qty</th>
-<th>Price</th>
-<th>GST%</th>
-<th>Total</th>
-<th></th>
+<th width="250">Item</th>
+<th width="100">Qty</th>
+<th width="120">Price</th>
+<th width="100">GST %</th>
+<th width="150">Total</th>
+<th width="50"></th>
 </tr>
 </thead>
 
@@ -49,50 +48,307 @@ Save Invoice
 
 </table>
 
+<br>
+
 <button class="btn btn-sm btn-primary" onclick="addRow()">
-Add Item
++ Add Item
 </button>
 
+
+<hr>
+
+<div class="row justify-content-end">
+
+<div class="col-md-4">
+
+<table class="table">
+
+<tr>
+<th>Subtotal</th>
+<td id="subtotal">0.00</td>
+</tr>
+
+<tr>
+<th>GST</th>
+<td id="taxTotal">0.00</td>
+</tr>
+
+<tr class="fw-bold">
+<th>Grand Total</th>
+<td id="grandTotal">0.00</td>
+</tr>
+
+</table>
+
+</div>
+
+</div>
+
 </div>
 </div>
 
 </div>
+
 
 <script>
 
-let items=[]
-let customers=[]
+let items = []
+let customers = []
+
+
+/* ===============================
+LOAD CUSTOMERS
+=============================== */
 
 async function loadCustomers(){
 
-const res=await fetch("/customers/")
-customers=await res.json()
+const res = await fetch("/api/customers/")
+customers = await res.json()
 
-const select=document.getElementById("customerSelect")
+const select = document.getElementById("customerSelect")
+
+select.innerHTML = `<option value="">Select Customer</option>`
 
 customers.forEach(c=>{
-
-select.innerHTML+=`
-<option value="${c.id}">
-${c.name}
-</option>
-`
-
+select.innerHTML += `<option value="${c.id}">${c.name}</option>`
 })
 
 }
 
+
+/* ===============================
+LOAD ITEMS
+=============================== */
+
 async function loadItems(){
 
-const res=await fetch("/api/items")
-items=await res.json()
+const res = await fetch("/api/items")
+items = await res.json()
+
+console.log("Items loaded:", items)
 
 }
 
-document.addEventListener("DOMContentLoaded",async function(){
+
+/* ===============================
+ADD ROW
+=============================== */
+
+function addRow(){
+
+if(items.length === 0){
+alert("No items found. Please create items first.")
+return
+}
+
+const tbody = document.querySelector("#salesTable tbody")
+
+const options = items.map(i=>`
+<option value="${i.id}" data-price="${i.selling_price}" data-gst="${i.gst_rate}">
+${i.name}
+</option>
+`).join("")
+
+const row = document.createElement("tr")
+
+row.innerHTML = `
+<td>
+<select class="form-select item-select" onchange="itemChanged(this)">
+<option value="">Select Item</option>
+${options}
+</select>
+</td>
+
+<td>
+<input type="number" class="form-control qty" value="1" min="1" oninput="calculateRow(this)">
+</td>
+
+<td>
+<input type="number" class="form-control price" value="0" step="0.01" oninput="calculateRow(this)">
+</td>
+
+<td>
+<input type="number" class="form-control gst" value="0" step="0.01" oninput="calculateRow(this)">
+</td>
+
+<td class="rowTotal">0.00</td>
+
+<td>
+<button class="btn btn-sm btn-danger" onclick="removeRow(this)">✕</button>
+</td>
+`
+
+tbody.appendChild(row)
+
+}
+
+
+/* ===============================
+ITEM SELECT
+=============================== */
+
+function itemChanged(select){
+
+const row = select.closest("tr")
+
+const option = select.options[select.selectedIndex]
+
+row.querySelector(".price").value = option.dataset.price || 0
+row.querySelector(".gst").value = option.dataset.gst || 0
+
+calculateRow(row.querySelector(".price"))
+
+}
+
+
+/* ===============================
+REMOVE ROW
+=============================== */
+
+function removeRow(btn){
+
+btn.closest("tr").remove()
+
+calculateTotals()
+
+}
+
+
+/* ===============================
+ROW CALCULATION
+=============================== */
+
+function calculateRow(input){
+
+const row = input.closest("tr")
+
+const qty = Number(row.querySelector(".qty").value)
+const price = Number(row.querySelector(".price").value)
+const gst = Number(row.querySelector(".gst").value)
+
+const subtotal = qty * price
+const tax = subtotal * gst / 100
+const total = subtotal + tax
+
+row.querySelector(".rowTotal").innerText = total.toFixed(2)
+
+calculateTotals()
+
+}
+
+
+/* ===============================
+TOTAL CALCULATION
+=============================== */
+
+function calculateTotals(){
+
+let subtotal = 0
+let taxTotal = 0
+
+document.querySelectorAll("#salesTable tbody tr").forEach(row=>{
+
+const qty = Number(row.querySelector(".qty").value)
+const price = Number(row.querySelector(".price").value)
+const gst = Number(row.querySelector(".gst").value)
+
+const sub = qty * price
+const tax = sub * gst / 100
+
+subtotal += sub
+taxTotal += tax
+
+})
+
+document.getElementById("subtotal").innerText = subtotal.toFixed(2)
+document.getElementById("taxTotal").innerText = taxTotal.toFixed(2)
+document.getElementById("grandTotal").innerText = (subtotal + taxTotal).toFixed(2)
+
+}
+
+
+/* ===============================
+SAVE SALES
+=============================== */
+
+async function saveSales(){
+
+const customer = document.getElementById("customerSelect").value
+const invoiceDate = document.getElementById("invoiceDate").value
+
+if(!customer){
+alert("Please select customer")
+return
+}
+
+let invoiceItems = []
+
+document.querySelectorAll("#salesTable tbody tr").forEach(row=>{
+
+const item = row.querySelector(".item-select").value
+const qty = Number(row.querySelector(".qty").value)
+const price = Number(row.querySelector(".price").value)
+const gst = Number(row.querySelector(".gst").value)
+
+if(item){
+
+invoiceItems.push({
+item_id:Number(item),
+quantity:qty,
+price:price,
+gst_rate:gst
+})
+
+}
+
+})
+
+console.log("Sending invoice:", invoiceItems)
+
+if(invoiceItems.length === 0){
+alert("Add items first")
+return
+}
+
+const res = await fetch("/api/sales/",{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify({
+customer_id:Number(customer),
+invoice_date:invoiceDate,
+items:invoiceItems
+})
+})
+
+const data = await res.json()
+
+if(!res.ok){
+alert(data.detail || "Failed to save invoice")
+return
+}
+
+alert("Sales invoice created")
+
+window.location.href="/sales"
+
+}
+
+
+/* ===============================
+INIT
+=============================== */
+
+document.addEventListener("DOMContentLoaded", async function(){
+
+document.getElementById("invoiceDate").value =
+new Date().toISOString().split("T")[0]
 
 await loadCustomers()
 await loadItems()
+
+document.querySelector("#salesTable tbody").innerHTML = ""
+
+addRow()
 
 })
 

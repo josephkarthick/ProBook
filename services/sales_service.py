@@ -64,9 +64,9 @@ def create_sales_invoice(db: Session, data, company_id):
         reduce_stock_sale(
             db,
             company_id,
-            invoice.id,
             item.item_id,
-            item.quantity
+            item.quantity,
+            invoice.id
         )
 
         total_amount += subtotal

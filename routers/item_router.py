@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.orm import Session
+
 from database import get_db
 from core.company_utils import get_current_company_id
+from models.item import Item
 
 from schemas.item_schema import ItemCreate, ItemUpdate
 from services.item_service import (
@@ -14,6 +16,26 @@ from services.item_service import (
 router = APIRouter(prefix="/api/items", tags=["Items"])
 
 
+# ===============================
+# GET ITEMS
+# ===============================
+@router.get("")
+def get_items(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+
+    company_id = get_current_company_id(request)
+
+    return db.query(Item).filter(
+        Item.company_id == company_id,
+        Item.is_active == True
+    ).all()
+
+
+# ===============================
+# CREATE ITEM
+# ===============================
 @router.post("")
 def create_item_api(
     data: ItemCreate,
@@ -24,7 +46,10 @@ def create_item_api(
     return create_item(db, data, company_id)
 
 
-@router.get("")
+# ===============================
+# LIST ITEMS
+# ===============================
+@router.get("/list")
 def list_items_api(
     request: Request,
     db: Session = Depends(get_db)
@@ -33,6 +58,9 @@ def list_items_api(
     return list_items(db, company_id)
 
 
+# ===============================
+# UPDATE ITEM
+# ===============================
 @router.put("/{item_id}")
 def update_item_api(
     item_id: int,
@@ -40,6 +68,7 @@ def update_item_api(
     request: Request,
     db: Session = Depends(get_db)
 ):
+
     company_id = get_current_company_id(request)
 
     item = update_item(db, item_id, data, company_id)
@@ -50,12 +79,16 @@ def update_item_api(
     return item
 
 
+# ===============================
+# DELETE ITEM
+# ===============================
 @router.delete("/{item_id}")
 def delete_item_api(
     item_id: int,
     request: Request,
     db: Session = Depends(get_db)
 ):
+
     company_id = get_current_company_id(request)
 
     item = delete_item(db, item_id, company_id)

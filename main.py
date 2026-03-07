@@ -2,7 +2,6 @@ from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
-
 from database import engine, Base, SessionLocal
 from services.menu_service import get_menus
 
@@ -39,6 +38,9 @@ from routers.ui.company_ui_router import router as company_ui_router
 from routers.ui.vendor_ui_router import router as vendor_ui_router
 from routers.sales_router import router as sales_router
 from routers.ui.sales_ui_router import router as sales_ui_router
+from routers.ui.customer_ui_router import router as customer_ui_router
+from routers.customer_router import router as customer_router
+
 
 
 
@@ -103,6 +105,8 @@ app.include_router(company_ui_router)
 app.include_router(vendor_ui_router)
 app.include_router(sales_router)
 app.include_router(sales_ui_router)
+app.include_router(customer_ui_router)
+app.include_router(customer_router)
 
 
 

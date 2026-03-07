@@ -1,0 +1,180 @@
+{% extends "ProBook/Base/base.html" %}
+
+{% block title %}Sales Invoices | ProBook{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<!-- PAGE HEADER -->
+
+<div class="d-flex justify-content-between mb-4">
+
+<h3>Sales Invoices</h3>
+
+<a href="/sales-create" class="btn btn-primary">
+<i class="icon-plus-circle me-1"></i> Create Invoice
+</a>
+
+</div>
+
+
+<!-- SALES TABLE -->
+
+<div class="card">
+
+<div class="card-body">
+
+<div class="table-responsive">
+
+<table class="table table-bordered">
+
+<thead>
+
+<tr>
+
+<th>Invoice No</th>
+<th>Date</th>
+<th>Customer</th>
+<th>Total</th>
+<th>Status</th>
+<th width="120">Actions</th>
+
+</tr>
+
+</thead>
+
+<tbody id="salesBody">
+
+<tr>
+<td colspan="5" class="text-center text-muted">
+Loading sales invoices...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* ==========================
+CHECK ACTIVE COMPANY
+========================== */
+
+async function checkCompany(){
+
+const res = await fetch("/api/companies/active")
+const data = await res.json()
+
+if(!data.company_id){
+
+alert("Please select a company first")
+
+window.location.href="/company"
+
+return false
+
+}
+
+return true
+
+}
+
+
+/* ==========================
+LOAD SALES
+========================== */
+
+async function loadSales(){
+
+const res = await fetch("api/sales/")
+const data = await res.json()
+
+const body = document.getElementById("salesBody")
+
+body.innerHTML = ""
+
+if(!data.length){
+
+body.innerHTML = `
+<tr>
+<td colspan="5" class="text-center text-muted">
+No sales invoices found
+</td>
+</tr>
+`
+
+return
+
+}
+
+data.forEach(s => {
+
+body.innerHTML += `
+
+<tr>
+
+<td>${s.invoice_no}</td>
+
+<td>${s.invoice_date}</td>
+
+<td>${s.customer_name || ''}</td>
+
+<td>${Number(s.grand_total).toFixed(2)}</td>
+
+<td>
+<span class="badge bg-success">
+${s.status}
+</span>
+</td>
+
+<td>
+
+<a href="/sales-view/${s.id}" 
+class="btn btn-sm btn-info me-1">
+<i class="icon-eye"></i>
+</a>
+
+<a href="/sales-print/${s.id}" 
+class="btn btn-sm btn-secondary">
+<i class="icon-printer"></i>
+</a>
+
+</td>
+
+</tr>
+
+`
+
+})
+
+}
+
+
+/* ==========================
+INIT
+========================== */
+
+document.addEventListener("DOMContentLoaded", async function(){
+
+const ok = await checkCompany()
+
+if(!ok) return
+
+loadSales()
+
+})
+
+</script>
+
+{% endblock %}
