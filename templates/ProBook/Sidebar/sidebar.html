@@ -1,5 +1,5 @@
 {% set current_path = request.url.path %}
-{% set active_tab = None %}
+{% set ns = namespace(active_tab=None) %}
 
 <div class="two-col-sidebar" id="two-col-sidebar">
 <div class="sidebar sidebar-twocol">
@@ -13,23 +13,25 @@
 <div class="sidebar-left">
 <div class="nav flex-column align-items-center sidebar-nav" role="tablist">
 
+{# Detect active parent based on child url #}
 {% for parent in menus %}
 
     {% for child in parent.submenu or [] %}
-        {% if current_path == child.url %}
-            {% set active_tab = parent.id %}
+        {% if current_path.startswith(child.url) %}
+            {% set ns.active_tab = parent.id %}
         {% endif %}
     {% endfor %}
 
 {% endfor %}
 
-{% if not active_tab and menus|length > 0 %}
-    {% set active_tab = menus[0].id %}
+{# Default first tab if nothing active #}
+{% if not ns.active_tab and menus|length > 0 %}
+    {% set ns.active_tab = menus[0].id %}
 {% endif %}
 
 {% for parent in menus %}
 <a href="#"
-   class="nav-link {% if parent.id == active_tab %}active{% endif %}"
+   class="nav-link {% if parent.id == ns.active_tab %}active{% endif %}"
    data-bs-toggle="tab"
    data-bs-target="#tab-{{ parent.id }}">
     <i class="{{ parent.icon }}"></i>
@@ -74,7 +76,7 @@ data-bs-toggle="dropdown">
 
 {% for parent in menus %}
 
-<div class="tab-pane fade {% if parent.id == active_tab %}show active{% endif %}"
+<div class="tab-pane fade {% if parent.id == ns.active_tab %}show active{% endif %}"
 id="tab-{{ parent.id }}">
 
 <ul>
@@ -83,10 +85,10 @@ id="tab-{{ parent.id }}">
 <span>{{ parent.title }}</span>
 </li>
 
-{% for child in parent.submenu %}
+{% for child in parent.submenu or [] %}
 <li>
 <a href="{{ child.url }}"
-class="{% if current_path == child.url %}active{% endif %}">
+class="{% if current_path.startswith(child.url) %}active{% endif %}">
 <i class="{{ child.icon }}"></i>
 <span>{{ child.title }}</span>
 </a>
@@ -105,42 +107,3 @@ class="{% if current_path == child.url %}active{% endif %}">
 </div>
 </div>
 </div>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-
-const dropdown = document.getElementById("companyDropdown");
-if (!dropdown) return;
-
-fetch("/api/companies/")
-.then(res => res.json())
-.then(companies => {
-
-dropdown.innerHTML = "";
-
-companies.forEach(company => {
-
-const li = document.createElement("li");
-const a = document.createElement("a");
-
-a.className = "dropdown-item";
-a.href = "#";
-a.innerText = company.name;
-
-a.onclick = function () {
-fetch(`/api/companies/switch/${company.id}`, {
-method: "POST",
-credentials: "same-origin"
-}).then(() => location.reload());
-};
-
-li.appendChild(a);
-dropdown.appendChild(li);
-
-});
-
-})
-.catch(err => console.log("Error:", err));
-
-});
-</script>

@@ -6,7 +6,9 @@ router = APIRouter()
 
 
 # Purchase Bill Page
-@router.get("/purchase/create", response_class=HTMLResponse)
+from core.template_engine import render_template
+
+@router.get("/purchase/create")
 def purchase_create_page(request: Request):
 
     return render_template(
