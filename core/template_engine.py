@@ -39,11 +39,3 @@ def render_template(template_name, request, context=None):
     finally:
         db.close()
 
-
-# 🚫 Prevent misuse
-def template_response(*args, **kwargs):
-    raise Exception(
-        "Use render_template() instead of templates.TemplateResponse()"
-    )
-
-templates.TemplateResponse = template_response

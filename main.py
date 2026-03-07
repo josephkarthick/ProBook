@@ -1,11 +1,13 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
-
+from fastapi.responses import RedirectResponse
 from database import engine, Base
 from core.template_engine import render_template
 
 # Routers
+from routers.auth_router import router as auth_router
+from models.user import User
 from routers.company_router import router as company_router
 from routers.account_router import router as account_router
 from routers.account_page_router import router as account_page_router
@@ -48,6 +50,9 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 Base.metadata.create_all(bind=engine)
 
 # Register routers
+
+app.include_router(auth_router)
+
 app.include_router(company_router)
 app.include_router(account_router)
 app.include_router(account_page_router)
@@ -81,6 +86,9 @@ app.include_router(customer_router)
 
 @app.get("/")
 def home(request: Request):
+
+    if not request.session.get("user_id"):
+        return RedirectResponse("/login")
 
     return render_template(
         "ProBook/Base/base.html",
