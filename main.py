@@ -2,13 +2,12 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.responses import RedirectResponse
+
 from database import engine, Base
 from core.template_engine import render_template
 
-
 # Routers
 from routers.auth_router import router as auth_router
-from models.user import User
 from routers.company_router import router as company_router
 from routers.account_router import router as account_router
 from routers.account_page_router import router as account_page_router
@@ -39,53 +38,74 @@ from routers.ui.sales_ui_router import router as sales_ui_router
 from routers.ui.customer_ui_router import router as customer_ui_router
 from routers.customer_router import router as customer_router
 
+
 app = FastAPI()
 
-uvicorn main:app --host 0.0.0.0 --port 10000
-
+# Session middleware
 app.add_middleware(
     SessionMiddleware,
     secret_key="probook-secret-key"
 )
 
+# Static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Create tables
 Base.metadata.create_all(bind=engine)
 
-# Register routers
+
+# ======================
+# Register Routers
+# ======================
 
 app.include_router(auth_router)
-
 app.include_router(company_router)
+
 app.include_router(account_router)
 app.include_router(account_page_router)
+
 app.include_router(journal_router)
 app.include_router(ledger_router)
 app.include_router(trial_balance_router)
 app.include_router(profit_loss_router)
 app.include_router(balance_sheet_router)
+
 app.include_router(vendor_router)
 app.include_router(vendor_page_router)
+
 app.include_router(category_router)
+
 app.include_router(purchase_router)
 app.include_router(purchase_page_router)
-app.include_router(item_ui_router)
+
 app.include_router(item_router)
+app.include_router(item_ui_router)
+
 app.include_router(journal_ui_router)
 app.include_router(ledger_ui_router)
 app.include_router(trial_balance_ui_router)
 app.include_router(profit_loss_ui_router)
 app.include_router(balance_sheet_ui_router)
+
 app.include_router(purchase_ui_router)
+
 app.include_router(stock_router)
 app.include_router(stock_ui_router)
+
 app.include_router(company_ui_router)
+
 app.include_router(vendor_ui_router)
+
 app.include_router(sales_router)
 app.include_router(sales_ui_router)
-app.include_router(customer_ui_router)
-app.include_router(customer_router)
 
+app.include_router(customer_router)
+app.include_router(customer_ui_router)
+
+
+# ======================
+# Home Page
+# ======================
 
 @app.get("/")
 def home(request: Request):
@@ -99,6 +119,10 @@ def home(request: Request):
     )
 
 
+# ======================
+# Company Page
+# ======================
+
 @app.get("/company")
 def company_page(request: Request):
 
@@ -107,6 +131,10 @@ def company_page(request: Request):
         request
     )
 
+
+# ======================
+# Debug Routes
+# ======================
 
 @app.get("/routes")
 def list_routes():
