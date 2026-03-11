@@ -7,3 +7,4 @@ python-multipart
 passlib[bcrypt]
 bcrypt
 itsdangerous
+email-validator
