@@ -8,3 +8,4 @@ passlib[bcrypt]
 bcrypt
 itsdangerous
 email-validator
+psycopg2-binary
