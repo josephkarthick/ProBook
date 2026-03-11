@@ -47,6 +47,7 @@ app.add_middleware(
     secret_key="probook-secret-key"
 )
 
+uvicorn app.main:app --host 0.0.0.0 --port 10000
 # Static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
