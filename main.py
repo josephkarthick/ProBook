@@ -47,7 +47,7 @@ app.add_middleware(
     secret_key="probook-secret-key"
 )
 
-uvicorn app.main:app --host 0.0.0.0 --port 10000
+
 # Static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -146,3 +146,7 @@ def list_routes():
         routes.append(route.path)
 
     return routes
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
