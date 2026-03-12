@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-postgresql+psycopg2://user:Yd6YUjCb4uy0pzYICXzfxClny38mte8o@host:5432/probook
+DATABASE_URL = "mysql+pymysql://root:Karthick77@localhost/probook_erp"
 
 engine = create_engine(DATABASE_URL, echo=True)
 

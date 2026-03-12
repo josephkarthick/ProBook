@@ -43,18 +43,21 @@ def create_sales_invoice(db: Session, data, company_id):
 
     for item in data.items:
 
-        subtotal = item.quantity * item.price
-        tax = subtotal * item.gst_rate / 100
+        qty = Decimal(item.quantity)
+        price = Decimal(item.price)
+        gst = Decimal(item.gst_rate)
+
+        subtotal = qty * price
+        tax = subtotal * gst / Decimal("100")
         total = subtotal + tax
 
         invoice_item = SalesInvoiceItem(
-
             invoice_id=invoice.id,
             item_id=item.item_id,
-            qty=item.quantity,
-            price=item.price,
+            qty=qty,
+            price=price,
             amount=subtotal,
-            gst_rate=item.gst_rate,
+            gst_rate=gst,
             gst_amount=tax,
             total=total
         )
@@ -65,7 +68,7 @@ def create_sales_invoice(db: Session, data, company_id):
             db,
             company_id,
             item.item_id,
-            item.quantity,
+            qty,
             invoice.id
         )
 

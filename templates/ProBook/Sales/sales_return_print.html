@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<title>Sales Return</title>
+
+<style>
+
+body{font-family:Arial}
+
+table{width:100%;border-collapse:collapse}
+
+th,td{border:1px solid #ccc;padding:8px}
+
+</style>
+
+</head>
+
+<body onload="window.print()">
+
+<h2>Sales Return</h2>
+
+<p>Return No: {{return_doc.return_no}}</p>
+<p>Date: {{return_doc.return_date}}</p>
+
+<table>
+
+<thead>
+<tr>
+<th>Item</th>
+<th>Qty</th>
+<th>Price</th>
+<th>Total</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for i in items %}
+
+<tr>
+<td>{{i.item_id}}</td>
+<td>{{i.qty}}</td>
+<td>{{i.price}}</td>
+<td>{{i.total}}</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</body>
+
+</html>

@@ -1,0 +1,84 @@
+{% extends "ProBook/Base/base.html" %}
+
+{% block title %}Sales Returns{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex justify-content-between mb-4">
+<h3>Sales Returns</h3>
+<a href="/sales-return-create" class="btn btn-primary">Create Return</a>
+</div>
+
+<div class="card">
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>Return No</th>
+<th>Date</th>
+<th>Invoice</th>
+<th>Total</th>
+<th width="150">Action</th>
+</tr>
+</thead>
+
+<tbody id="returnTable">
+
+<tr>
+<td colspan="5" class="text-center text-muted">
+Loading...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+async function loadReturns(){
+
+const res = await fetch("/api/sales-returns")
+const data = await res.json()
+
+const body = document.getElementById("returnTable")
+body.innerHTML = ""
+
+data.forEach(r=>{
+
+body.innerHTML += `
+<tr>
+<td>${r.return_no}</td>
+<td>${r.return_date}</td>
+<td>${r.invoice_no}</td>
+<td>${r.grand_total}</td>
+
+<td>
+
+<a href="/sales-return-view/${r.id}" class="btn btn-sm btn-info">View</a>
+
+<a href="/sales-return-print/${r.id}" class="btn btn-sm btn-secondary">Print</a>
+
+</td>
+
+</tr>
+`
+
+})
+
+}
+
+loadReturns()
+
+</script>
+
+{% endblock %}

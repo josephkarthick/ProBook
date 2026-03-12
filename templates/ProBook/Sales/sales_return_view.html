@@ -1,0 +1,50 @@
+{% extends "ProBook/Base/base.html" %}
+
+{% block title %}Sales Return View{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<h3>Sales Return</h3>
+
+<div class="card">
+<div class="card-body">
+
+<p><strong>Return No:</strong> {{return_doc.return_no}}</p>
+<p><strong>Date:</strong> {{return_doc.return_date}}</p>
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>Item</th>
+<th>Qty</th>
+<th>Price</th>
+<th>Total</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for i in items %}
+
+<tr>
+<td>{{i.item_id}}</td>
+<td>{{i.qty}}</td>
+<td>{{i.price}}</td>
+<td>{{i.total}}</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+</div>
+
+</div>
+
+{% endblock %}

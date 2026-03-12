@@ -24,11 +24,16 @@ def get_stock_summary(db: Session, company_id: int):
 
     for r in rows:
 
+        qty = float(r.qty or 0)
+        value = float(r.value or 0)
+        avg_cost = value / qty if qty else 0
+
         result.append({
             "item_id": r.id,
             "item_name": r.name,
-            "qty": float(r.qty or 0),
-            "value": float(r.value or 0)
+            "qty": qty,
+            "avg_cost": avg_cost,
+            "stock_value": value
         })
 
     return result
