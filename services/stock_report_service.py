@@ -5,13 +5,14 @@ from models.stock_layer import StockLayer
 from models.item import Item
 
 
+
 def get_stock_summary(db: Session, company_id: int):
 
     rows = db.query(
         Item.id,
         Item.name,
         func.sum(StockLayer.qty).label("qty"),
-        func.sum(StockLayer.qty * StockLayer.cost).label("value")
+        func.sum(StockLayer.qty * func.coalesce(StockLayer.cost,0)).label("value")
     ).join(
         StockLayer, StockLayer.item_id == Item.id
     ).filter(
@@ -26,6 +27,7 @@ def get_stock_summary(db: Session, company_id: int):
 
         qty = float(r.qty or 0)
         value = float(r.value or 0)
+
         avg_cost = value / qty if qty else 0
 
         result.append({

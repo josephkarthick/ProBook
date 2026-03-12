@@ -108,19 +108,19 @@ return
 
 }
 
-data.forEach(row=>{
+data.forEach(row => {
+
+const qty = Number(row.qty || 0)
+const avg = Number(row.avg_cost || 0)
+const val = Number(row.stock_value || 0)
 
 body.innerHTML += `
-
 <tr>
-
 <td>${row.item_name}</td>
-<td>${Number(row.qty).toFixed(2)}</td>
-<td>${Number(row.avg_cost).toFixed(2)}</td>
-<td>${Number(row.stock_value).toFixed(2)}</td>
-
+<td>${qty.toFixed(2)}</td>
+<td>${avg.toFixed(2)}</td>
+<td>${val.toFixed(2)}</td>
 </tr>
-
 `
 
 })

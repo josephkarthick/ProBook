@@ -37,11 +37,6 @@ from routers.sales_router import router as sales_router
 from routers.ui.sales_ui_router import router as sales_ui_router
 from routers.ui.customer_ui_router import router as customer_ui_router
 from routers.customer_router import router as customer_router
-from routers.sales_return_router import router as sales_return_router
-from routers.ui.sales_return_ui_router import router as sales_return_ui_router
-from routers.vendor_payment_router import router as vendor_payment_router
-from routers.ui.vendor_payment_ui_router import router as vendor_payment_ui_router
-
 
 
 app = FastAPI()
@@ -51,7 +46,6 @@ app.add_middleware(
     SessionMiddleware,
     secret_key="probook-secret-key"
 )
-
 
 # Static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -108,14 +102,6 @@ app.include_router(sales_ui_router)
 app.include_router(customer_router)
 app.include_router(customer_ui_router)
 
-app.include_router(sales_return_router)
-
-
-app.include_router(sales_return_ui_router)
-app.include_router(vendor_payment_router)
-app.include_router(vendor_payment_ui_router)
-
-
 
 # ======================
 # Home Page
@@ -159,7 +145,3 @@ def list_routes():
         routes.append(route.path)
 
     return routes
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

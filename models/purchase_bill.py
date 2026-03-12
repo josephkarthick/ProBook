@@ -1,8 +1,7 @@
-from sqlalchemy import Column, Integer, String, Date, Numeric, ForeignKey, UniqueConstraint, DateTime
+from sqlalchemy import Column, Integer, String, Date, Numeric, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from database import Base
-from datetime import datetime
-
+from sqlalchemy.orm import relationship
 
 class PurchaseBill(Base):
 
@@ -30,9 +29,7 @@ class PurchaseBill(Base):
 
     paid_amount = Column(Numeric(15,2), default=0)
 
-    status = Column(String(20), default="UNPAID")
-
-    created_at = Column(DateTime, default=datetime.utcnow)
+    status = Column(String(20), default="POSTED")
 
     items = relationship(
         "PurchaseBillItem",
@@ -40,8 +37,4 @@ class PurchaseBill(Base):
         cascade="all, delete-orphan"
     )
 
-    vendor = relationship("Vendor")
-
-    @property
-    def balance_amount(self):
-        return float(self.grand_total or 0) - float(self.paid_amount or 0)
+    vendor = relationship("Vendor")    

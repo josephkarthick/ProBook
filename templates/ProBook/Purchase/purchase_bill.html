@@ -6,6 +6,7 @@
 <div class="content">
 
 <div class="d-flex justify-content-between mb-4">
+
 <h3>Purchase Bill</h3>
 
 <button class="btn btn-success" onclick="savePurchase()">
@@ -20,12 +21,7 @@ Save Bill
 
 <div class="row mb-4">
 
-<div class="col-md-3">
-<label>Bill No</label>
-<input type="text" id="billNo" class="form-control" placeholder="Auto Generated" readonly>
-</div>
-
-<div class="col-md-3">
+<div class="col-md-4">
 <label>Vendor</label>
 <select class="form-select" id="vendorSelect"></select>
 </div>
@@ -101,8 +97,6 @@ Save Bill
 
 let items = []
 let vendors = []
-let company_id = null
-
 
 /* ------------------------
 CHECK ACTIVE COMPANY
@@ -126,11 +120,9 @@ window.location.href="/company"
 return false
 }
 
-company_id = data.company_id
 return true
 
 }
-
 
 /* ------------------------
 LOAD VENDORS
@@ -157,7 +149,6 @@ ${v.name}
 
 }
 
-
 /* ------------------------
 LOAD ITEMS
 ------------------------- */
@@ -168,7 +159,6 @@ const res = await fetch("/api/items")
 items = await res.json()
 
 }
-
 
 /* ------------------------
 ADD ROW
@@ -244,7 +234,6 @@ tbody.appendChild(row)
 
 }
 
-
 /* ------------------------
 AUTO ITEM PRICE + GST
 ------------------------- */
@@ -269,7 +258,6 @@ calculateRow(row.querySelector(".qty"))
 
 })
 
-
 /* ------------------------
 REMOVE ROW
 ------------------------- */
@@ -280,7 +268,6 @@ btn.closest("tr").remove()
 calculateTotals()
 
 }
-
 
 /* ------------------------
 CALCULATE ROW
@@ -303,7 +290,6 @@ row.querySelector(".rowTotal").innerText = total.toFixed(2)
 calculateTotals()
 
 }
-
 
 /* ------------------------
 TOTAL CALCULATION
@@ -334,7 +320,6 @@ document.getElementById("taxTotal").innerText = taxTotal.toFixed(2)
 document.getElementById("grandTotal").innerText = (subtotal + taxTotal).toFixed(2)
 
 }
-
 
 /* ------------------------
 SAVE PURCHASE
@@ -403,11 +388,6 @@ text:"Please add items to purchase bill"
 return
 }
 
-const subtotal = Number(document.getElementById("subtotal").innerText)
-const tax = Number(document.getElementById("taxTotal").innerText)
-const grand = Number(document.getElementById("grandTotal").innerText)
-
-
 const res = await fetch("/purchases/",{
 
 method:"POST",
@@ -418,14 +398,8 @@ headers:{
 
 body:JSON.stringify({
 
-company_id:company_id,
 vendor_id:Number(vendor),
 bill_date:billDate,
-
-total_amount:subtotal,
-tax_amount:tax,
-grand_total:grand,
-
 items:billItems
 
 })
@@ -445,8 +419,6 @@ text:data.detail || "Failed to save purchase"
 return
 }
 
-document.getElementById("billNo").value = data.bill_no || ""
-
 Swal.fire({
 icon:"success",
 title:"Purchase Saved",
@@ -462,15 +434,11 @@ calculateTotals()
 
 }
 
-
 /* ------------------------
 INIT
 ------------------------- */
 
 document.addEventListener("DOMContentLoaded", async function(){
-
-document.getElementById("billDate").value =
-new Date().toISOString().split("T")[0]
 
 const ok = await checkCompany()
 if(!ok) return

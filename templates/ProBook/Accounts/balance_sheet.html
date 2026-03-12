@@ -165,10 +165,9 @@ totalAssets += amount
 assetBody.innerHTML += `
 
 <tr>
-<td>${a.name}</td>
+<td>${a.account_name}</td>
 <td>${amount.toFixed(2)}</td>
 </tr>
-
 `
 
 })
@@ -183,7 +182,7 @@ totalLiabilities += amount
 liabilityBody.innerHTML += `
 
 <tr>
-<td>${l.name}</td>
+<td>${l.account_name}</td>
 <td>${amount.toFixed(2)}</td>
 </tr>
 

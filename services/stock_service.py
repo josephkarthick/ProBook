@@ -117,5 +117,3 @@ def validate_stock_before_sale(db: Session, company_id, item_id, qty):
         )
 
     return True
-    
-    

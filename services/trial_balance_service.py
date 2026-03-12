@@ -8,10 +8,13 @@ from models.accounts import Account
 def get_trial_balance(db: Session, company_id: int):
 
     rows = db.query(
+
         Account.id,
         Account.name,
+
         func.sum(JournalLine.debit).label("debit"),
         func.sum(JournalLine.credit).label("credit")
+
     ).join(JournalLine, JournalLine.account_id == Account.id)\
      .join(JournalEntry, JournalEntry.id == JournalLine.journal_id)\
      .filter(JournalEntry.company_id == company_id)\
@@ -30,9 +33,9 @@ def get_trial_balance(db: Session, company_id: int):
 
         result.append({
             "account_id": r.id,
-            "name": r.name,   # FIXED
-            "debit": float(debit),
-            "credit": float(credit)
+            "account_name": r.name,
+            "debit": debit,
+            "credit": credit
         })
 
     return result
