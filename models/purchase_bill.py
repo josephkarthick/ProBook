@@ -30,7 +30,6 @@ class PurchaseBill(Base):
 
     paid_amount = Column(Numeric(15,2), default=0)
 
-    # UNPAID | PARTIALLY_PAID | PAID
     status = Column(String(20), default="UNPAID")
 
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -43,7 +42,6 @@ class PurchaseBill(Base):
 
     vendor = relationship("Vendor")
 
-    # Useful property for balance
     @property
     def balance_amount(self):
         return float(self.grand_total or 0) - float(self.paid_amount or 0)
