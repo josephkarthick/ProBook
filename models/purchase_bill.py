@@ -29,7 +29,7 @@ class PurchaseBill(Base):
 
     paid_amount = Column(Numeric(15,2), default=0)
 
-    status = Column(String(20), default="POSTED")
+    status = Column(String(20), default="UNPAID")
 
     items = relationship(
         "PurchaseBillItem",

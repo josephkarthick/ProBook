@@ -9,104 +9,55 @@ from services.journal_service import create_journal
 from schemas.journal_schema import JournalEntryCreate, JournalLineCreate
 
 
-def create_purchase_payment(db: Session, payment_data):
+@router.post("/purchase-payments/")
+def create_vendor_payment(payment: VendorPaymentCreate, db: Session = Depends(get_db)):
 
-    try:
-        total_payment = Decimal(payment_data.total_amount)
-        remaining_amount = total_payment
+    bill = db.query(PurchaseBill).filter(
+        PurchaseBill.id == payment.purchase_bill_id
+    ).first()
 
-        # 1️⃣ Validate Vendor
-        vendor = db.query(Vendor).filter(
-            Vendor.id == payment_data.vendor_id,
-            Vendor.company_id == payment_data.company_id
-        ).first()
+    if not bill:
+        raise HTTPException(status_code=404, detail="Bill not found")
 
-        if not vendor or not vendor.account_id:
-            raise Exception("Vendor not found or liability account missing")
+    new_payment = VendorPayment(
+        company_id=bill.company_id,
+        vendor_id=bill.vendor_id,
+        purchase_bill_id=bill.id,
+        payment_date=payment.payment_date,
+        amount=payment.amount,
+        payment_method=payment.payment_method
+    )
 
-        # 2️⃣ Create Payment Header
-        payment = PurchasePayment(
-            company_id=payment_data.company_id,
-            vendor_id=payment_data.vendor_id,
-            payment_date=payment_data.payment_date,
-            payment_mode=payment_data.payment_mode,
-            reference_no=payment_data.reference_no,
-            total_amount=total_payment
-        )
+    db.add(new_payment)
 
-        db.add(payment)
-        db.flush()
+    bill.paid_amount += payment.amount
 
-        # 3️⃣ Get Unpaid Bills (Oldest First)
-        bills = db.query(PurchaseBill).filter(
-            PurchaseBill.company_id == payment_data.company_id,
-            PurchaseBill.vendor_id == payment_data.vendor_id,
-            PurchaseBill.total_amount > PurchaseBill.paid_amount
-        ).order_by(PurchaseBill.bill_date.asc()).all()
+    if bill.paid_amount == 0:
+        bill.status = "UNPAID"
 
-        for bill in bills:
-            if remaining_amount <= 0:
-                break
+    elif bill.paid_amount < bill.grand_total:
+        bill.status = "PARTIAL"
 
-            outstanding = bill.total_amount - bill.paid_amount
-            allocate_amount = min(outstanding, remaining_amount)
+    else:
+        bill.status = "PAID"
 
-            # Create Allocation
-            allocation = PurchasePaymentAllocation(
-                company_id=payment_data.company_id,
-                payment_id=payment.id,
-                purchase_id=bill.id,
-                allocated_amount=allocate_amount
-            )
+    db.commit()
 
-            db.add(allocation)
+    return {"message": "Payment recorded"}
+    
+balance = bill.grand_total - bill.paid_amount
 
-            # Update Bill
-            bill.paid_amount += allocate_amount
+if payment.amount > balance:
+    raise HTTPException(
+        status_code=400,
+        detail="Payment exceeds remaining balance"
+    )
 
-            if bill.paid_amount == bill.total_amount:
-                bill.status = "PAID"
-            else:
-                bill.status = "PARTIAL"
-
-            remaining_amount -= allocate_amount
-
-        # 4️⃣ Get Cash/Bank Account
-        payment_account = db.query(Account).filter(
-            Account.company_id == payment_data.company_id,
-            Account.name.ilike(f"%{payment_data.payment_mode}%")
-        ).first()
-
-        if not payment_account:
-            raise Exception("Payment account not found")
-
-        # 5️⃣ Create Journal Entry
-        journal_data = JournalEntryCreate(
-            company_id=payment_data.company_id,
-            date=payment_data.payment_date,
-            reference_no=payment_data.reference_no,
-            narration=f"Purchase Payment - {payment_data.reference_no}",
-            lines=[
-                JournalLineCreate(
-                    account_id=vendor.account_id,
-                    debit=total_payment,
-                    credit=Decimal("0")
-                ),
-                JournalLineCreate(
-                    account_id=payment_account.id,
-                    debit=Decimal("0"),
-                    credit=total_payment
-                )
-            ]
-        )
-
-        create_journal(db, journal_data)
-
-        db.commit()
-        db.refresh(payment)
-
-        return payment
-
-    except Exception as e:
-        db.rollback()
-        raise
+new_payment = VendorPayment(
+    company_id=bill.company_id,
+    vendor_id=bill.vendor_id,
+    purchase_bill_id=bill.id,
+    payment_date=payment.payment_date,
+    amount=payment.amount,
+    payment_method=payment.payment_method
+)  

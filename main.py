@@ -37,7 +37,8 @@ from routers.sales_router import router as sales_router
 from routers.ui.sales_ui_router import router as sales_ui_router
 from routers.ui.customer_ui_router import router as customer_ui_router
 from routers.customer_router import router as customer_router
-
+from routers.purchase_payment_router import router as purchase_payment_router
+from routers.ui.purchase_payment_ui_router import router as purchase_payment_ui_router
 
 app = FastAPI()
 
@@ -88,6 +89,9 @@ app.include_router(profit_loss_ui_router)
 app.include_router(balance_sheet_ui_router)
 
 app.include_router(purchase_ui_router)
+app.include_router(purchase_payment_router)
+app.include_router(purchase_payment_ui_router)
+
 
 app.include_router(stock_router)
 app.include_router(stock_ui_router)
@@ -101,6 +105,7 @@ app.include_router(sales_ui_router)
 
 app.include_router(customer_router)
 app.include_router(customer_ui_router)
+
 
 
 # ======================
