@@ -1,0 +1,398 @@
+{% extends "ProBook/Base/base.html" %}
+
+{% block title %}Purchase Bills{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex justify-content-between mb-4">
+<h3>Purchase Bills</h3>
+
+<a href="/purchase-create" class="btn btn-primary">
+Create Purchase
+</a>
+</div>
+
+<div class="card">
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th width="120">Bill No</th>
+<th width="140">Date</th>
+<th>Vendor</th>
+<th width="150">Total</th>
+<th width="120">Paid</th>
+<th width="120">Balance</th>
+<th width="120">Status</th>
+<th width="200" class="text-center">Action</th>
+</tr>
+</thead>
+
+<tbody id="purchaseBody">
+
+<tr>
+<td colspan="8" class="text-center text-muted">
+Loading purchases...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+</div>
+
+</div>
+
+
+<!-- PAYMENT MODAL -->
+
+<div class="modal fade" id="paymentModal">
+
+<div class="modal-dialog">
+
+<div class="modal-content">
+
+<div class="modal-header">
+<h5 class="modal-title">Vendor Payment</h5>
+<button class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+
+<input type="hidden" id="paymentBillId">
+
+<div class="mb-3">
+<label>Payment Date</label>
+<input type="date" id="paymentDate" class="form-control">
+</div>
+
+<div class="mb-3">
+<label>Amount</label>
+<input type="number" id="paymentAmount" class="form-control">
+</div>
+
+<div class="mb-3">
+<label>Payment Method</label>
+<select id="paymentMethod" class="form-select">
+<option value="Cash">Cash</option>
+<option value="Bank">Bank</option>
+<option value="UPI">UPI</option>
+</select>
+</div>
+
+</div>
+
+<div class="modal-footer">
+
+<button class="btn btn-secondary" data-bs-dismiss="modal">
+Cancel
+</button>
+
+<button class="btn btn-success" onclick="savePayment()">
+Save Payment
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="modal fade" id="historyModal">
+
+<div class="modal-dialog modal-lg">
+
+<div class="modal-content">
+
+<div class="modal-header">
+<h5 class="modal-title">Payment History</h5>
+<button class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>Reference</th>
+<th>Date</th>
+<th>Method</th>
+<th>Amount</th>
+</tr>
+</thead>
+
+<tbody id="paymentHistoryBody">
+<tr>
+<td colspan="4" class="text-center">Loading...</td>
+</tr>
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+
+/* =========================
+LOAD PURCHASE BILLS
+========================= */
+
+async function loadPurchases(){
+
+try{
+
+const res = await fetch("/purchases/")
+const data = await res.json()
+
+const body = document.getElementById("purchaseBody")
+body.innerHTML=""
+
+if(!data.length){
+
+body.innerHTML=`
+<tr>
+<td colspan="8" class="text-center text-muted">
+No purchase bills found
+</td>
+</tr>
+`
+return
+}
+
+data.forEach(p=>{
+
+const total = Number(p.grand_total || 0)
+const paid = Number(p.paid_amount || 0)
+const balance = total - paid
+
+body.innerHTML+=`
+
+<tr>
+
+<td>
+<a href="/purchase-view/${p.id}">
+${p.bill_no}
+</a>
+</td>
+
+<td>${p.bill_date ?? ''}</td>
+
+<td>${p.vendor_name ?? ''}</td>
+
+<td class="text-end">${total.toFixed(2)}</td>
+
+<td class="text-end">${paid.toFixed(2)}</td>
+
+<td class="text-end">${balance.toFixed(2)}</td>
+
+<td>
+<span class="badge ${
+p.status === "PAID"
+? "bg-success"
+: p.status === "PARTIAL"
+? "bg-warning text-dark"
+: "bg-danger"
+}">
+${p.status || "UNPAID"}
+</span>
+</td>
+
+<td>
+
+${balance > 0
+? `<button class="btn btn-sm btn-info"
+onclick="viewPayments(${p.id})">
+Payments
+</button>
+
+<button class="btn btn-sm btn-success"
+onclick="openPaymentModal(${p.id},${balance})">
+Pay
+</button>`
+: `<span class="text-success fw-bold">Paid</span>`
+}
+
+</td>
+
+</tr>
+`
+
+})
+
+}catch(err){
+
+Swal.fire({
+icon:"error",
+title:"Error",
+text:"Unable to load purchase bills"
+})
+
+}
+
+}
+
+
+/* =========================
+OPEN PAYMENT MODAL
+========================= */
+
+function openPaymentModal(billId, balance){
+
+document.getElementById("paymentBillId").value = billId
+document.getElementById("paymentAmount").value = balance
+
+document.getElementById("paymentDate").value =
+new Date().toISOString().split("T")[0]
+
+const modal = new bootstrap.Modal(
+document.getElementById("paymentModal")
+)
+
+modal.show()
+
+}
+
+
+/* =========================
+SAVE PAYMENT
+========================= */
+
+async function savePayment(){
+
+const billId = document.getElementById("paymentBillId").value
+const date = document.getElementById("paymentDate").value
+const amount = document.getElementById("paymentAmount").value
+const method = document.getElementById("paymentMethod").value
+
+if(!amount){
+
+Swal.fire({
+icon:"warning",
+title:"Amount Required",
+text:"Enter payment amount"
+})
+
+return
+}
+
+const res = await fetch("/purchase-payments/",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+purchase_bill_id:Number(billId),
+payment_date:date,
+amount:Number(amount),
+payment_method:method
+
+})
+
+})
+
+const data = await res.json()
+
+if(!res.ok){
+
+Swal.fire({
+icon:"error",
+title:"Payment Failed",
+text:data.detail || "Unable to save payment"
+})
+
+return
+
+}
+
+Swal.fire({
+icon:"success",
+title:"Payment Saved",
+timer:1200,
+showConfirmButton:false
+})
+
+setTimeout(()=>{
+location.reload()
+},1200)
+
+}
+
+
+/* =========================
+PAGE INIT
+========================= */
+
+document.addEventListener("DOMContentLoaded",function(){
+
+loadPurchases()
+
+})
+
+
+async function viewPayments(billId){
+
+const modal = new bootstrap.Modal(
+document.getElementById("historyModal")
+)
+
+modal.show()
+
+const res = await fetch(`/purchase-payments/${billId}`)
+const data = await res.json()
+
+const body = document.getElementById("paymentHistoryBody")
+
+body.innerHTML = ""
+
+if(!data.length){
+
+body.innerHTML = `
+<tr>
+<td colspan="4" class="text-center text-muted">
+No payments recorded
+</td>
+</tr>
+`
+return
+}
+
+data.forEach(p=>{
+
+body.innerHTML += `
+
+<tr>
+<td>${p.reference_no}</td>
+<td>${p.payment_date}</td>
+<td>${p.payment_method}</td>
+<td class="text-end">${Number(p.amount_paid).toFixed(2)}</td>
+</tr>
+
+`
+
+})
+
+}
+</script>
+
+{% endblock %}

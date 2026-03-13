@@ -12,6 +12,9 @@ from services.purchase_service import create_purchase_bill
 router = APIRouter(prefix="/purchases", tags=["Purchases"])
 
 
+# ===============================
+# CREATE PURCHASE BILL
+# ===============================
 @router.post("/")
 def create_purchase_api(
     data: PurchaseBillCreate,
@@ -22,7 +25,11 @@ def create_purchase_api(
     company_id = get_current_company_id(request)
 
     return create_purchase_bill(db, data, company_id)
-    
+
+
+# ===============================
+# LIST PURCHASE BILLS
+# ===============================
 @router.get("/")
 def list_purchases(request: Request, db: Session = Depends(get_db)):
 
@@ -38,13 +45,26 @@ def list_purchases(request: Request, db: Session = Depends(get_db)):
     result = []
 
     for p in purchases:
+
+        paid_amount = float(p.paid_amount or 0)
+        grand_total = float(p.grand_total)
+        balance = grand_total - paid_amount
+
         result.append({
             "id": p.id,
             "bill_no": p.bill_no,
             "bill_date": p.bill_date,
             "vendor_name": p.vendor.name,
-            "grand_total": float(p.grand_total),
-            "status": p.status
+
+            "grand_total": grand_total,
+            "paid_amount": paid_amount,
+            "balance": balance,
+
+            "status": p.status,
+
+            # Needed for payment modal
+            "vendor_id": p.vendor_id,
+            "company_id": p.company_id
         })
 
-    return result    
+    return result

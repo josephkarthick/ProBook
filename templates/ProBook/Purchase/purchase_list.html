@@ -6,49 +6,59 @@
 
 <div class="content">
 
-<div class="d-flex justify-content-between mb-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-<h3>Purchase Bills</h3>
+        <h3 class="mb-0">Purchase Bills</h3>
 
-<a href="/purchase-create" class="btn btn-primary">
-Create Purchase
-</a>
+        <a href="/purchase-create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Create Purchase
+        </a>
+
+    </div>
+
+
+    <!-- Purchase Table -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover table-bordered align-middle">
+
+                    <thead class="table-light">
+                        <tr>
+                            <th width="120">Bill No</th>
+                            <th width="140">Date</th>
+                            <th>Vendor</th>
+                            <th width="150" class="text-end">Total</th>
+                            <th width="120" class="text-center">Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="purchaseBody">
+
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                Loading purchase bills...
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+    </div>
 
 </div>
 
-<div class="card">
-<div class="card-body">
 
-<table class="table table-bordered">
-
-<thead>
-<tr>
-<th width="120">Bill No</th>
-<th width="140">Date</th>
-<th>Vendor</th>
-<th width="150">Total</th>
-<th width="120">Status</th>
-</tr>
-</thead>
-
-<tbody id="purchaseBody">
-
-<tr>
-<td colspan="5" class="text-center text-muted">
-Loading purchases...
-</td>
-</tr>
-
-</tbody>
-
-</table>
-
-</div>
-</div>
-
-</div>
-
+<!-- SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 <script>
 
@@ -58,74 +68,87 @@ LOAD PURCHASE BILLS
 
 async function loadPurchases(){
 
-try{
+    try{
 
-const res = await fetch("/purchases/")
+        const res = await fetch("/purchases/");
 
-if(!res.ok){
-throw new Error("Failed to load purchases")
-}
+        if(!res.ok){
+            throw new Error("Failed to load purchases");
+        }
 
-const data = await res.json()
+        const data = await res.json();
 
-const body = document.getElementById("purchaseBody")
+        const body = document.getElementById("purchaseBody");
 
-body.innerHTML=""
+        body.innerHTML = "";
 
-if(!data.length){
+        if(!data.length){
 
-body.innerHTML=`
-<tr>
-<td colspan="5" class="text-center text-muted">
-No purchase bills found
-</td>
-</tr>
-`
+            body.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                        No purchase bills found
+                    </td>
+                </tr>
+            `;
 
-return
-}
+            return;
+        }
 
-data.forEach(p=>{
+        data.forEach(p => {
 
-body.innerHTML+=`
+            const status = p.status || "POSTED";
 
-<tr>
+            const statusBadge = `
+                <span class="badge bg-success">
+                    ${status}
+                </span>
+            `;
 
-<td>
-<a href="/purchase-view/${p.id}">
-${p.bill_no}
-</a>
-</td>
+            body.innerHTML += `
 
-<td>${p.bill_date ?? ''}</td>
+                <tr>
 
-<td>${p.vendor_name ?? ''}</td>
+                    <td>
+                        <a href="/purchase-view/${p.id}" class="fw-semibold text-decoration-none">
+                            ${p.bill_no || ''}
+                        </a>
+                    </td>
 
-<td class="text-end">
-${Number(p.grand_total || 0).toFixed(2)}
-</td>
+                    <td>
+                        ${p.bill_date || ''}
+                    </td>
 
-<td>
-<span class="badge bg-success">
-${p.status || 'POSTED'}
-</span>
-</td>
+                    <td>
+                        ${p.vendor_name || ''}
+                    </td>
 
-</tr>
+                    <td class="text-end">
+                        ${Number(p.grand_total || 0).toFixed(2)}
+                    </td>
 
-`
+                    <td class="text-center">
+                        ${statusBadge}
+                    </td>
 
-})
+                </tr>
 
-}catch(err){
+            `;
 
-Swal.fire({
-icon:"error",
-title:"Error",
-text:"Unable to load purchase bills"
-})
+        });
 
-}
+    }
+    catch(err){
+
+        console.error(err);
+
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Unable to load purchase bills"
+        });
+
+    }
 
 }
 
@@ -134,11 +157,11 @@ text:"Unable to load purchase bills"
 PAGE INIT
 ========================= */
 
-document.addEventListener("DOMContentLoaded",function(){
+document.addEventListener("DOMContentLoaded", function(){
 
-loadPurchases()
+    loadPurchases();
 
-})
+});
 
 </script>
 

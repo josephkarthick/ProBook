@@ -170,3 +170,40 @@ def create_purchase_journal(db, bill):
     ))
 
     db.commit()
+    
+def create_vendor_payment_journal(db, payment):
+
+    payable = db.query(Account).filter(
+        Account.name == "Accounts Payable",
+        Account.company_id == payment.company_id
+    ).first()
+
+    cash = db.query(Account).filter(
+        Account.name == "Cash",
+        Account.company_id == payment.company_id
+    ).first()
+
+    journal = JournalEntry(
+        company_id=payment.company_id,
+        reference_no=payment.reference_no,
+        date=payment.payment_date,
+        narration="Vendor Payment",
+        status="POSTED"
+    )
+
+    db.add(journal)
+    db.flush()
+
+    db.add(JournalLine(
+        journal_id=journal.id,
+        account_id=payable.id,
+        debit=payment.amount_paid,
+        credit=0
+    ))
+
+    db.add(JournalLine(
+        journal_id=journal.id,
+        account_id=cash.id,
+        debit=0,
+        credit=payment.amount_paid
+    ))
