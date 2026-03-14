@@ -2,7 +2,6 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.responses import RedirectResponse
-
 from database import engine, Base
 from core.template_engine import render_template
 
@@ -39,6 +38,16 @@ from routers.ui.customer_ui_router import router as customer_ui_router
 from routers.customer_router import router as customer_router
 from routers.purchase_payment_router import router as purchase_payment_router
 from routers.ui.purchase_payment_ui_router import router as purchase_payment_ui_router
+from routers.ui.grn_ui_router import router as grn_ui_router
+from routers.grn_router import router as grn_router
+from routers.purchase_order_router import router as po_router
+from routers.ui.po_ui_router import router as po_ui_router
+
+
+
+
+
+
 
 app = FastAPI()
 
@@ -106,7 +115,12 @@ app.include_router(sales_ui_router)
 app.include_router(customer_router)
 app.include_router(customer_ui_router)
 
+app.include_router(grn_ui_router)
+app.include_router(grn_router)
 
+
+app.include_router(po_router)
+app.include_router(po_ui_router)
 
 # ======================
 # Home Page

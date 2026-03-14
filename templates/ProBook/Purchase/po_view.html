@@ -1,0 +1,201 @@
+{% extends "ProBook/Base/base.html" %}
+{% block title %}View Purchase Order{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex justify-content-between mb-4">
+
+<h3>Purchase Order</h3>
+
+<div>
+<a id="editBtn" class="btn btn-warning">Edit</a>
+<button class="btn btn-secondary" onclick="window.print()">Print</button>
+</div>
+
+</div>
+
+
+<div class="card">
+<div class="card-body">
+
+<!-- COMPANY HEADER -->
+
+<div class="row mb-4">
+
+<div class="col-md-6">
+<h4 class="mb-1">Your Company Name</h4>
+<div>Company Address</div>
+<div>GSTIN: XXXXXXXX</div>
+</div>
+
+<div class="col-md-6 text-end">
+<h4 class="fw-bold">PURCHASE ORDER</h4>
+<div><b>PO Number:</b> <span id="poNumber"></span></div>
+<div><b>Date:</b> <span id="poDate"></span></div>
+</div>
+
+</div>
+
+
+<hr>
+
+
+<!-- VENDOR DETAILS -->
+
+<div class="row mb-4">
+
+<div class="col-md-6">
+<label class="fw-bold">Vendor</label>
+<div id="vendorName"></div>
+</div>
+
+</div>
+
+
+<!-- ITEMS TABLE -->
+
+<table class="table table-bordered">
+
+<thead class="table-light">
+<tr>
+<th>#</th>
+<th>Item</th>
+<th width="120">Qty</th>
+<th width="150">Price</th>
+<th width="120">GST %</th>
+<th width="150">Total</th>
+</tr>
+</thead>
+
+<tbody id="poItems"></tbody>
+
+</table>
+
+
+<!-- TOTALS -->
+
+<div class="row justify-content-end">
+
+<div class="col-md-4">
+
+<table class="table">
+
+<tr>
+<th>Subtotal</th>
+<td id="subtotal" class="text-end"></td>
+</tr>
+
+<tr>
+<th>GST</th>
+<td id="gstTotal" class="text-end"></td>
+</tr>
+
+<tr class="fw-bold">
+<th>Grand Total</th>
+<td id="grandTotal" class="text-end"></td>
+</tr>
+
+</table>
+
+</div>
+
+</div>
+
+
+<!-- FOOTER -->
+
+<div class="row mt-5">
+
+<div class="col-md-6">
+<b>Terms & Conditions</b>
+<p class="small text-muted">
+Goods once sold cannot be returned. Payment terms as agreed.
+</p>
+</div>
+
+<div class="col-md-6 text-end">
+<br><br><br>
+_________________________<br>
+Authorized Signature
+</div>
+
+</div>
+
+
+</div>
+</div>
+
+</div>
+
+
+
+<script>
+
+const poId = window.location.pathname.split("/").pop()
+
+
+async function loadPO(){
+
+const res = await fetch(`/api/purchase-orders/${poId}`)
+const po = await res.json()
+
+document.getElementById("poNumber").innerText = po.po_number
+document.getElementById("vendorName").innerText = po.vendor_name || po.vendor_id
+document.getElementById("poDate").innerText = po.po_date
+
+document.getElementById("editBtn").href =
+`/purchase/po/edit/${po.id}`
+
+
+let subtotal = 0
+let taxTotal = 0
+let row = 1
+
+const tbody = document.getElementById("poItems")
+
+
+po.items.forEach(i=>{
+
+const sub = i.quantity * i.price
+const tax = sub * i.gst_rate / 100
+const total = sub + tax
+
+subtotal += sub
+taxTotal += tax
+
+
+tbody.innerHTML += `
+
+<tr>
+<td>${row++}</td>
+<td>${i.item_name || i.item_id}</td>
+<td>${i.quantity}</td>
+<td>${i.price}</td>
+<td>${i.gst_rate}%</td>
+<td>${total.toFixed(2)}</td>
+</tr>
+
+`
+
+})
+
+
+document.getElementById("subtotal").innerText =
+subtotal.toFixed(2)
+
+document.getElementById("gstTotal").innerText =
+taxTotal.toFixed(2)
+
+document.getElementById("grandTotal").innerText =
+(subtotal + taxTotal).toFixed(2)
+
+}
+
+
+document.addEventListener("DOMContentLoaded",loadPO)
+
+</script>
+
+{% endblock %}

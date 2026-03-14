@@ -1,0 +1,161 @@
+{% extends "ProBook/Base/base.html" %}
+
+{% block title %}Purchase Orders{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex justify-content-between mb-4">
+<h3>Purchase Orders</h3>
+
+<a href="/purchase/po/create" class="btn btn-primary">
+Create Purchase Order
+</a>
+</div>
+
+<div class="card">
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th width="150">PO Number</th>
+<th width="150">Date</th>
+<th>Vendor</th>
+<th width="150">Total</th>
+<th width="120">Status</th>
+<th width="180" class="text-center">Action</th>
+</tr>
+</thead>
+
+<tbody id="poBody">
+
+<tr>
+<td colspan="6" class="text-center text-muted">
+Loading purchase orders...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+</div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+
+/* =========================
+LOAD PURCHASE ORDERS
+========================= */
+
+async function loadPO(){
+
+try{
+
+const res = await fetch("/api/purchase-orders/")
+const data = await res.json()
+
+const body = document.getElementById("poBody")
+
+body.innerHTML = ""
+
+if(!data.length){
+
+body.innerHTML = `
+<tr>
+<td colspan="6" class="text-center text-muted">
+No purchase orders found
+</td>
+</tr>
+`
+return
+}
+
+data.forEach(po=>{
+
+body.innerHTML += `
+
+<tr>
+
+<td>
+<a href="/purchase/po/view/${po.id}">
+${po.po_number}
+</a>
+</td>
+
+<td>${po.po_date ?? ''}</td>
+
+<td>${po.vendor_name ?? po.vendor_id}</td>
+
+<td class="text-end">
+${Number(po.total_amount || 0).toFixed(2)}
+</td>
+
+<td>
+
+<span class="badge ${
+po.status === "APPROVED"
+? "bg-success"
+: po.status === "DRAFT"
+? "bg-warning text-dark"
+: "bg-secondary"
+}">
+${po.status || "DRAFT"}
+</span>
+
+</td>
+
+<td class="text-center">
+
+<a href="/purchase/po/view/${po.id}"
+class="btn btn-sm btn-info">
+View
+</a>
+
+<a href="/purchase/po/edit/${po.id}"
+class="btn btn-sm btn-warning">
+Edit
+</a>
+
+</td>
+
+</tr>
+
+`
+
+})
+
+}catch(err){
+
+Swal.fire({
+icon:"error",
+title:"Error",
+text:"Unable to load purchase orders"
+})
+
+}
+
+}
+
+
+/* =========================
+PAGE INIT
+========================= */
+
+document.addEventListener("DOMContentLoaded",function(){
+
+loadPO()
+
+})
+
+</script>
+
+{% endblock %}

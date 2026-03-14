@@ -25,3 +25,21 @@ def purchase_list_page(request: Request):
         "ProBook/Purchase/purchase_list.html",
         request
     )
+
+@router.get("/purchase/po/view/{po_id}", response_class=HTMLResponse)
+def view_po_page(request: Request, po_id: int):
+
+    return render_template(
+        "ProBook/Purchase/po_view.html",
+        request,
+        {"po_id": po_id}
+    )
+
+@router.get("/purchase/po/edit/{po_id}", response_class=HTMLResponse)
+def edit_po_page(request: Request, po_id: int):
+
+    return render_template(
+        "ProBook/Purchase/po_edit.html",
+        request,
+        {"po_id": po_id}
+    )   

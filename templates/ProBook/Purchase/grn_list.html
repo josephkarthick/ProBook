@@ -1,0 +1,71 @@
+{% extends "ProBook/Base/base.html" %}
+
+{% block title %}GRN{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex justify-content-between mb-3">
+<h3>Goods Received</h3>
+<a href="/grn/create" class="btn btn-primary">Create GRN</a>
+</div>
+
+<div class="card">
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>GRN No</th>
+<th>Date</th>
+<th>Vendor</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody id="grn_table">
+
+</tbody>
+
+</table>
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+async function loadGRN(){
+
+let res = await fetch("/api/grn")
+let data = await res.json()
+
+let table = document.getElementById("grn_table")
+
+data.forEach(grn=>{
+
+let row = `
+<tr>
+
+<td>${grn.grn_no}</td>
+<td>${grn.receipt_date}</td>
+<td>${grn.vendor_name}</td>
+<td>${grn.status}</td>
+
+</tr>
+`
+
+table.innerHTML += row
+
+})
+
+}
+
+loadGRN()
+
+</script>
+
+{% endblock %}
