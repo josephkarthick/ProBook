@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.39
+-- Server version	8.0.45
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,33 +16,38 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `item_categories`
+-- Table structure for table `purchase_payments`
 --
 
-DROP TABLE IF EXISTS `item_categories`;
+DROP TABLE IF EXISTS `purchase_payments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `item_categories` (
+CREATE TABLE `purchase_payments` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `company_id` int NOT NULL,
-  `name` varchar(150) NOT NULL,
-  `parent_id` int DEFAULT NULL,
-  `created_at` datetime DEFAULT (now()),
+  `company_id` int DEFAULT NULL,
+  `vendor_id` int DEFAULT NULL,
+  `purchase_bill_id` int DEFAULT NULL,
+  `payment_date` date DEFAULT NULL,
+  `amount` decimal(15,2) DEFAULT NULL,
+  `payment_method` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `company_id` (`company_id`),
-  KEY `parent_id` (`parent_id`),
-  CONSTRAINT `item_categories_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
-  CONSTRAINT `item_categories_ibfk_2` FOREIGN KEY (`parent_id`) REFERENCES `item_categories` (`id`)
+  KEY `vendor_id` (`vendor_id`),
+  KEY `purchase_bill_id` (`purchase_bill_id`),
+  KEY `ix_purchase_payments_id` (`id`),
+  CONSTRAINT `purchase_payments_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
+  CONSTRAINT `purchase_payments_ibfk_2` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`),
+  CONSTRAINT `purchase_payments_ibfk_3` FOREIGN KEY (`purchase_bill_id`) REFERENCES `purchase_bills` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `item_categories`
+-- Dumping data for table `purchase_payments`
 --
 
-LOCK TABLES `item_categories` WRITE;
-/*!40000 ALTER TABLE `item_categories` DISABLE KEYS */;
-/*!40000 ALTER TABLE `item_categories` ENABLE KEYS */;
+LOCK TABLES `purchase_payments` WRITE;
+/*!40000 ALTER TABLE `purchase_payments` DISABLE KEYS */;
+/*!40000 ALTER TABLE `purchase_payments` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -54,4 +59,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-07 17:06:31
+-- Dump completed on 2026-03-15 11:25:15

@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.39
+-- Server version	8.0.45
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -36,7 +36,7 @@ CREATE TABLE `journal_entries` (
   KEY `ix_journal_entries_id` (`id`),
   CONSTRAINT `journal_entries_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
   CONSTRAINT `journal_entries_ibfk_2` FOREIGN KEY (`reversed_from_id`) REFERENCES `journal_entries` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -45,7 +45,7 @@ CREATE TABLE `journal_entries` (
 
 LOCK TABLES `journal_entries` WRITE;
 /*!40000 ALTER TABLE `journal_entries` DISABLE KEYS */;
-INSERT INTO `journal_entries` VALUES (7,1,'PB-00001','2026-03-05','Purchase Bill','POSTED',NULL),(8,1,'PB-00002','2026-03-05','Purchase Bill','POSTED',NULL),(9,1,'PB-00003','2026-03-05','Purchase Bill','POSTED',NULL),(10,1,'PB-00004','2026-03-05','Purchase Bill','POSTED',NULL),(11,1,'PB-00005','2026-03-05','Purchase Bill','POSTED',NULL),(12,1,'PB-00006','2026-03-12','Purchase Bill','POSTED',NULL),(13,1,'PB-00007','2026-03-05','Purchase Bill','POSTED',NULL),(14,1,'PB-00008','2026-03-05','Purchase Bill','POSTED',NULL),(15,1,'PB-00009','2026-03-05','Purchase Bill','POSTED',NULL),(16,1,'SI-00004','2026-03-07','Sales Invoice SI-00004','POSTED',NULL),(17,1,'SI-00005','2026-03-07','Sales Invoice SI-00005','POSTED',NULL);
+INSERT INTO `journal_entries` VALUES (1,1,'PB-00002','2026-03-12','Purchase Bill','POSTED',NULL),(2,1,'SI-00001','2026-03-13','Sales Invoice SI-00001','POSTED',NULL);
 /*!40000 ALTER TABLE `journal_entries` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -58,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-07 17:06:30
+-- Dump completed on 2026-03-15 11:25:15

@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.39
+-- Server version	8.0.45
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -33,13 +33,14 @@ CREATE TABLE `purchase_bills` (
   `grand_total` decimal(15,2) DEFAULT NULL,
   `paid_amount` decimal(15,2) DEFAULT NULL,
   `status` varchar(20) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_company_purchase_bill` (`company_id`,`bill_no`),
   KEY `vendor_id` (`vendor_id`),
   KEY `ix_purchase_bills_id` (`id`),
   CONSTRAINT `purchase_bills_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
   CONSTRAINT `purchase_bills_ibfk_2` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -48,7 +49,7 @@ CREATE TABLE `purchase_bills` (
 
 LOCK TABLES `purchase_bills` WRITE;
 /*!40000 ALTER TABLE `purchase_bills` DISABLE KEYS */;
-INSERT INTO `purchase_bills` VALUES (7,1,1,'PB-00001','2026-03-05',3750.00,675.00,4425.00,0.00,'POSTED'),(8,1,1,'PB-00002','2026-03-05',11550.00,2079.00,13629.00,0.00,'POSTED'),(9,1,1,'PB-00003','2026-03-05',25000.00,4500.00,29500.00,0.00,'POSTED'),(10,1,1,'PB-00004','2026-03-05',200.00,36.00,236.00,0.00,'POSTED'),(11,1,1,'PB-00005','2026-03-05',180.00,32.40,212.40,0.00,'POSTED'),(12,1,1,'PB-00006','2026-03-12',250.00,45.00,295.00,0.00,'POSTED'),(13,1,1,'PB-00007','2026-03-05',1500.00,270.00,1770.00,0.00,'POSTED'),(14,1,1,'PB-00008','2026-03-05',250.00,45.00,295.00,0.00,'POSTED'),(15,1,1,'PB-00009','2026-03-05',90000.00,16200.00,106200.00,0.00,'POSTED');
+INSERT INTO `purchase_bills` VALUES (1,1,1,'PB-00001','2026-03-12',19.49,3.51,23.00,0.00,'UNPAID','2026-03-12 16:42:21'),(2,1,1,'PB-00002','2026-03-12',19.49,3.51,23.00,0.00,'POSTED',NULL);
 /*!40000 ALTER TABLE `purchase_bills` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -61,4 +62,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-07 17:06:31
+-- Dump completed on 2026-03-15 11:25:16

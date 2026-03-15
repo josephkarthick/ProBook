@@ -2,13 +2,13 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from core.template_engine import render_template
 
-router = APIRouter(prefix="/purchase-orders")
+router = APIRouter()
 
 
 # ==========================
-# Purchase Order List Page
+# Purchase Order List
 # ==========================
-@router.get("/list", response_class=HTMLResponse)
+@router.get("/purchase/po/list", response_class=HTMLResponse)
 def purchase_order_list_page(request: Request):
 
     return render_template(
@@ -18,9 +18,9 @@ def purchase_order_list_page(request: Request):
 
 
 # ==========================
-# Create Purchase Order Page
+# Create Purchase Order
 # ==========================
-@router.get("/create", response_class=HTMLResponse)
+@router.get("/purchase/po/create", response_class=HTMLResponse)
 def purchase_order_create_page(request: Request):
 
     return render_template(
@@ -30,9 +30,9 @@ def purchase_order_create_page(request: Request):
 
 
 # ==========================
-# Purchase Order View Page
+# View Purchase Order
 # ==========================
-@router.get("/view/{po_id}", response_class=HTMLResponse)
+@router.get("/purchase/po/view/{po_id}", response_class=HTMLResponse)
 def purchase_order_view_page(request: Request, po_id: int):
 
     return render_template(
