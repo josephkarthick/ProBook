@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,40 +16,37 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `sales_return_items`
+-- Table structure for table `sales_invoices`
 --
 
-DROP TABLE IF EXISTS `sales_return_items`;
+DROP TABLE IF EXISTS `sales_invoices`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `sales_return_items` (
+CREATE TABLE `sales_invoices` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `return_id` int DEFAULT NULL,
-  `invoice_item_id` int DEFAULT NULL,
-  `item_id` int DEFAULT NULL,
-  `qty` decimal(10,2) DEFAULT NULL,
-  `price` decimal(12,2) DEFAULT NULL,
-  `amount` decimal(12,2) DEFAULT NULL,
-  `gst_rate` decimal(5,2) DEFAULT NULL,
-  `gst_amount` decimal(12,2) DEFAULT NULL,
-  `total` decimal(12,2) DEFAULT NULL,
+  `company_id` int DEFAULT NULL,
+  `customer_id` int DEFAULT NULL,
+  `invoice_no` varchar(20) DEFAULT NULL,
+  `invoice_date` date DEFAULT NULL,
+  `total_amount` decimal(12,2) DEFAULT NULL,
+  `tax_amount` decimal(12,2) DEFAULT NULL,
+  `grand_total` decimal(12,2) DEFAULT NULL,
+  `status` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `return_id` (`return_id`),
-  KEY `invoice_item_id` (`invoice_item_id`),
-  KEY `item_id` (`item_id`),
-  CONSTRAINT `sales_return_items_ibfk_1` FOREIGN KEY (`return_id`) REFERENCES `sales_returns` (`id`),
-  CONSTRAINT `sales_return_items_ibfk_2` FOREIGN KEY (`invoice_item_id`) REFERENCES `sales_invoice_items` (`id`),
-  CONSTRAINT `sales_return_items_ibfk_3` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
+  KEY `company_id` (`company_id`),
+  KEY `customer_id` (`customer_id`),
+  CONSTRAINT `sales_invoices_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
+  CONSTRAINT `sales_invoices_ibfk_2` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `sales_return_items`
+-- Dumping data for table `sales_invoices`
 --
 
-LOCK TABLES `sales_return_items` WRITE;
-/*!40000 ALTER TABLE `sales_return_items` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sales_return_items` ENABLE KEYS */;
+LOCK TABLES `sales_invoices` WRITE;
+/*!40000 ALTER TABLE `sales_invoices` DISABLE KEYS */;
+/*!40000 ALTER TABLE `sales_invoices` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -61,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-15 11:25:15
+-- Dump completed on 2026-03-17  1:00:12

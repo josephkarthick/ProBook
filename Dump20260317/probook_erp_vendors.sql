@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,40 +16,48 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `customers`
+-- Table structure for table `vendors`
 --
 
-DROP TABLE IF EXISTS `customers`;
+DROP TABLE IF EXISTS `vendors`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `customers` (
+CREATE TABLE `vendors` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `company_id` int DEFAULT NULL,
-  `name` varchar(200) NOT NULL,
-  `phone` varchar(20) DEFAULT NULL,
-  `email` varchar(200) DEFAULT NULL,
-  `address` varchar(500) DEFAULT NULL,
+  `company_id` int NOT NULL,
+  `account_id` int NOT NULL,
+  `vendor_code` varchar(20) NOT NULL,
+  `name` varchar(150) NOT NULL,
+  `contact_person` varchar(150) DEFAULT NULL,
+  `phone` varchar(20) NOT NULL,
+  `email` varchar(150) DEFAULT NULL,
   `gst_number` varchar(50) DEFAULT NULL,
-  `account_id` int DEFAULT NULL,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
+  `address` text,
+  `city` varchar(100) DEFAULT NULL,
+  `state` varchar(100) DEFAULT NULL,
+  `pincode` varchar(20) DEFAULT NULL,
   `is_active` tinyint(1) DEFAULT NULL,
+  `created_at` datetime DEFAULT (now()),
+  `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `company_id` (`company_id`),
+  UNIQUE KEY `uq_vendor_company_code` (`company_id`,`vendor_code`),
   KEY `account_id` (`account_id`),
-  CONSTRAINT `customers_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
-  CONSTRAINT `customers_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`)
+  KEY `ix_vendors_company_id` (`company_id`),
+  KEY `ix_vendors_vendor_code` (`vendor_code`),
+  KEY `ix_vendors_id` (`id`),
+  CONSTRAINT `vendors_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
+  CONSTRAINT `vendors_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `customers`
+-- Dumping data for table `vendors`
 --
 
-LOCK TABLES `customers` WRITE;
-/*!40000 ALTER TABLE `customers` DISABLE KEYS */;
-INSERT INTO `customers` VALUES (1,1,'Karthick','08682884814','josephkarthick.yosef@gmail.com','24/16,Kamber Street,Ambedkar Nagar, Padikuppam Road, West Anna Nagar','',NULL,'2026-03-13 17:08:05',NULL,1);
-/*!40000 ALTER TABLE `customers` ENABLE KEYS */;
+LOCK TABLES `vendors` WRITE;
+/*!40000 ALTER TABLE `vendors` DISABLE KEYS */;
+INSERT INTO `vendors` VALUES (1,1,23,'VEND11','Karthick',NULL,'08682884814','josephkarthick.yosef@gmail.com','','24/16,Kamber Street,Ambedkar Nagar, Padikuppam Road, West Anna Nagar','Chennai','Tamil Nadu','600040',1,'2026-03-16 20:44:13',NULL);
+/*!40000 ALTER TABLE `vendors` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -61,4 +69,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-15 11:25:16
+-- Dump completed on 2026-03-17  1:00:12

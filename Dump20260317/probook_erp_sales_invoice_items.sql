@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,36 +16,37 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `stock_movements`
+-- Table structure for table `sales_invoice_items`
 --
 
-DROP TABLE IF EXISTS `stock_movements`;
+DROP TABLE IF EXISTS `sales_invoice_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `stock_movements` (
+CREATE TABLE `sales_invoice_items` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `company_id` int DEFAULT NULL,
+  `invoice_id` int DEFAULT NULL,
   `item_id` int DEFAULT NULL,
   `qty` decimal(10,2) DEFAULT NULL,
-  `movement_type` varchar(20) DEFAULT NULL,
-  `reference_id` int DEFAULT NULL,
-  `created_at` datetime DEFAULT (now()),
+  `price` decimal(12,2) DEFAULT NULL,
+  `amount` decimal(12,2) DEFAULT NULL,
+  `gst_rate` decimal(5,2) DEFAULT NULL,
+  `gst_amount` decimal(12,2) DEFAULT NULL,
+  `total` decimal(12,2) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `company_id` (`company_id`),
+  KEY `invoice_id` (`invoice_id`),
   KEY `item_id` (`item_id`),
-  CONSTRAINT `stock_movements_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
-  CONSTRAINT `stock_movements_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `sales_invoice_items_ibfk_1` FOREIGN KEY (`invoice_id`) REFERENCES `sales_invoices` (`id`),
+  CONSTRAINT `sales_invoice_items_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `stock_movements`
+-- Dumping data for table `sales_invoice_items`
 --
 
-LOCK TABLES `stock_movements` WRITE;
-/*!40000 ALTER TABLE `stock_movements` DISABLE KEYS */;
-INSERT INTO `stock_movements` VALUES (1,1,1,1.00,'PURCHASE',2,'2026-03-12 22:13:57'),(2,1,1,-1.00,'SALE',1,'2026-03-13 22:38:21');
-/*!40000 ALTER TABLE `stock_movements` ENABLE KEYS */;
+LOCK TABLES `sales_invoice_items` WRITE;
+/*!40000 ALTER TABLE `sales_invoice_items` DISABLE KEYS */;
+/*!40000 ALTER TABLE `sales_invoice_items` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -57,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-15 11:25:15
+-- Dump completed on 2026-03-17  1:00:12

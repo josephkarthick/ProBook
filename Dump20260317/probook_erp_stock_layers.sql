@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,32 +16,34 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `vendor_payment_allocations`
+-- Table structure for table `stock_layers`
 --
 
-DROP TABLE IF EXISTS `vendor_payment_allocations`;
+DROP TABLE IF EXISTS `stock_layers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `vendor_payment_allocations` (
+CREATE TABLE `stock_layers` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `payment_id` int DEFAULT NULL,
-  `purchase_invoice_id` int DEFAULT NULL,
-  `amount_applied` decimal(12,2) DEFAULT NULL,
+  `company_id` int DEFAULT NULL,
+  `item_id` int DEFAULT NULL,
+  `qty` decimal(10,2) DEFAULT NULL,
+  `cost` decimal(12,2) DEFAULT NULL,
+  `reference_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `payment_id` (`payment_id`),
-  KEY `purchase_invoice_id` (`purchase_invoice_id`),
-  CONSTRAINT `vendor_payment_allocations_ibfk_1` FOREIGN KEY (`payment_id`) REFERENCES `vendor_payments` (`id`),
-  CONSTRAINT `vendor_payment_allocations_ibfk_2` FOREIGN KEY (`purchase_invoice_id`) REFERENCES `purchase_bills` (`id`)
+  KEY `company_id` (`company_id`),
+  KEY `item_id` (`item_id`),
+  CONSTRAINT `stock_layers_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
+  CONSTRAINT `stock_layers_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `vendor_payment_allocations`
+-- Dumping data for table `stock_layers`
 --
 
-LOCK TABLES `vendor_payment_allocations` WRITE;
-/*!40000 ALTER TABLE `vendor_payment_allocations` DISABLE KEYS */;
-/*!40000 ALTER TABLE `vendor_payment_allocations` ENABLE KEYS */;
+LOCK TABLES `stock_layers` WRITE;
+/*!40000 ALTER TABLE `stock_layers` DISABLE KEYS */;
+/*!40000 ALTER TABLE `stock_layers` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -53,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-15 11:25:15
+-- Dump completed on 2026-03-17  1:00:12

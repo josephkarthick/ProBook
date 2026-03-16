@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,33 +16,33 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `item_categories`
+-- Table structure for table `goods_receipt_items`
 --
 
-DROP TABLE IF EXISTS `item_categories`;
+DROP TABLE IF EXISTS `goods_receipt_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `item_categories` (
+CREATE TABLE `goods_receipt_items` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `company_id` int NOT NULL,
-  `name` varchar(150) NOT NULL,
-  `parent_id` int DEFAULT NULL,
-  `created_at` datetime DEFAULT (now()),
+  `grn_id` int DEFAULT NULL,
+  `item_id` int DEFAULT NULL,
+  `qty_received` decimal(10,2) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `company_id` (`company_id`),
-  KEY `parent_id` (`parent_id`),
-  CONSTRAINT `item_categories_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
-  CONSTRAINT `item_categories_ibfk_2` FOREIGN KEY (`parent_id`) REFERENCES `item_categories` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `grn_id` (`grn_id`),
+  KEY `item_id` (`item_id`),
+  CONSTRAINT `goods_receipt_items_ibfk_1` FOREIGN KEY (`grn_id`) REFERENCES `goods_receipts` (`id`),
+  CONSTRAINT `goods_receipt_items_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `item_categories`
+-- Dumping data for table `goods_receipt_items`
 --
 
-LOCK TABLES `item_categories` WRITE;
-/*!40000 ALTER TABLE `item_categories` DISABLE KEYS */;
-/*!40000 ALTER TABLE `item_categories` ENABLE KEYS */;
+LOCK TABLES `goods_receipt_items` WRITE;
+/*!40000 ALTER TABLE `goods_receipt_items` DISABLE KEYS */;
+INSERT INTO `goods_receipt_items` VALUES (1,1,1,1.00),(2,2,1,1.00),(3,3,1,1.00),(4,4,1,1.00),(5,5,1,1.00),(6,6,2,6.00),(7,7,2,200.00),(8,8,2,50.00),(9,9,2,7.00);
+/*!40000 ALTER TABLE `goods_receipt_items` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -54,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-15 11:25:15
+-- Dump completed on 2026-03-17  1:00:11

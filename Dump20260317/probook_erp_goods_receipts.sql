@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,37 +16,37 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `journal_entries`
+-- Table structure for table `goods_receipts`
 --
 
-DROP TABLE IF EXISTS `journal_entries`;
+DROP TABLE IF EXISTS `goods_receipts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `journal_entries` (
+CREATE TABLE `goods_receipts` (
   `id` int NOT NULL AUTO_INCREMENT,
   `company_id` int NOT NULL,
-  `reference_no` varchar(50) DEFAULT NULL,
-  `date` date DEFAULT NULL,
-  `narration` varchar(255) DEFAULT NULL,
+  `vendor_id` int NOT NULL,
+  `grn_no` varchar(50) NOT NULL,
+  `receipt_date` date DEFAULT NULL,
   `status` varchar(20) DEFAULT NULL,
-  `reversed_from_id` int DEFAULT NULL,
+  `po_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `company_id` (`company_id`),
-  KEY `reversed_from_id` (`reversed_from_id`),
-  KEY `ix_journal_entries_id` (`id`),
-  CONSTRAINT `journal_entries_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
-  CONSTRAINT `journal_entries_ibfk_2` FOREIGN KEY (`reversed_from_id`) REFERENCES `journal_entries` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `vendor_id` (`vendor_id`),
+  KEY `ix_goods_receipts_id` (`id`),
+  CONSTRAINT `goods_receipts_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
+  CONSTRAINT `goods_receipts_ibfk_2` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `journal_entries`
+-- Dumping data for table `goods_receipts`
 --
 
-LOCK TABLES `journal_entries` WRITE;
-/*!40000 ALTER TABLE `journal_entries` DISABLE KEYS */;
-INSERT INTO `journal_entries` VALUES (1,1,'PB-00002','2026-03-12','Purchase Bill','POSTED',NULL),(2,1,'SI-00001','2026-03-13','Sales Invoice SI-00001','POSTED',NULL);
-/*!40000 ALTER TABLE `journal_entries` ENABLE KEYS */;
+LOCK TABLES `goods_receipts` WRITE;
+/*!40000 ALTER TABLE `goods_receipts` DISABLE KEYS */;
+INSERT INTO `goods_receipts` VALUES (1,1,1,'GRN-00001','2026-03-15','RECEIVED',NULL),(2,1,1,'GRN-00002','2026-03-15','RECEIVED',NULL),(3,1,1,'GRN-00003','2026-03-15','RECEIVED',NULL),(4,1,1,'GRN-00004','2026-03-15','RECEIVED',NULL),(5,1,1,'GRN-00005','2026-03-15','RECEIVED',NULL),(6,1,1,'GRN-00006','2026-03-15','RECEIVED',NULL),(7,1,1,'GRN-00007','2026-03-15','RECEIVED',NULL),(8,1,1,'GRN-00008','2026-03-13','RECEIVED',NULL),(9,1,1,'GRN-00009','2026-03-16','RECEIVED',1);
+/*!40000 ALTER TABLE `goods_receipts` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -58,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-15 11:25:15
+-- Dump completed on 2026-03-17  1:00:11

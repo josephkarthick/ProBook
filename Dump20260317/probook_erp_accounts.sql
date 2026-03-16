@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -48,7 +48,7 @@ CREATE TABLE `accounts` (
 
 LOCK TABLES `accounts` WRITE;
 /*!40000 ALTER TABLE `accounts` DISABLE KEYS */;
-INSERT INTO `accounts` VALUES (1,1,NULL,'Assets','ASSET',NULL,1,1,0.00,NULL),(2,1,NULL,'Liabilities','LIABILITY',NULL,1,1,0.00,NULL),(3,1,NULL,'Equity','EQUITY',NULL,1,1,0.00,NULL),(4,1,NULL,'Income','INCOME',NULL,1,1,0.00,NULL),(5,1,NULL,'Expense','EXPENSE',NULL,1,1,0.00,NULL),(6,1,NULL,'Current Assets','ASSET',1,1,1,0.00,NULL),(7,1,NULL,'Fixed Assets','ASSET',1,1,1,0.00,NULL),(8,1,NULL,'Current Liabilities','LIABILITY',2,1,1,0.00,NULL),(9,1,NULL,'Direct Income','INCOME',4,1,1,0.00,NULL),(10,1,NULL,'Direct Expense','EXPENSE',5,1,1,0.00,NULL),(11,1,NULL,'Indirect Expense','EXPENSE',5,1,1,0.00,NULL),(12,1,NULL,'Cash','ASSET',6,0,1,0.00,NULL),(13,1,NULL,'Bank','ASSET',6,0,1,0.00,NULL),(14,1,NULL,'Accounts Receivable','ASSET',6,0,1,0.00,NULL),(15,1,NULL,'Inventory','ASSET',6,0,1,0.00,NULL),(16,1,NULL,'Input GST','ASSET',6,0,1,0.00,NULL),(17,1,NULL,'Accounts Payable','LIABILITY',8,0,1,0.00,NULL),(18,1,NULL,'GST Payable','LIABILITY',8,0,1,0.00,NULL),(19,1,NULL,'Sales','INCOME',9,0,1,0.00,NULL),(20,1,NULL,'Purchase','EXPENSE',10,0,1,0.00,NULL),(21,1,NULL,'Cost of Goods Sold','EXPENSE',10,0,1,0.00,NULL),(22,1,NULL,'Capital','EQUITY',3,0,1,0.00,NULL),(23,1,NULL,'Ezee','LIABILITY',17,0,0,0.00,NULL);
+INSERT INTO `accounts` VALUES (1,1,NULL,'Assets','ASSET',NULL,1,1,0.00,NULL),(2,1,NULL,'Liabilities','LIABILITY',NULL,1,1,0.00,NULL),(3,1,NULL,'Equity','EQUITY',NULL,1,1,0.00,NULL),(4,1,NULL,'Income','INCOME',NULL,1,1,0.00,NULL),(5,1,NULL,'Expense','EXPENSE',NULL,1,1,0.00,NULL),(6,1,NULL,'Current Assets','ASSET',1,1,1,0.00,NULL),(7,1,NULL,'Fixed Assets','ASSET',1,1,1,0.00,NULL),(8,1,NULL,'Current Liabilities','LIABILITY',2,1,1,0.00,NULL),(9,1,NULL,'Direct Income','INCOME',4,1,1,0.00,NULL),(10,1,NULL,'Direct Expense','EXPENSE',5,1,1,0.00,NULL),(11,1,NULL,'Indirect Expense','EXPENSE',5,1,1,0.00,NULL),(12,1,NULL,'Cash','ASSET',6,0,1,0.00,NULL),(13,1,NULL,'Bank','ASSET',6,0,1,0.00,NULL),(14,1,NULL,'Accounts Receivable','ASSET',6,0,1,0.00,NULL),(15,1,NULL,'Inventory','ASSET',6,0,1,0.00,NULL),(16,1,NULL,'Input GST','ASSET',6,0,1,0.00,NULL),(17,1,NULL,'Accounts Payable','LIABILITY',8,0,1,0.00,NULL),(18,1,NULL,'GST Payable','LIABILITY',8,0,1,0.00,NULL),(19,1,NULL,'Sales','INCOME',9,0,1,0.00,NULL),(20,1,NULL,'Purchase','EXPENSE',10,0,1,0.00,NULL),(21,1,NULL,'Cost of Goods Sold','EXPENSE',10,0,1,0.00,NULL),(22,1,NULL,'Capital','EQUITY',3,0,1,0.00,NULL),(23,1,NULL,'Karthick','LIABILITY',17,0,0,0.00,NULL);
 /*!40000 ALTER TABLE `accounts` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -61,4 +61,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-15 11:25:16
+-- Dump completed on 2026-03-17  1:00:11

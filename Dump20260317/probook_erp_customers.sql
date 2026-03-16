@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,41 +16,39 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `purchase_bills`
+-- Table structure for table `customers`
 --
 
-DROP TABLE IF EXISTS `purchase_bills`;
+DROP TABLE IF EXISTS `customers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `purchase_bills` (
+CREATE TABLE `customers` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `company_id` int NOT NULL,
-  `vendor_id` int NOT NULL,
-  `bill_no` varchar(50) NOT NULL,
-  `bill_date` date NOT NULL,
-  `total_amount` decimal(15,2) DEFAULT NULL,
-  `tax_amount` decimal(15,2) DEFAULT NULL,
-  `grand_total` decimal(15,2) DEFAULT NULL,
-  `paid_amount` decimal(15,2) DEFAULT NULL,
-  `status` varchar(20) DEFAULT NULL,
+  `company_id` int DEFAULT NULL,
+  `name` varchar(200) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `email` varchar(200) DEFAULT NULL,
+  `address` varchar(500) DEFAULT NULL,
+  `gst_number` varchar(50) DEFAULT NULL,
+  `account_id` int DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_company_purchase_bill` (`company_id`,`bill_no`),
-  KEY `vendor_id` (`vendor_id`),
-  KEY `ix_purchase_bills_id` (`id`),
-  CONSTRAINT `purchase_bills_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
-  CONSTRAINT `purchase_bills_ibfk_2` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `company_id` (`company_id`),
+  KEY `account_id` (`account_id`),
+  CONSTRAINT `customers_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
+  CONSTRAINT `customers_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `purchase_bills`
+-- Dumping data for table `customers`
 --
 
-LOCK TABLES `purchase_bills` WRITE;
-/*!40000 ALTER TABLE `purchase_bills` DISABLE KEYS */;
-INSERT INTO `purchase_bills` VALUES (1,1,1,'PB-00001','2026-03-12',19.49,3.51,23.00,0.00,'UNPAID','2026-03-12 16:42:21'),(2,1,1,'PB-00002','2026-03-12',19.49,3.51,23.00,0.00,'POSTED',NULL);
-/*!40000 ALTER TABLE `purchase_bills` ENABLE KEYS */;
+LOCK TABLES `customers` WRITE;
+/*!40000 ALTER TABLE `customers` DISABLE KEYS */;
+/*!40000 ALTER TABLE `customers` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -62,4 +60,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-15 11:25:16
+-- Dump completed on 2026-03-17  1:00:12

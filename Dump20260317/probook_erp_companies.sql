@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,48 +16,41 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `vendors`
+-- Table structure for table `companies`
 --
 
-DROP TABLE IF EXISTS `vendors`;
+DROP TABLE IF EXISTS `companies`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `vendors` (
+CREATE TABLE `companies` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `company_id` int NOT NULL,
-  `account_id` int NOT NULL,
-  `vendor_code` varchar(20) NOT NULL,
   `name` varchar(150) NOT NULL,
-  `contact_person` varchar(150) DEFAULT NULL,
-  `phone` varchar(20) NOT NULL,
+  `code` varchar(50) NOT NULL,
   `email` varchar(150) DEFAULT NULL,
-  `gst_number` varchar(50) DEFAULT NULL,
-  `address` text,
+  `phone` varchar(50) DEFAULT NULL,
+  `address_line1` varchar(255) DEFAULT NULL,
+  `address_line2` varchar(255) DEFAULT NULL,
   `city` varchar(100) DEFAULT NULL,
   `state` varchar(100) DEFAULT NULL,
+  `country` varchar(100) DEFAULT NULL,
   `pincode` varchar(20) DEFAULT NULL,
+  `gst_number` varchar(50) DEFAULT NULL,
   `is_active` tinyint(1) DEFAULT NULL,
   `created_at` datetime DEFAULT (now()),
-  `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_vendor_company_code` (`company_id`,`vendor_code`),
-  KEY `account_id` (`account_id`),
-  KEY `ix_vendors_id` (`id`),
-  KEY `ix_vendors_company_id` (`company_id`),
-  KEY `ix_vendors_vendor_code` (`vendor_code`),
-  CONSTRAINT `vendors_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
-  CONSTRAINT `vendors_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`)
+  UNIQUE KEY `code` (`code`),
+  KEY `ix_companies_id` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `vendors`
+-- Dumping data for table `companies`
 --
 
-LOCK TABLES `vendors` WRITE;
-/*!40000 ALTER TABLE `vendors` DISABLE KEYS */;
-INSERT INTO `vendors` VALUES (1,1,23,'Ezee01','Ezee',NULL,'','','','','Mumbai','Maharastra','',1,'2026-03-12 21:48:44',NULL);
-/*!40000 ALTER TABLE `vendors` ENABLE KEYS */;
+LOCK TABLES `companies` WRITE;
+/*!40000 ALTER TABLE `companies` DISABLE KEYS */;
+INSERT INTO `companies` VALUES (1,'Aura Bpo Services','Aura Bpo Services','josephkarthick.yosef@gmail.com','08682884814',NULL,NULL,NULL,NULL,NULL,NULL,'',1,'2026-03-16 20:07:45');
+/*!40000 ALTER TABLE `companies` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -69,4 +62,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-15 11:25:16
+-- Dump completed on 2026-03-17  1:00:11

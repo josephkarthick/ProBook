@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,30 +16,42 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `users`
+-- Table structure for table `purchase_payments`
 --
 
-DROP TABLE IF EXISTS `users`;
+DROP TABLE IF EXISTS `purchase_payments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `users` (
+CREATE TABLE `purchase_payments` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `username` varchar(100) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `role` varchar(50) DEFAULT NULL,
-  `is_active` tinyint(1) DEFAULT NULL,
+  `company_id` int DEFAULT NULL,
+  `vendor_id` int DEFAULT NULL,
+  `purchase_bill_id` int DEFAULT NULL,
+  `reference_no` varchar(30) DEFAULT NULL,
+  `payment_date` date DEFAULT NULL,
+  `bill_total` decimal(15,2) DEFAULT NULL,
+  `amount_paid` decimal(15,2) DEFAULT NULL,
+  `balance_after` decimal(15,2) DEFAULT NULL,
+  `payment_method` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `username` (`username`)
+  UNIQUE KEY `reference_no` (`reference_no`),
+  KEY `company_id` (`company_id`),
+  KEY `vendor_id` (`vendor_id`),
+  KEY `purchase_bill_id` (`purchase_bill_id`),
+  KEY `ix_purchase_payments_id` (`id`),
+  CONSTRAINT `purchase_payments_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
+  CONSTRAINT `purchase_payments_ibfk_2` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`),
+  CONSTRAINT `purchase_payments_ibfk_3` FOREIGN KEY (`purchase_bill_id`) REFERENCES `purchase_bills` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `users`
+-- Dumping data for table `purchase_payments`
 --
 
-LOCK TABLES `users` WRITE;
-/*!40000 ALTER TABLE `users` DISABLE KEYS */;
-/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+LOCK TABLES `purchase_payments` WRITE;
+/*!40000 ALTER TABLE `purchase_payments` DISABLE KEYS */;
+/*!40000 ALTER TABLE `purchase_payments` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -51,4 +63,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-15 11:25:15
+-- Dump completed on 2026-03-17  1:00:12
