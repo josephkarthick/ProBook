@@ -6,7 +6,6 @@
 <div class="content">
 
 <div class="d-flex justify-content-between mb-4">
-
 <h3>Purchase Order</h3>
 
 <div>
@@ -17,7 +16,7 @@
 </div>
 
 
-<div class="card">
+<div class="card shadow-sm">
 <div class="card-body">
 
 <!-- COMPANY HEADER -->
@@ -25,9 +24,9 @@
 <div class="row mb-4">
 
 <div class="col-md-6">
-<h4 class="mb-1">Your Company Name</h4>
-<div>Company Address</div>
-<div>GSTIN: XXXXXXXX</div>
+<h4 class="mb-1" id="companyName"></h4>
+<div id="companyAddress"></div>
+<div>GSTIN: <span id="companyGST"></span></div>
 </div>
 
 <div class="col-md-6 text-end">
@@ -37,7 +36,6 @@
 </div>
 
 </div>
-
 
 <hr>
 
@@ -65,7 +63,7 @@
 <th width="120">Qty</th>
 <th width="150">Price</th>
 <th width="120">GST %</th>
-<th width="150">Total</th>
+<th width="150" class="text-end">Total</th>
 </tr>
 </thead>
 
@@ -109,9 +107,9 @@
 <div class="row mt-5">
 
 <div class="col-md-6">
-<b>Terms & Conditions</b>
+<b>Purchase Confirmation</b>
 <p class="small text-muted">
-Goods once sold cannot be returned. Payment terms as agreed.
+This Purchase Order confirms our request to supply the above-mentioned items at the agreed price and quantity as per our discussion.
 </p>
 </div>
 
@@ -122,7 +120,6 @@ Authorized Signature
 </div>
 
 </div>
-
 
 </div>
 </div>
@@ -138,45 +135,84 @@ const poId = window.location.pathname.split("/").pop()
 
 async function loadPO(){
 
+try{
+
+/* -------------------------
+   Purchase Order
+-------------------------- */
+
 const res = await fetch(`/api/purchase-orders/${poId}`)
 const po = await res.json()
 
+
+/* -------------------------
+   Company (from API)
+-------------------------- */
+
+const companyRes = await fetch(`/api/companies/`)
+const companies = await companyRes.json()
+
+const company = companies.find(c => c.is_active) || companies[0]
+
+
+document.getElementById("companyName").innerText =
+company.name || ""
+
+document.getElementById("companyAddress").innerText =
+`${company.address_line1 || ""}, 
+ ${company.address_line2 || ""}, 
+ ${company.city || ""} - ${company.pincode || ""}`
+
+document.getElementById("companyGST").innerText =
+company.gst_number || ""
+
+
+/* -------------------------
+   PO DETAILS
+-------------------------- */
+
 document.getElementById("poNumber").innerText = po.po_number
-document.getElementById("vendorName").innerText = po.vendor_name || po.vendor_id
 document.getElementById("poDate").innerText = po.po_date
+document.getElementById("vendorName").innerText =
+po.vendor_name || po.vendor_id
 
 document.getElementById("editBtn").href =
 `/purchase/po/edit/${po.id}`
 
+
+/* -------------------------
+   ITEMS
+-------------------------- */
 
 let subtotal = 0
 let taxTotal = 0
 let row = 1
 
 const tbody = document.getElementById("poItems")
+tbody.innerHTML = ""
 
 
 po.items.forEach(i=>{
 
-const sub = i.quantity * i.price
+const qty = i.ordered_qty
+const price = i.price
+
+const sub = qty * price
 const tax = sub * i.gst_rate / 100
 const total = sub + tax
 
 subtotal += sub
 taxTotal += tax
 
-
 tbody.innerHTML += `
-
 <tr>
 <td>${row++}</td>
-<td>${i.item_name || i.item_id}</td>
-<td>${i.quantity}</td>
-<td>${i.price}</td>
+<td>${i.item_name}</td>
+<td>${qty}</td>
+<td>${price.toFixed(2)}</td>
 <td>${i.gst_rate}%</td>
-<td>${total.toFixed(2)}</td>
+<td class="text-end">${total.toFixed(2)}</td>
 </tr>
-
 `
 
 })
@@ -191,11 +227,68 @@ taxTotal.toFixed(2)
 document.getElementById("grandTotal").innerText =
 (subtotal + taxTotal).toFixed(2)
 
+
+}
+catch(error){
+console.error("PO Load Error:",error)
 }
 
+}
 
 document.addEventListener("DOMContentLoaded",loadPO)
 
 </script>
+
+
+
+<style>
+
+/* PRINT MODE */
+
+@media print {
+
+body{
+background:white !important;
+}
+
+/* hide header and buttons */
+
+.header,
+.navbar,
+.sidebar,
+.menu,
+.d-flex.justify-content-between.mb-4,
+.btn{
+display:none !important;
+}
+
+.content{
+margin:0 !important;
+padding:0 !important;
+width:100% !important;
+}
+
+.card{
+border:none !important;
+box-shadow:none !important;
+}
+
+.card-body{
+padding:0 !important;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+table th,
+table td{
+border:1px solid #000;
+}
+
+}
+
+</style>
 
 {% endblock %}

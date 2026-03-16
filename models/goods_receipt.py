@@ -13,6 +13,8 @@ class GoodsReceipt(Base):
 
     vendor_id = Column(Integer, ForeignKey("vendors.id"), nullable=False)
 
+    po_id = Column(Integer, ForeignKey("purchase_orders.id"), nullable=False)  # ✅ ADD THIS
+
     grn_no = Column(String(50), nullable=False)
 
     receipt_date = Column(Date)

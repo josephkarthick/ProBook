@@ -6,7 +6,6 @@ router = APIRouter()
 
 
 # Purchase Bill Page
-from core.template_engine import render_template
 
 @router.get("/purchase/create")
 def purchase_create_page(request: Request):
@@ -18,7 +17,7 @@ def purchase_create_page(request: Request):
 
 
 # Purchase List Page (optional for later)
-@router.get("/purchase/bills", response_class=HTMLResponse)
+@router.get("/purchase/bills")
 def purchase_list_page(request: Request):
 
     return render_template(
@@ -26,7 +25,7 @@ def purchase_list_page(request: Request):
         request
     )
 
-@router.get("/purchase/po/view/{po_id}", response_class=HTMLResponse)
+@router.get("/purchase/po/view/{po_id}")
 def view_po_page(request: Request, po_id: int):
 
     return render_template(
@@ -35,7 +34,7 @@ def view_po_page(request: Request, po_id: int):
         {"po_id": po_id}
     )
 
-@router.get("/purchase/po/edit/{po_id}", response_class=HTMLResponse)
+@router.get("/purchase/po/edit/{po_id}")
 def edit_po_page(request: Request, po_id: int):
 
     return render_template(

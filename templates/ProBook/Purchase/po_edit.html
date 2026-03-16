@@ -5,42 +5,89 @@
 
 <div class="content">
 
+<div class="d-flex justify-content-between mb-4">
+
 <h3>Edit Purchase Order</h3>
 
-<br>
+<button class="btn btn-success" onclick="updatePO()">
+Update PO
+</button>
 
-<h4>Vendor</h4>
-
-<select id="vendorSelect" class="form-select mb-3"></select>
+</div>
 
 
-<table class="table table-bordered" id="poTable">
+<div class="card">
+<div class="card-body">
+
+<div class="row mb-4">
+
+<div class="col-md-4">
+<label>Vendor</label>
+<select class="form-select" id="vendorSelect"></select>
+</div>
+
+<div class="col-md-3">
+<label>PO Date</label>
+<input type="date" id="poDate" class="form-control">
+</div>
+
+</div>
+
+
+<table class="table table-bordered" id="purchaseTable">
 
 <thead>
-
 <tr>
 <th width="250">Item</th>
-<th width="120">Qty</th>
+<th width="100">Qty</th>
 <th width="120">Price</th>
-<th width="120">GST</th>
-<th width="80"></th>
+<th width="100">GST %</th>
+<th width="150">Total</th>
+<th width="50"></th>
 </tr>
-
 </thead>
 
 <tbody></tbody>
 
 </table>
 
-<button class="btn btn-primary btn-sm" onclick="addRow()">
-Add Row
+<br>
+
+<button class="btn btn-sm btn-primary" onclick="addRow()">
++ Add Item
 </button>
 
-<br><br>
+<hr>
 
-<button class="btn btn-success" onclick="updatePO()">
-Update Purchase Order
-</button>
+<div class="row justify-content-end">
+
+<div class="col-md-4">
+
+<table class="table">
+
+<tr>
+<th>Subtotal</th>
+<td id="subtotal">0.00</td>
+</tr>
+
+<tr>
+<th>GST</th>
+<td id="taxTotal">0.00</td>
+</tr>
+
+<tr class="fw-bold">
+<th>Grand Total</th>
+<td id="grandTotal">0.00</td>
+</tr>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+</div>
 
 </div>
 
@@ -49,8 +96,8 @@ Update Purchase Order
 
 const poId = window.location.pathname.split("/").pop()
 
-let vendors = []
 let items = []
+let vendors = []
 let poData = {}
 
 
@@ -63,14 +110,10 @@ vendors = await res.json()
 
 const select = document.getElementById("vendorSelect")
 
+select.innerHTML = `<option value="">Select Vendor</option>`
+
 vendors.forEach(v=>{
-
-select.innerHTML += `
-<option value="${v.id}">
-${v.name}
-</option>
-`
-
+select.innerHTML += `<option value="${v.id}">${v.name}</option>`
 })
 
 }
@@ -94,10 +137,13 @@ const res = await fetch(`/api/purchase-orders/${poId}`)
 poData = await res.json()
 
 document.getElementById("vendorSelect").value = poData.vendor_id
+document.getElementById("poDate").value = poData.po_date
 
 poData.items.forEach(i=>{
 addRow(i)
 })
+
+calculateTotals()
 
 }
 
@@ -106,7 +152,7 @@ addRow(i)
 
 function addRow(data=null){
 
-const tbody = document.querySelector("#poTable tbody")
+const tbody = document.querySelector("#purchaseTable tbody")
 
 const row = document.createElement("tr")
 
@@ -114,17 +160,17 @@ row.innerHTML = `
 
 <td>
 
-<select class="form-select item">
+<select class="form-select item-select">
+
+<option value="">Select Item</option>
 
 ${items.map(it=>`
-
 <option value="${it.id}"
+data-price="${it.purchase_price}"
+data-gst="${it.gst_rate}"
 ${data && data.item_id==it.id ? "selected":""}>
-
 ${it.name}
-
 </option>
-
 `).join("")}
 
 </select>
@@ -132,41 +178,125 @@ ${it.name}
 </td>
 
 <td>
-
 <input type="number"
 class="form-control qty"
-value="${data ? data.quantity : 1}">
-
+value="${data ? data.ordered_qty : 1}"
+oninput="calculateRow(this)">
 </td>
 
 <td>
-
 <input type="number"
 class="form-control price"
-value="${data ? data.price : 0}">
-
+value="${data ? data.price : 0}"
+step="0.01"
+oninput="calculateRow(this)">
 </td>
 
 <td>
-
 <input type="number"
 class="form-control gst"
-value="${data ? data.gst_rate : 0}">
-
+value="${data ? data.gst_rate : 0}"
+step="0.01"
+oninput="calculateRow(this)">
 </td>
 
-<td>
+<td class="rowTotal">0.00</td>
 
-<button class="btn btn-danger btn-sm"
-onclick="this.closest('tr').remove()">
+<td>
+<button class="btn btn-sm btn-danger"
+onclick="removeRow(this)">
 ✕
 </button>
-
 </td>
 
 `
 
 tbody.appendChild(row)
+
+calculateRow(row.querySelector(".qty"))
+
+}
+
+
+/* AUTO ITEM PRICE + GST */
+
+document.addEventListener("change", function(e){
+
+if(e.target.classList.contains("item-select")){
+
+const option = e.target.selectedOptions[0]
+
+const price = option.dataset.price || 0
+const gst = option.dataset.gst || 0
+
+const row = e.target.closest("tr")
+
+row.querySelector(".price").value = price
+row.querySelector(".gst").value = gst
+
+calculateRow(row.querySelector(".qty"))
+
+}
+
+})
+
+
+/* REMOVE ROW */
+
+function removeRow(btn){
+
+btn.closest("tr").remove()
+calculateTotals()
+
+}
+
+
+/* CALCULATE ROW */
+
+function calculateRow(input){
+
+const row = input.closest("tr")
+
+const qty = Number(row.querySelector(".qty").value)
+const price = Number(row.querySelector(".price").value)
+const gst = Number(row.querySelector(".gst").value)
+
+const subtotal = qty * price
+const tax = subtotal * gst / 100
+const total = subtotal + tax
+
+row.querySelector(".rowTotal").innerText = total.toFixed(2)
+
+calculateTotals()
+
+}
+
+
+/* TOTALS */
+
+function calculateTotals(){
+
+let subtotal = 0
+let taxTotal = 0
+
+document.querySelectorAll("#purchaseTable tbody tr")
+.forEach(row=>{
+
+const qty = Number(row.querySelector(".qty").value)
+const price = Number(row.querySelector(".price").value)
+const gst = Number(row.querySelector(".gst").value)
+
+const sub = qty * price
+const tax = sub * gst / 100
+
+subtotal += sub
+taxTotal += tax
+
+})
+
+document.getElementById("subtotal").innerText = subtotal.toFixed(2)
+document.getElementById("taxTotal").innerText = taxTotal.toFixed(2)
+document.getElementById("grandTotal").innerText = (subtotal + taxTotal).toFixed(2)
 
 }
 
@@ -175,22 +305,28 @@ tbody.appendChild(row)
 
 async function updatePO(){
 
-let itemsData = []
+let poItems = []
 
-document.querySelectorAll("#poTable tbody tr")
+document.querySelectorAll("#purchaseTable tbody tr")
 .forEach(row=>{
 
-itemsData.push({
+const item = row.querySelector(".item-select").value
+const qty = Number(row.querySelector(".qty").value)
+const price = Number(row.querySelector(".price").value)
+const gst = Number(row.querySelector(".gst").value)
 
-item_id:Number(row.querySelector(".item").value),
-quantity:Number(row.querySelector(".qty").value),
-price:Number(row.querySelector(".price").value),
-gst_rate:Number(row.querySelector(".gst").value)
+if(item){
 
+poItems.push({
+item_id:Number(item),
+quantity:qty,
+price:price,
+gst_rate:gst
 })
 
-})
+}
 
+})
 
 await fetch(`/api/purchase-orders/${poId}`,{
 
@@ -203,12 +339,12 @@ headers:{
 body:JSON.stringify({
 
 vendor_id:Number(document.getElementById("vendorSelect").value),
-items:itemsData
+po_date:document.getElementById("poDate").value,
+items:poItems
 
 })
 
 })
-
 
 alert("Purchase Order Updated")
 

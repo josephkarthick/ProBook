@@ -1,154 +1,268 @@
 {% extends "ProBook/Base/base.html" %}
-
 {% block title %}Goods Received{% endblock %}
 
 {% block content %}
 
 <div class="content">
 
-<div class="d-flex justify-content-between mb-3">
-<h3>Goods Received (GRN)</h3>
-<button class="btn btn-success" onclick="saveGRN()">Save GRN</button>
+    <div class="d-flex justify-content-between mb-3">
+        <h3>Goods Received (GRN)</h3>
+
+        <button class="btn btn-success" onclick="saveGRN()">
+            Save GRN
+        </button>
+    </div>
+
+
+    <div class="card">
+        <div class="card-body">
+
+            <div class="row mb-3">
+
+                <div class="col-md-4">
+                    <label>Purchase Order</label>
+                    <select id="po_select" class="form-control" onchange="loadPOItems()">
+                        <option value="">Select PO</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label>GRN Date</label>
+                    <input type="date" id="grn_date" class="form-control">
+                </div>
+
+            </div>
+
+
+            <table class="table table-bordered">
+
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Ordered Qty</th>
+                        <th>Received Qty</th>
+                        <th>Pending Qty</th>
+                        <th>Receive Now</th>
+                    </tr>
+                </thead>
+
+                <tbody id="items_table"></tbody>
+
+            </table>
+
+        </div>
+    </div>
+
 </div>
 
-<div class="card">
-<div class="card-body">
-
-<div class="row mb-3">
-
-<div class="col-md-4">
-<label>Purchase Order</label>
-<select id="po_select" class="form-control" onchange="loadPOItems()">
-<option value="">Select PO</option>
-</select>
-</div>
-
-<div class="col-md-4">
-<label>GRN Date</label>
-<input type="date" id="grn_date" class="form-control">
-</div>
-
-</div>
-
-
-<table class="table table-bordered">
-<thead>
-<tr>
-<th>Item</th>
-<th>Ordered Qty</th>
-<th>Received Qty</th>
-</tr>
-</thead>
-
-<tbody id="items_table">
-
-</tbody>
-
-</table>
-
-</div>
-</div>
-
-</div>
 
 <script>
 
-async function loadPOs(){
 
-let res = await fetch("/api/purchase-orders")
-let data = await res.json()
+// Load Purchase Orders
+async function loadPOs() {
 
-let select = document.getElementById("po_select")
+    let res = await fetch("/api/purchase-orders");
+    let data = await res.json();
 
-data.forEach(po=>{
-    let opt = document.createElement("option")
-    opt.value = po.id
-    opt.text = po.po_number
-    select.appendChild(opt)
-})
+    let select = document.getElementById("po_select");
 
-}
+    select.innerHTML = `<option value="">Select PO</option>`;
 
-async function loadPOItems(){
+    data.forEach(po => {
 
-let po_id = document.getElementById("po_select").value
+        let option = document.createElement("option");
 
-let res = await fetch(`/api/purchase-orders/${po_id}`)
-let data = await res.json()
+        option.value = po.id;
+        option.text = po.po_number;
 
-let tbody = document.getElementById("items_table")
-tbody.innerHTML = ""
+        select.appendChild(option);
 
-data.items.forEach(item=>{
-
-let row = `
-<tr>
-
-<td>${item.item_name}</td>
-
-<td>${item.qty}</td>
-
-<td>
-<input type="number"
-class="form-control qty"
-data-item="${item.item_id}"
-value="0">
-</td>
-
-</tr>
-`
-
-tbody.innerHTML += row
-
-})
+    });
 
 }
 
-async function saveGRN(){
 
-let po_id = document.getElementById("po_select").value
-let date = document.getElementById("grn_date").value
+// Load PO Items
+async function loadPOItems() {
 
-let rows = document.querySelectorAll(".qty")
+    let po_id = document.getElementById("po_select").value;
 
-let items = []
+    if (!po_id) return;
 
-rows.forEach(r=>{
+    let res = await fetch(`/api/grn/${po_id}`);
+    let data = await res.json();
 
-let qty = parseFloat(r.value)
+    let tbody = document.getElementById("items_table");
 
-if(qty > 0){
+    tbody.innerHTML = "";
 
-items.push({
-item_id: r.dataset.item,
-qty: qty
-})
+    data.items.forEach(item => {
+
+        let ordered = item.ordered_qty || item.quantity || 0;
+        let received = item.received_qty || 0;
+        let pending = item.pending_qty;
+
+        let row = `
+            <tr>
+
+                <td>${item.item_name}</td>
+
+                <td>${ordered}</td>
+
+                <td>${received}</td>
+
+                <td>${pending}</td>
+
+                <td>
+                    <input
+                        type="number"
+                        class="form-control qty"
+                        data-item="${item.item_id}"
+                        max="${pending}"
+                        min="0"
+                        value="0">
+                </td>
+
+            </tr>
+        `;
+
+        tbody.innerHTML += row;
+
+    });
 
 }
 
-})
 
-let payload = {
+// Save GRN
+async function saveGRN() {
 
-po_id: po_id,
-receipt_date: date,
-items: items
+    let po_id = document.getElementById("po_select").value;
+    let date = document.getElementById("grn_date").value;
+
+    if (!po_id) {
+
+        Swal.fire({
+            icon: "error",
+            title: "Select PO",
+            text: "Please select Purchase Order"
+        });
+
+        return;
+    }
+
+    if (!date) {
+
+        Swal.fire({
+            icon: "error",
+            title: "Select Date",
+            text: "Please select GRN Date"
+        });
+
+        return;
+    }
+
+
+    let rows = document.querySelectorAll(".qty");
+
+    let items = [];
+
+    rows.forEach(r => {
+
+        let qty = parseFloat(r.value);
+
+        if (qty > 0) {
+
+            items.push({
+                item_id: r.dataset.item,
+                qty: qty
+            });
+
+        }
+
+    });
+
+
+    if (items.length === 0) {
+
+        Swal.fire({
+            icon: "warning",
+            title: "No Quantity Entered",
+            text: "Enter at least one item quantity"
+        });
+
+        return;
+
+    }
+
+
+    let payload = {
+
+        po_id: po_id,
+        receipt_date: date,
+        items: items
+
+    };
+
+
+    let res = await fetch("/api/grn", {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify(payload)
+
+    });
+
+
+    let result = await res.json();
+
+
+    Swal.fire({
+        icon: "success",
+        title: "GRN Created",
+        text: result.message || "Goods Received Successfully"
+    }).then(() => {
+
+        location.href = "/grn/list";
+
+    });
 
 }
 
-await fetch("/api/grn",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify(payload)
-})
 
-alert("GRN Saved")
 
-location.reload()
+// Prevent receiving more than pending
+document.addEventListener("input", function(e) {
 
-}
+    if (e.target.classList.contains("qty")) {
 
-loadPOs()
+        let max = parseFloat(e.target.max);
+        let value = parseFloat(e.target.value);
+
+        if (!isNaN(value) && value > max) {
+
+            Swal.fire({
+                icon: "error",
+                title: "Invalid Quantity",
+                text: "Cannot receive more than pending quantity"
+            });
+
+            e.target.value = max;
+
+        }
+
+    }
+
+});
+
+
+// Initialize Page
+loadPOs();
+
 
 </script>
 

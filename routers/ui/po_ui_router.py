@@ -8,7 +8,7 @@ router = APIRouter()
 # ==========================
 # Purchase Order List
 # ==========================
-@router.get("/purchase/po/list", response_class=HTMLResponse)
+@router.get("/purchase/po/list")
 def purchase_order_list_page(request: Request):
 
     return render_template(
@@ -16,11 +16,10 @@ def purchase_order_list_page(request: Request):
         request
     )
 
-
 # ==========================
 # Create Purchase Order
 # ==========================
-@router.get("/purchase/po/create", response_class=HTMLResponse)
+@router.get("/purchase/po/create")
 def purchase_order_create_page(request: Request):
 
     return render_template(

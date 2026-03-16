@@ -4,6 +4,7 @@ from models.purchase_order_item import PurchaseOrderItem
 import datetime
 
 
+
 def create_purchase_order(db: Session, data):
 
     po_number = f"PO-{int(datetime.datetime.now().timestamp())}"
@@ -48,3 +49,53 @@ def create_purchase_order(db: Session, data):
     db.refresh(po)
 
     return po
+    
+
+
+
+def update_purchase_order(db: Session, po_id: int, data):
+
+    po = db.query(PurchaseOrder).filter(PurchaseOrder.id == po_id).first()
+
+    if not po:
+        return None
+
+    subtotal = 0
+    tax_total = 0
+
+    # update vendor
+    po.vendor_id = data.vendor_id
+
+    # remove old items
+    db.query(PurchaseOrderItem).filter(
+        PurchaseOrderItem.po_id == po_id
+    ).delete()
+
+    # add new items
+    for item in data.items:
+
+        line_subtotal = item.quantity * item.price
+        line_tax = line_subtotal * item.gst_rate / 100
+        line_total = line_subtotal + line_tax
+
+        subtotal += line_subtotal
+        tax_total += line_tax
+
+        po_item = PurchaseOrderItem(
+            po_id = po_id,
+            item_id = item.item_id,
+            quantity = item.quantity,
+            price = item.price,
+            gst_rate = item.gst_rate,
+            total = line_total
+        )
+
+        db.add(po_item)
+
+    # update total
+    po.total_amount = subtotal + tax_total
+
+    db.commit()
+    db.refresh(po)
+
+    return po    

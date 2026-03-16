@@ -19,15 +19,17 @@
 <thead>
 <tr>
 <th>GRN No</th>
+<th>PO Number</th>
 <th>Date</th>
 <th>Vendor</th>
+<th>Ordered Qty</th>
+<th>Received (This GRN)</th>
+<th>Pending After</th>
 <th>Status</th>
 </tr>
 </thead>
 
-<tbody id="grn_table">
-
-</tbody>
+<tbody id="grn_table"></tbody>
 
 </table>
 
@@ -44,6 +46,7 @@ let res = await fetch("/api/grn")
 let data = await res.json()
 
 let table = document.getElementById("grn_table")
+table.innerHTML = ""
 
 data.forEach(grn=>{
 
@@ -51,8 +54,12 @@ let row = `
 <tr>
 
 <td>${grn.grn_no}</td>
+<td>${grn.po_number}</td>
 <td>${grn.receipt_date}</td>
 <td>${grn.vendor_name}</td>
+<td>${grn.ordered_qty}</td>
+<td>${grn.received_qty}</td>
+<td>${grn.pending_qty}</td>
 <td>${grn.status}</td>
 
 </tr>
