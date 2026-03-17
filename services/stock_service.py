@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from models.item import Item
 from models.stock_layer import StockLayer
 from models.stock_movement import StockMovement
-
+from sqlalchemy import func
 
 # ===============================
 # ADD STOCK FROM PURCHASE

@@ -20,17 +20,9 @@ router = APIRouter(prefix="/api/items", tags=["Items"])
 # GET ITEMS
 # ===============================
 @router.get("")
-def get_items(
-    request: Request,
-    db: Session = Depends(get_db)
-):
-
+def get_items(request: Request, db: Session = Depends(get_db)):
     company_id = get_current_company_id(request)
-
-    return db.query(Item).filter(
-        Item.company_id == company_id,
-        Item.is_active == True
-    ).all()
+    return list_items(db, company_id)
 
 
 # ===============================
@@ -46,16 +38,6 @@ def create_item_api(
     return create_item(db, data, company_id)
 
 
-# ===============================
-# LIST ITEMS
-# ===============================
-@router.get("/list")
-def list_items_api(
-    request: Request,
-    db: Session = Depends(get_db)
-):
-    company_id = get_current_company_id(request)
-    return list_items(db, company_id)
 
 
 # ===============================

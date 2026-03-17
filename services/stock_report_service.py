@@ -7,45 +7,40 @@ from models.item import Item
 
 def get_stock_summary(db: Session, company_id: int):
 
-    rows = db.query(
-        Item.id,
-        Item.name,
-
-        # ✅ STOCK QTY FROM MOVEMENT
-        func.coalesce(func.sum(StockMovement.qty), 0).label("qty"),
-
-        # ✅ STOCK VALUE FROM LAYER
-        func.coalesce(func.sum(StockLayer.qty * func.coalesce(StockLayer.cost, 0)), 0).label("value")
-
-    ).outerjoin(
-        StockMovement,
-        (StockMovement.item_id == Item.id) &
-        (StockMovement.company_id == company_id)
-    ).outerjoin(
-        StockLayer,
-        (StockLayer.item_id == Item.id) &
-        (StockLayer.company_id == company_id)
-    ).filter(
+    items = db.query(Item).filter(
         Item.company_id == company_id
-    ).group_by(
-        Item.id, Item.name
     ).all()
 
     result = []
 
-    for r in rows:
+    for item in items:
 
-        qty = float(r.qty or 0)
-        value = float(r.value or 0)
+        # ✅ STOCK FROM MOVEMENT
+        qty = db.query(func.coalesce(func.sum(StockMovement.qty), 0)).filter(
+            StockMovement.company_id == company_id,
+            StockMovement.item_id == item.id
+        ).scalar()
+
+        # ✅ VALUE FROM LAYER
+        value = db.query(func.coalesce(func.sum(
+            StockLayer.qty * StockLayer.cost
+        ), 0)).filter(
+            StockLayer.company_id == company_id,
+            StockLayer.item_id == item.id
+        ).scalar()
+
+        qty = float(qty or 0)
+        value = float(value or 0)
 
         avg_cost = value / qty if qty else 0
 
         result.append({
-            "item_id": r.id,
-            "item_name": r.name,
+            "item_id": item.id,
+            "item_name": item.name,
             "qty": qty,
             "avg_cost": avg_cost,
-            "stock_value": value
+            "stock_value": value,
+            "min_stock": float(item.min_stock_level or 0)
         })
 
     return result

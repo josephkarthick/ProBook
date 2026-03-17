@@ -40,7 +40,8 @@ def create_item(db: Session, data: ItemCreate, company_id: int):
         gst_rate=data.gst_rate,
         purchase_price=data.purchase_price,
         selling_price=data.selling_price,
-        track_inventory=data.track_inventory
+        track_inventory=data.track_inventory,
+        min_stock_level=data.min_stock_level or 0
     )
 
     db.add(item)
@@ -70,7 +71,8 @@ def update_item(db: Session, item_id: int, data: ItemUpdate, company_id: int):
         return None
 
     for key, value in data.model_dump(exclude_unset=True).items():
-        setattr(item, key, value)
+        if value is not None:
+            setattr(item, key, value)
 
     db.commit()
     db.refresh(item)

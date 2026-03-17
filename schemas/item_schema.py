@@ -16,6 +16,8 @@ class ItemCreate(BaseModel):
     selling_price: Optional[Decimal] = 0
 
     track_inventory: Optional[bool] = True
+    
+    min_stock_level: Optional[Decimal] = 0  
 
 
 class ItemUpdate(BaseModel):
@@ -32,3 +34,5 @@ class ItemUpdate(BaseModel):
 
     track_inventory: Optional[bool] = None
     is_active: Optional[bool] = None
+    
+    min_stock_level: Optional[Decimal] = None

@@ -43,3 +43,5 @@ class Item(Base):
 
     # 🔹 Relationship
     category = relationship("ItemCategory")
+    
+    min_stock_level = Column(Numeric(10,2), default=0)
