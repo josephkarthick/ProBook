@@ -117,3 +117,72 @@ def validate_stock_before_sale(db: Session, company_id, item_id, qty):
         )
 
     return True
+    
+
+def stock_adjustment(db: Session, company_id, item_id, qty, adjustment_type, reason=None):
+
+    qty = Decimal(qty)
+
+    item = db.query(Item).filter(
+        Item.id == item_id,
+        Item.company_id == company_id
+    ).first()
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    if adjustment_type == "OUT":
+        validate_stock_before_sale(db, company_id, item_id, qty)
+        movement_qty = -qty
+
+    else:
+        movement_qty = qty
+
+    # ✅ Movement
+    movement = StockMovement(
+        company_id=company_id,
+        item_id=item_id,
+        qty=movement_qty,
+        movement_type=f"ADJUSTMENT_{adjustment_type}",
+        reference_id=None
+    )
+
+    db.add(movement)
+
+    # ✅ Only for IN → add layer
+    if adjustment_type == "IN":
+
+        # get avg cost
+        avg_cost = get_avg_cost(db, company_id, item_id)
+
+        layer = StockLayer(
+            company_id=company_id,
+            item_id=item_id,
+            qty=qty,
+            cost=avg_cost,
+            reference_id=None
+        )
+
+        db.add(layer)
+
+    db.commit()
+
+    return {"message": "Stock adjusted successfully"}
+
+def get_avg_cost(db: Session, company_id, item_id):
+
+    layers = db.query(
+        func.coalesce(func.sum(StockLayer.qty), 0),
+        func.coalesce(func.sum(StockLayer.qty * StockLayer.cost), 0)
+    ).filter(
+        StockLayer.company_id == company_id,
+        StockLayer.item_id == item_id
+    ).first()
+
+    total_qty = float(layers[0] or 0)
+    total_value = float(layers[1] or 0)
+
+    if total_qty == 0:
+        return 0
+
+    return total_value / total_qty    

@@ -1,24 +1,44 @@
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
-
 from core.template_engine import render_template
 
-router = APIRouter(tags=["Stock UI"])
+router = APIRouter(prefix="/stock", tags=["Stock UI"])
 
 
-@router.get("/stock-summary")
+# ===============================
+# STOCK SUMMARY
+# ===============================
+@router.get("/summary")
 def stock_summary_page(request: Request):
-
     return render_template(
         "ProBook/Stock/stock_summary.html",
         request
     )
 
 
-@router.get("/stock-ledger")
+# ===============================
+# STOCK LEDGER
+# ===============================
+@router.get("/ledger")
 def stock_ledger_page(request: Request):
-
     return render_template(
         "ProBook/Stock/stock_ledger.html",
+        request
+    )
+
+
+# ===============================
+# STOCK ADJUSTMENT
+# ===============================
+@router.get("/adjustment")
+def stock_adjustment_page(request: Request):
+    return render_template(
+        "ProBook/Stock/stock_adjustment.html",
+        request
+    )
+    
+@router.get("/low-stock")
+def low_stock_page(request: Request):
+    return render_template(
+        "ProBook/Stock/low_stock.html",
         request
     )    

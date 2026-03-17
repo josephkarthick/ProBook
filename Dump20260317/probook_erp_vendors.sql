@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.39
+-- Server version	8.0.45
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -42,9 +42,9 @@ CREATE TABLE `vendors` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_vendor_company_code` (`company_id`,`vendor_code`),
   KEY `account_id` (`account_id`),
+  KEY `ix_vendors_id` (`id`),
   KEY `ix_vendors_company_id` (`company_id`),
   KEY `ix_vendors_vendor_code` (`vendor_code`),
-  KEY `ix_vendors_id` (`id`),
   CONSTRAINT `vendors_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
   CONSTRAINT `vendors_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -56,7 +56,7 @@ CREATE TABLE `vendors` (
 
 LOCK TABLES `vendors` WRITE;
 /*!40000 ALTER TABLE `vendors` DISABLE KEYS */;
-INSERT INTO `vendors` VALUES (1,1,23,'VEND11','Karthick',NULL,'08682884814','josephkarthick.yosef@gmail.com','','24/16,Kamber Street,Ambedkar Nagar, Padikuppam Road, West Anna Nagar','Chennai','Tamil Nadu','600040',1,'2026-03-16 20:44:13',NULL);
+INSERT INTO `vendors` VALUES (1,1,23,'VAIS','Karthick',NULL,'08682884814','josephkarthick.yosef@gmail.com','','24/16,Kamber Street,Ambedkar Nagar, Padikuppam Road, West Anna Nagar','Chennai','Tamil Nadu','600040',1,'2026-03-17 11:24:24',NULL);
 /*!40000 ALTER TABLE `vendors` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -69,4 +69,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-17  1:00:12
+-- Dump completed on 2026-03-17 16:01:06

@@ -1,0 +1,82 @@
+{% extends "ProBook/Base/base.html" %}
+
+{% block title %}Low Stock Alert{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex justify-content-between mb-4">
+    <h3>Low Stock Alert 🔴</h3>
+</div>
+
+<div class="card">
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>Item</th>
+<th class="text-end">Current Stock</th>
+<th class="text-end">Min Stock</th>
+<th class="text-end text-danger">Shortage</th>
+</tr>
+</thead>
+
+<tbody id="lowStockBody">
+
+<tr>
+<td colspan="4" class="text-center text-muted">
+Loading...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+async function loadLowStock(){
+
+    const res = await fetch("/api/stock/low-stock")
+    const result = await res.json()
+
+    const data = result.data || []
+
+    const body = document.getElementById("lowStockBody")
+    body.innerHTML = ""
+
+    if(!data.length){
+        body.innerHTML = `
+        <tr>
+            <td colspan="4" class="text-center text-success">
+                All items are healthy ✅
+            </td>
+        </tr>`
+        return
+    }
+
+    data.forEach(row => {
+
+        body.innerHTML += `
+        <tr class="table-danger">
+            <td>${row.item_name}</td>
+            <td class="text-end">${row.stock.toFixed(2)}</td>
+            <td class="text-end">${row.min_stock.toFixed(2)}</td>
+            <td class="text-end fw-bold">${row.shortage.toFixed(2)}</td>
+        </tr>`
+    })
+}
+
+document.addEventListener("DOMContentLoaded", loadLowStock)
+
+</script>
+
+{% endblock %}

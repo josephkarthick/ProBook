@@ -7,18 +7,13 @@
 <div class="content">
 
 <div class="d-flex justify-content-between mb-4">
-
-<h3>Stock Ledger</h3>
-
+    <h3>Stock Ledger</h3>
 </div>
 
-
-<div class="card">
+<div class="card shadow-sm">
 <div class="card-body">
 
-
 <!-- FILTERS -->
-
 <div class="row mb-4">
 
 <div class="col-md-4">
@@ -37,44 +32,34 @@
 </div>
 
 <div class="col-md-2 d-flex align-items-end">
-
 <button class="btn btn-primary w-100" onclick="loadStockLedger()">
 Load
 </button>
-
 </div>
 
 </div>
 
-
-<!-- STOCK TABLE -->
-
+<!-- TABLE -->
 <div class="table-responsive">
 
-<table class="table table-bordered">
+<table class="table table-bordered table-hover align-middle">
 
-<thead>
-
+<thead class="table-light">
 <tr>
-
 <th>Date</th>
 <th>Reference</th>
-<th>IN</th>
-<th>OUT</th>
-<th>Balance</th>
-
+<th class="text-end text-success">IN</th>
+<th class="text-end text-danger">OUT</th>
+<th class="text-end">Balance</th>
 </tr>
-
 </thead>
 
 <tbody id="stockBody">
-
 <tr>
 <td colspan="5" class="text-center text-muted">
 Select item to view stock ledger
 </td>
 </tr>
-
 </tbody>
 
 </table>
@@ -86,141 +71,118 @@ Select item to view stock ledger
 
 </div>
 
-
 <script>
 
 let items = []
 
-
 /* ======================
 CHECK COMPANY
 ====================== */
-
 async function checkCompany(){
 
-const res = await fetch("/api/companies/active")
-const data = await res.json()
+    const res = await fetch("/api/companies/active")
+    const data = await res.json()
 
-if(!data.company_id){
+    if(!data.company_id){
+        alert("Please select company first")
+        window.location.href="/company"
+        return false
+    }
 
-alert("Please select company first")
-window.location.href="/company"
-
-return false
-
-}
-
-return true
-
+    return true
 }
 
 
 /* ======================
 LOAD ITEMS
 ====================== */
-
 async function loadItems(){
 
-const res = await fetch("/api/items")
-items = await res.json()
+    const res = await fetch("/api/items")
+    items = await res.json()
 
-const select = document.getElementById("itemSelect")
+    const select = document.getElementById("itemSelect")
 
-select.innerHTML = `<option value="">Select Item</option>`
+    select.innerHTML = `<option value="">Select Item</option>`
 
-items.forEach(i => {
-
-select.innerHTML += `
-<option value="${i.id}">
-${i.name}
-</option>
-`
-
-})
-
+    items.forEach(i => {
+        select.innerHTML += `<option value="${i.id}">${i.name}</option>`
+    })
 }
 
 
 /* ======================
-LOAD STOCK LEDGER
+LOAD LEDGER
 ====================== */
-
 async function loadStockLedger(){
 
-const item_id = document.getElementById("itemSelect").value
-const fromDate = document.getElementById("fromDate").value
-const toDate = document.getElementById("toDate").value
+    const item_id = document.getElementById("itemSelect").value
+    const fromDate = document.getElementById("fromDate").value
+    const toDate = document.getElementById("toDate").value
 
-if(!item_id){
+    if(!item_id){
+        alert("Please select item")
+        return
+    }
 
-alert("Please select item")
-return
+    try {
 
-}
+        const res = await fetch(`/stock/ledger/${item_id}?from_date=${fromDate}&to_date=${toDate}`)
+        const data = await res.json()
 
-const res = await fetch(`/stock/ledger/${item_id}?from_date=${fromDate}&to_date=${toDate}`)
-const data = await res.json()
+        const body = document.getElementById("stockBody")
+        body.innerHTML = ""
 
-const body = document.getElementById("stockBody")
+        if(!data.length){
+            body.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center text-muted">
+                    No stock movement found
+                </td>
+            </tr>`
+            return
+        }
 
-body.innerHTML = ""
+        let balance = 0
 
-if(!data.length){
+        data.forEach(row => {
 
-body.innerHTML = `
-<tr>
-<td colspan="5" class="text-center text-muted">
-No stock movement found
-</td>
-</tr>
-`
+            const qtyIn = Number(row.qty_in || 0)
+            const qtyOut = Number(row.qty_out || 0)
 
-return
+            balance += qtyIn - qtyOut
 
-}
+            body.innerHTML += `
+            <tr>
+                <td>${row.date}</td>
+                <td>${row.reference || "-"}</td>
+                <td class="text-end text-success">${qtyIn.toFixed(2)}</td>
+                <td class="text-end text-danger">${qtyOut.toFixed(2)}</td>
+                <td class="text-end fw-bold">${balance.toFixed(2)}</td>
+            </tr>`
+        })
 
-let balance = 0
-
-data.forEach(row => {
-
-balance += Number(row.qty_in) - Number(row.qty_out)
-
-body.innerHTML += `
-
-<tr>
-
-<td>${row.date}</td>
-<td>${row.reference}</td>
-<td>${Number(row.qty_in).toFixed(2)}</td>
-<td>${Number(row.qty_out).toFixed(2)}</td>
-<td>${balance.toFixed(2)}</td>
-
-</tr>
-
-`
-
-})
-
+    } catch (err) {
+        console.error(err)
+        alert("Error loading stock ledger")
+    }
 }
 
 
 /* ======================
 INIT
 ====================== */
-
 document.addEventListener("DOMContentLoaded", async function(){
 
-const ok = await checkCompany()
+    const ok = await checkCompany()
+    if(!ok) return
 
-if(!ok) return
+    await loadItems()
 
-await loadItems()
-
-document.getElementById("fromDate").value = "2026-01-01"
-document.getElementById("toDate").value = "2026-12-31"
+    document.getElementById("fromDate").value = "2026-01-01"
+    document.getElementById("toDate").value = "2026-12-31"
 
 })
-
 </script>
 
 {% endblock %}
