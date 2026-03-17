@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,36 +16,37 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `stock_movements`
+-- Table structure for table `journal_entries`
 --
 
-DROP TABLE IF EXISTS `stock_movements`;
+DROP TABLE IF EXISTS `journal_entries`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `stock_movements` (
+CREATE TABLE `journal_entries` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `company_id` int DEFAULT NULL,
-  `item_id` int DEFAULT NULL,
-  `qty` decimal(10,2) DEFAULT NULL,
-  `movement_type` varchar(20) DEFAULT NULL,
-  `reference_id` int DEFAULT NULL,
-  `created_at` datetime DEFAULT (now()),
+  `company_id` int NOT NULL,
+  `reference_no` varchar(50) DEFAULT NULL,
+  `date` date DEFAULT NULL,
+  `narration` varchar(255) DEFAULT NULL,
+  `status` varchar(20) DEFAULT NULL,
+  `reversed_from_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `company_id` (`company_id`),
-  KEY `item_id` (`item_id`),
-  CONSTRAINT `stock_movements_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
-  CONSTRAINT `stock_movements_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `reversed_from_id` (`reversed_from_id`),
+  KEY `ix_journal_entries_id` (`id`),
+  CONSTRAINT `journal_entries_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
+  CONSTRAINT `journal_entries_ibfk_2` FOREIGN KEY (`reversed_from_id`) REFERENCES `journal_entries` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `stock_movements`
+-- Dumping data for table `journal_entries`
 --
 
-LOCK TABLES `stock_movements` WRITE;
-/*!40000 ALTER TABLE `stock_movements` DISABLE KEYS */;
-INSERT INTO `stock_movements` VALUES (1,1,1,1.00,'PURCHASE',1,'2026-03-17 11:28:43');
-/*!40000 ALTER TABLE `stock_movements` ENABLE KEYS */;
+LOCK TABLES `journal_entries` WRITE;
+/*!40000 ALTER TABLE `journal_entries` DISABLE KEYS */;
+INSERT INTO `journal_entries` VALUES (1,1,'PB-00001','2026-03-16','Purchase Bill','POSTED',NULL),(2,1,'PAY-00001','2026-03-16','Vendor Payment','POSTED',NULL),(3,1,'SI-00001','2026-03-17','Sales Invoice SI-00001','POSTED',NULL),(4,1,'SI-00002','2026-03-17','Sales Invoice SI-00002','POSTED',NULL),(5,1,'SI-00003','2026-03-17','Sales Invoice SI-00003','POSTED',NULL);
+/*!40000 ALTER TABLE `journal_entries` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -57,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-17 16:01:06
+-- Dump completed on 2026-03-18  3:36:25

@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,35 +16,36 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `stock_layers`
+-- Table structure for table `purchase_order_items`
 --
 
-DROP TABLE IF EXISTS `stock_layers`;
+DROP TABLE IF EXISTS `purchase_order_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `stock_layers` (
+CREATE TABLE `purchase_order_items` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `company_id` int DEFAULT NULL,
+  `po_id` int DEFAULT NULL,
   `item_id` int DEFAULT NULL,
-  `qty` decimal(10,2) DEFAULT NULL,
-  `cost` decimal(12,2) DEFAULT NULL,
-  `reference_id` int DEFAULT NULL,
+  `quantity` decimal(12,2) DEFAULT NULL,
+  `price` decimal(12,2) DEFAULT NULL,
+  `gst_rate` decimal(5,2) DEFAULT NULL,
+  `total` decimal(12,2) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `company_id` (`company_id`),
+  KEY `po_id` (`po_id`),
   KEY `item_id` (`item_id`),
-  CONSTRAINT `stock_layers_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
-  CONSTRAINT `stock_layers_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `purchase_order_items_ibfk_1` FOREIGN KEY (`po_id`) REFERENCES `purchase_orders` (`id`),
+  CONSTRAINT `purchase_order_items_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `stock_layers`
+-- Dumping data for table `purchase_order_items`
 --
 
-LOCK TABLES `stock_layers` WRITE;
-/*!40000 ALTER TABLE `stock_layers` DISABLE KEYS */;
-INSERT INTO `stock_layers` VALUES (1,1,1,1.00,25.00,1);
-/*!40000 ALTER TABLE `stock_layers` ENABLE KEYS */;
+LOCK TABLES `purchase_order_items` WRITE;
+/*!40000 ALTER TABLE `purchase_order_items` DISABLE KEYS */;
+INSERT INTO `purchase_order_items` VALUES (2,1,1,300.00,20.00,18.00,7080.00);
+/*!40000 ALTER TABLE `purchase_order_items` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -56,4 +57,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-17 16:01:07
+-- Dump completed on 2026-03-18  3:36:24

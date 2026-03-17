@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,40 +16,43 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `purchase_bills`
+-- Table structure for table `purchase_payments`
 --
 
-DROP TABLE IF EXISTS `purchase_bills`;
+DROP TABLE IF EXISTS `purchase_payments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `purchase_bills` (
+CREATE TABLE `purchase_payments` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `company_id` int NOT NULL,
-  `vendor_id` int NOT NULL,
-  `bill_no` varchar(50) NOT NULL,
-  `bill_date` date NOT NULL,
-  `total_amount` decimal(15,2) DEFAULT NULL,
-  `tax_amount` decimal(15,2) DEFAULT NULL,
-  `grand_total` decimal(15,2) DEFAULT NULL,
-  `paid_amount` decimal(15,2) DEFAULT NULL,
-  `status` varchar(20) DEFAULT NULL,
+  `company_id` int DEFAULT NULL,
+  `vendor_id` int DEFAULT NULL,
+  `purchase_bill_id` int DEFAULT NULL,
+  `reference_no` varchar(30) DEFAULT NULL,
+  `payment_date` date DEFAULT NULL,
+  `bill_total` decimal(15,2) DEFAULT NULL,
+  `amount_paid` decimal(15,2) DEFAULT NULL,
+  `balance_after` decimal(15,2) DEFAULT NULL,
+  `payment_method` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_company_purchase_bill` (`company_id`,`bill_no`),
+  UNIQUE KEY `reference_no` (`reference_no`),
+  KEY `company_id` (`company_id`),
   KEY `vendor_id` (`vendor_id`),
-  KEY `ix_purchase_bills_id` (`id`),
-  CONSTRAINT `purchase_bills_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
-  CONSTRAINT `purchase_bills_ibfk_2` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`)
+  KEY `purchase_bill_id` (`purchase_bill_id`),
+  KEY `ix_purchase_payments_id` (`id`),
+  CONSTRAINT `purchase_payments_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
+  CONSTRAINT `purchase_payments_ibfk_2` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`),
+  CONSTRAINT `purchase_payments_ibfk_3` FOREIGN KEY (`purchase_bill_id`) REFERENCES `purchase_bills` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `purchase_bills`
+-- Dumping data for table `purchase_payments`
 --
 
-LOCK TABLES `purchase_bills` WRITE;
-/*!40000 ALTER TABLE `purchase_bills` DISABLE KEYS */;
-INSERT INTO `purchase_bills` VALUES (1,1,1,'PB-00001','2026-03-17',25.00,4.50,29.50,29.50,'PAID');
-/*!40000 ALTER TABLE `purchase_bills` ENABLE KEYS */;
+LOCK TABLES `purchase_payments` WRITE;
+/*!40000 ALTER TABLE `purchase_payments` DISABLE KEYS */;
+INSERT INTO `purchase_payments` VALUES (1,1,1,1,'PAY-00001','2026-03-16',7080.00,1000.00,6080.00,'Cash');
+/*!40000 ALTER TABLE `purchase_payments` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -61,4 +64,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-17 16:01:07
+-- Dump completed on 2026-03-18  3:36:24

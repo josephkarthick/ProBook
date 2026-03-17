@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,35 +16,33 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `journal_lines`
+-- Table structure for table `purchase_orders`
 --
 
-DROP TABLE IF EXISTS `journal_lines`;
+DROP TABLE IF EXISTS `purchase_orders`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `journal_lines` (
+CREATE TABLE `purchase_orders` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `journal_id` int NOT NULL,
-  `account_id` int NOT NULL,
-  `debit` decimal(12,2) DEFAULT NULL,
-  `credit` decimal(12,2) DEFAULT NULL,
+  `po_number` varchar(50) DEFAULT NULL,
+  `vendor_id` int DEFAULT NULL,
+  `po_date` date DEFAULT NULL,
+  `total_amount` decimal(12,2) DEFAULT NULL,
+  `status` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `journal_id` (`journal_id`),
-  KEY `account_id` (`account_id`),
-  KEY `ix_journal_lines_id` (`id`),
-  CONSTRAINT `journal_lines_ibfk_1` FOREIGN KEY (`journal_id`) REFERENCES `journal_entries` (`id`),
-  CONSTRAINT `journal_lines_ibfk_2` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `vendor_id` (`vendor_id`),
+  CONSTRAINT `purchase_orders_ibfk_1` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `journal_lines`
+-- Dumping data for table `purchase_orders`
 --
 
-LOCK TABLES `journal_lines` WRITE;
-/*!40000 ALTER TABLE `journal_lines` DISABLE KEYS */;
-INSERT INTO `journal_lines` VALUES (1,1,20,25.00,0.00),(2,1,16,4.50,0.00),(3,1,17,0.00,29.50),(4,2,17,29.50,0.00),(5,2,12,0.00,29.50);
-/*!40000 ALTER TABLE `journal_lines` ENABLE KEYS */;
+LOCK TABLES `purchase_orders` WRITE;
+/*!40000 ALTER TABLE `purchase_orders` DISABLE KEYS */;
+INSERT INTO `purchase_orders` VALUES (1,'PO-1773689605',1,'2026-03-15',7080.00,'PARTIAL');
+/*!40000 ALTER TABLE `purchase_orders` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -56,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-17 16:01:06
+-- Dump completed on 2026-03-18  3:36:25

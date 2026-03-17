@@ -6,174 +6,157 @@
 
 <div class="content">
 
-<!-- PAGE HEADER -->
+    <!-- ================= HEADER ================= -->
+    <div class="d-flex justify-content-between mb-4">
+        <h3>Sales Invoices</h3>
 
-<div class="d-flex justify-content-between mb-4">
-
-<h3>Sales Invoices</h3>
-
-<a href="/sales-create" class="btn btn-primary">
-<i class="icon-plus-circle me-1"></i> Create Invoice
-</a>
-
-</div>
+        <a href="/sales-create" class="btn btn-primary">
+            <i class="icon-plus-circle me-1"></i> Create Invoice
+        </a>
+    </div>
 
 
-<!-- SALES TABLE -->
+    <!-- ================= TABLE ================= -->
+    <div class="card">
+        <div class="card-body">
 
-<div class="card">
+            <div class="table-responsive">
+                <table class="table table-bordered">
 
-<div class="card-body">
+                    <thead>
+                        <tr>
+                            <th>Invoice No</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th width="180">Actions</th>
+                        </tr>
+                    </thead>
 
-<div class="table-responsive">
+                    <tbody id="salesBody">
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">
+                                Loading sales invoices...
+                            </td>
+                        </tr>
+                    </tbody>
 
-<table class="table table-bordered">
+                </table>
+            </div>
 
-<thead>
-
-<tr>
-
-<th>Invoice No</th>
-<th>Date</th>
-<th>Customer</th>
-<th>Total</th>
-<th>Status</th>
-<th width="120">Actions</th>
-
-</tr>
-
-</thead>
-
-<tbody id="salesBody">
-
-<tr>
-<td colspan="5" class="text-center text-muted">
-Loading sales invoices...
-</td>
-</tr>
-
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
-</div>
+        </div>
+    </div>
 
 </div>
 
 
 <script>
 
-/* ==========================
-CHECK ACTIVE COMPANY
-========================== */
+/* ================= CHECK ACTIVE COMPANY ================= */
+async function checkCompany() {
 
-async function checkCompany(){
+    const res = await fetch("/api/companies/active");
+    const data = await res.json();
 
-const res = await fetch("/api/companies/active")
-const data = await res.json()
+    if (!data.company_id) {
+        alert("Please select a company first");
+        window.location.href = "/company";
+        return false;
+    }
 
-if(!data.company_id){
-
-alert("Please select a company first")
-
-window.location.href="/company"
-
-return false
-
-}
-
-return true
-
+    return true;
 }
 
 
-/* ==========================
-LOAD SALES
-========================== */
+/* ================= LOAD SALES ================= */
+async function loadSales() {
 
-async function loadSales(){
+    const res = await fetch("/api/sales/");
+    const data = await res.json();
 
-const res = await fetch("api/sales/")
-const data = await res.json()
+    const body = document.getElementById("salesBody");
+    body.innerHTML = "";
 
-const body = document.getElementById("salesBody")
+    if (!data.length) {
+        body.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center text-muted">
+                    No sales invoices found
+                </td>
+            </tr>
+        `;
+        return;
+    }
 
-body.innerHTML = ""
+    data.forEach(s => {
 
-if(!data.length){
+        // ================= STATUS COLOR =================
+        let statusClass = "bg-danger";
 
-body.innerHTML = `
-<tr>
-<td colspan="5" class="text-center text-muted">
-No sales invoices found
-</td>
-</tr>
-`
+        if (s.payment_status === "PAID") {
+            statusClass = "bg-success";
+        } else if (s.payment_status === "PARTIAL") {
+            statusClass = "bg-warning";
+        }
 
-return
+        // ================= PAY BUTTON =================
+        let payBtn = "";
 
+        if (s.payment_status !== "PAID") {
+            payBtn = `
+                <a href="/sales-view/${s.id}" 
+                   class="btn btn-sm btn-success">
+                    Pay
+                </a>
+            `;
+        }
+
+        body.innerHTML += `
+            <tr>
+
+                <td>${s.invoice_no}</td>
+                <td>${s.invoice_date}</td>
+                <td>${s.customer_name || ''}</td>
+                <td>${Number(s.grand_total).toFixed(2)}</td>
+
+                <td>
+                    <span class="badge ${statusClass}">
+                        ${s.payment_status}
+                    </span>
+                </td>
+
+                <td>
+
+                    <a href="/sales-view/${s.id}" 
+                       class="btn btn-sm btn-info me-1">
+                        <i class="icon-eye"></i>
+                    </a>
+
+                    <a href="/sales-print/${s.id}" 
+                       class="btn btn-sm btn-secondary me-1">
+                        <i class="icon-printer"></i>
+                    </a>
+
+                    ${payBtn}
+
+                </td>
+
+            </tr>
+        `;
+    });
 }
 
-data.forEach(s => {
 
-body.innerHTML += `
+/* ================= INIT ================= */
+document.addEventListener("DOMContentLoaded", async function () {
 
-<tr>
+    const ok = await checkCompany();
+    if (!ok) return;
 
-<td>${s.invoice_no}</td>
+    loadSales();
 
-<td>${s.invoice_date}</td>
-
-<td>${s.customer_name || ''}</td>
-
-<td>${Number(s.grand_total).toFixed(2)}</td>
-
-<td>
-<span class="badge bg-success">
-${s.status}
-</span>
-</td>
-
-<td>
-
-<a href="/sales-view/${s.id}" 
-class="btn btn-sm btn-info me-1">
-<i class="icon-eye"></i>
-</a>
-
-<a href="/sales-print/${s.id}" 
-class="btn btn-sm btn-secondary">
-<i class="icon-printer"></i>
-</a>
-
-</td>
-
-</tr>
-
-`
-
-})
-
-}
-
-
-/* ==========================
-INIT
-========================== */
-
-document.addEventListener("DOMContentLoaded", async function(){
-
-const ok = await checkCompany()
-
-if(!ok) return
-
-loadSales()
-
-})
+});
 
 </script>
 

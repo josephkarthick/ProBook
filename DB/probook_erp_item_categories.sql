@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,39 +16,33 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `goods_receipts`
+-- Table structure for table `item_categories`
 --
 
-DROP TABLE IF EXISTS `goods_receipts`;
+DROP TABLE IF EXISTS `item_categories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `goods_receipts` (
+CREATE TABLE `item_categories` (
   `id` int NOT NULL AUTO_INCREMENT,
   `company_id` int NOT NULL,
-  `vendor_id` int NOT NULL,
-  `po_id` int NOT NULL,
-  `grn_no` varchar(50) NOT NULL,
-  `receipt_date` date DEFAULT NULL,
-  `status` varchar(20) DEFAULT NULL,
+  `name` varchar(150) NOT NULL,
+  `parent_id` int DEFAULT NULL,
+  `created_at` datetime DEFAULT (now()),
   PRIMARY KEY (`id`),
   KEY `company_id` (`company_id`),
-  KEY `vendor_id` (`vendor_id`),
-  KEY `po_id` (`po_id`),
-  KEY `ix_goods_receipts_id` (`id`),
-  CONSTRAINT `goods_receipts_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
-  CONSTRAINT `goods_receipts_ibfk_2` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`),
-  CONSTRAINT `goods_receipts_ibfk_3` FOREIGN KEY (`po_id`) REFERENCES `purchase_orders` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `parent_id` (`parent_id`),
+  CONSTRAINT `item_categories_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
+  CONSTRAINT `item_categories_ibfk_2` FOREIGN KEY (`parent_id`) REFERENCES `item_categories` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `goods_receipts`
+-- Dumping data for table `item_categories`
 --
 
-LOCK TABLES `goods_receipts` WRITE;
-/*!40000 ALTER TABLE `goods_receipts` DISABLE KEYS */;
-INSERT INTO `goods_receipts` VALUES (1,1,1,1,'GRN-00001','2026-03-15','RECEIVED');
-/*!40000 ALTER TABLE `goods_receipts` ENABLE KEYS */;
+LOCK TABLES `item_categories` WRITE;
+/*!40000 ALTER TABLE `item_categories` DISABLE KEYS */;
+/*!40000 ALTER TABLE `item_categories` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -60,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-17 16:01:07
+-- Dump completed on 2026-03-18  3:36:25

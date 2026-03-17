@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,37 +16,41 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `sales_invoices`
+-- Table structure for table `companies`
 --
 
-DROP TABLE IF EXISTS `sales_invoices`;
+DROP TABLE IF EXISTS `companies`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `sales_invoices` (
+CREATE TABLE `companies` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `company_id` int DEFAULT NULL,
-  `customer_id` int DEFAULT NULL,
-  `invoice_no` varchar(20) DEFAULT NULL,
-  `invoice_date` date DEFAULT NULL,
-  `total_amount` decimal(12,2) DEFAULT NULL,
-  `tax_amount` decimal(12,2) DEFAULT NULL,
-  `grand_total` decimal(12,2) DEFAULT NULL,
-  `status` varchar(20) DEFAULT NULL,
+  `name` varchar(150) NOT NULL,
+  `code` varchar(50) NOT NULL,
+  `email` varchar(150) DEFAULT NULL,
+  `phone` varchar(50) DEFAULT NULL,
+  `address_line1` varchar(255) DEFAULT NULL,
+  `address_line2` varchar(255) DEFAULT NULL,
+  `city` varchar(100) DEFAULT NULL,
+  `state` varchar(100) DEFAULT NULL,
+  `country` varchar(100) DEFAULT NULL,
+  `pincode` varchar(20) DEFAULT NULL,
+  `gst_number` varchar(50) DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT NULL,
+  `created_at` datetime DEFAULT (now()),
   PRIMARY KEY (`id`),
-  KEY `company_id` (`company_id`),
-  KEY `customer_id` (`customer_id`),
-  CONSTRAINT `sales_invoices_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
-  CONSTRAINT `sales_invoices_ibfk_2` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  UNIQUE KEY `code` (`code`),
+  KEY `ix_companies_id` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `sales_invoices`
+-- Dumping data for table `companies`
 --
 
-LOCK TABLES `sales_invoices` WRITE;
-/*!40000 ALTER TABLE `sales_invoices` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sales_invoices` ENABLE KEYS */;
+LOCK TABLES `companies` WRITE;
+/*!40000 ALTER TABLE `companies` DISABLE KEYS */;
+INSERT INTO `companies` VALUES (1,'Aura Bpo Services','Aura Bpo Services','josephkarthick.yosef@gmail.com','08682884814','Chennai','Anna Nagar','Chennai','Tamilnadu',NULL,'600040','asdf;kjasdf225',1,'2026-03-17 01:02:42');
+/*!40000 ALTER TABLE `companies` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -58,4 +62,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-17 16:01:06
+-- Dump completed on 2026-03-18  3:36:25

@@ -36,3 +36,16 @@ class ItemUpdate(BaseModel):
     is_active: Optional[bool] = None
     
     min_stock_level: Optional[Decimal] = None
+    
+    
+class ItemResponse(BaseModel):
+
+    id: int
+    name: str
+    selling_price: Decimal
+    gst_rate: Decimal
+
+    stock: Decimal   # ✅ VERY IMPORTANT
+
+    class Config:
+        from_attributes = True    

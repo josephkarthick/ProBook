@@ -5,45 +5,41 @@
 
 <div class="content">
 
-<div class="d-flex justify-content-between mb-4">
+    <div class="d-flex justify-content-between mb-4">
+        <h3>Customers</h3>
 
-<h3>Customers</h3>
+        <a href="/customer-create" class="btn btn-primary">
+            Add Customer
+        </a>
+    </div>
 
-<a href="/customer-create" class="btn btn-primary">
-Add Customer
-</a>
+    <div class="card">
+        <div class="card-body">
 
-</div>
+            <table class="table table-bordered">
 
-<div class="card">
-<div class="card-body">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>GST</th>
+                        <th width="220">Actions</th>
+                    </tr>
+                </thead>
 
-<table class="table table-bordered">
+                <tbody id="customerBody">
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">
+                            Loading customers...
+                        </td>
+                    </tr>
+                </tbody>
 
-<thead>
-<tr>
-<th>Name</th>
-<th>Phone</th>
-<th>Email</th>
-<th>GST</th>
-<th width="150">Actions</th>
-</tr>
-</thead>
+            </table>
 
-<tbody id="customerBody">
-
-<tr>
-<td colspan="5" class="text-center text-muted">
-Loading customers...
-</td>
-</tr>
-
-</tbody>
-
-</table>
-
-</div>
-</div>
+        </div>
+    </div>
 
 </div>
 
@@ -53,92 +49,97 @@ Loading customers...
 
 async function loadCustomers(){
 
-const res = await fetch("/api/customers/")
-const data = await res.json()
+    const res = await fetch("/api/customers/")
+    const data = await res.json()
 
-const body = document.getElementById("customerBody")
+    const body = document.getElementById("customerBody")
+    body.innerHTML = ""
 
-body.innerHTML=""
+    if(data.length === 0){
 
-if(data.length === 0){
+        body.innerHTML = `
+        <tr>
+            <td colspan="5" class="text-center text-muted">
+                No customers found
+            </td>
+        </tr>
+        `
+        return
+    }
 
-body.innerHTML=`
-<tr>
-<td colspan="5" class="text-center text-muted">
-No customers found
-</td>
-</tr>
-`
-return
-}
+    data.forEach(c => {
 
-data.forEach(c=>{
+        body.innerHTML += `
+        <tr>
 
-body.innerHTML+=`
-<tr>
+            <td>${c.name}</td>
+            <td>${c.phone || ""}</td>
+            <td>${c.email || ""}</td>
+            <td>${c.gst_number || ""}</td>
 
-<td>${c.name}</td>
-<td>${c.phone || ""}</td>
-<td>${c.email || ""}</td>
-<td>${c.gst_number || ""}</td>
+            <td>
 
-<td>
+                <!-- 🔥 LEDGER BUTTON -->
+                <a href="/customer-ledger/${c.id}" 
+                   class="btn btn-sm btn-info me-1">
+                    Ledger
+                </a>
 
-<a href="/customer-edit/${c.id}" class="btn btn-sm btn-light me-1" title="Edit">
-<i class="icon-pencil"></i>
-</a>
+                <!-- EDIT -->
+                <a href="/customer-edit/${c.id}" 
+                   class="btn btn-sm btn-light me-1" title="Edit">
+                    <i class="icon-pencil"></i>
+                </a>
 
-<button class="btn btn-sm btn-light text-danger"
-onclick="deleteCustomer(${c.id})" title="Delete">
-<i class="icon-trash"></i>
-</button>
+                <!-- DELETE -->
+                <button class="btn btn-sm btn-light text-danger"
+                        onclick="deleteCustomer(${c.id})" title="Delete">
+                    <i class="icon-trash"></i>
+                </button>
 
-</td>
+            </td>
 
-</tr>
-`
-
-})
-
+        </tr>
+        `
+    })
 }
 
 
 async function deleteCustomer(id){
 
-const confirm = await Swal.fire({
-title:"Delete Customer?",
-text:"This action cannot be undone",
-icon:"warning",
-showCancelButton:true,
-confirmButtonText:"Yes Delete"
-})
+    const confirm = await Swal.fire({
+        title:"Delete Customer?",
+        text:"This action cannot be undone",
+        icon:"warning",
+        showCancelButton:true,
+        confirmButtonText:"Yes Delete"
+    })
 
-if(!confirm.isConfirmed) return
+    if(!confirm.isConfirmed) return
 
-const res = await fetch(`/api/customers/${id}`,{
-method:"DELETE"
-})
+    const res = await fetch(`/api/customers/${id}`,{
+        method:"DELETE"
+    })
 
-if(res.ok){
+    if(res.ok){
 
-Swal.fire({
-icon:"success",
-title:"Customer Deleted",
-timer:1500,
-showConfirmButton:false
-})
+        Swal.fire({
+            icon:"success",
+            title:"Customer Deleted",
+            timer:1500,
+            showConfirmButton:false
+        })
 
-loadCustomers()
+        loadCustomers()
 
-}else{
+    } else {
 
-Swal.fire({
-icon:"error",
-title:"Delete failed"
-})
+        Swal.fire({
+            icon:"error",
+            title:"Delete failed"
+        })
 
-}
-
+    }
 }
 
 document.addEventListener("DOMContentLoaded", loadCustomers)

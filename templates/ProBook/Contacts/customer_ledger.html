@@ -1,0 +1,76 @@
+{% extends "ProBook/Base/base.html" %}
+
+{% block title %}Customer Ledger{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<h3>Customer Ledger</h3>
+
+<div class="card">
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>Date</th>
+<th>Type</th>
+<th>Reference</th>
+<th>Debit</th>
+<th>Credit</th>
+<th>Balance</th>
+</tr>
+</thead>
+
+<tbody id="ledgerBody">
+<tr>
+<td colspan="6" class="text-center">Loading...</td>
+</tr>
+</tbody>
+
+</table>
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+async function loadLedger(){
+
+    const customerId = "{{ customer.id }}"
+
+    const res = await fetch(`/api/ledger/${customerId}`)
+    const data = await res.json()
+
+    const body = document.getElementById("ledgerBody")
+    body.innerHTML = ""
+
+    if(!data.length){
+        body.innerHTML = `<tr><td colspan="6">No data</td></tr>`
+        return
+    }
+
+    data.forEach(row => {
+
+        body.innerHTML += `
+        <tr>
+            <td>${row.date}</td>
+            <td>${row.type}</td>
+            <td>${row.ref}</td>
+            <td>${row.debit.toFixed(2)}</td>
+            <td>${row.credit.toFixed(2)}</td>
+            <td><b>${row.balance.toFixed(2)}</b></td>
+        </tr>
+        `
+    })
+}
+
+document.addEventListener("DOMContentLoaded", loadLedger)
+
+</script>
+
+{% endblock %}

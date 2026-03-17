@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,37 +16,38 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `sales_invoice_items`
+-- Table structure for table `purchase_bill_items`
 --
 
-DROP TABLE IF EXISTS `sales_invoice_items`;
+DROP TABLE IF EXISTS `purchase_bill_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `sales_invoice_items` (
+CREATE TABLE `purchase_bill_items` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `invoice_id` int DEFAULT NULL,
-  `item_id` int DEFAULT NULL,
-  `qty` decimal(10,2) DEFAULT NULL,
-  `price` decimal(12,2) DEFAULT NULL,
-  `amount` decimal(12,2) DEFAULT NULL,
+  `purchase_id` int NOT NULL,
+  `item_id` int NOT NULL,
+  `qty` decimal(10,2) NOT NULL,
+  `rate` decimal(12,2) NOT NULL,
+  `amount` decimal(12,2) NOT NULL,
   `gst_rate` decimal(5,2) DEFAULT NULL,
   `gst_amount` decimal(12,2) DEFAULT NULL,
-  `total` decimal(12,2) DEFAULT NULL,
+  `total` decimal(12,2) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `invoice_id` (`invoice_id`),
+  KEY `purchase_id` (`purchase_id`),
   KEY `item_id` (`item_id`),
-  CONSTRAINT `sales_invoice_items_ibfk_1` FOREIGN KEY (`invoice_id`) REFERENCES `sales_invoices` (`id`),
-  CONSTRAINT `sales_invoice_items_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `purchase_bill_items_ibfk_1` FOREIGN KEY (`purchase_id`) REFERENCES `purchase_bills` (`id`),
+  CONSTRAINT `purchase_bill_items_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `sales_invoice_items`
+-- Dumping data for table `purchase_bill_items`
 --
 
-LOCK TABLES `sales_invoice_items` WRITE;
-/*!40000 ALTER TABLE `sales_invoice_items` DISABLE KEYS */;
-/*!40000 ALTER TABLE `sales_invoice_items` ENABLE KEYS */;
+LOCK TABLES `purchase_bill_items` WRITE;
+/*!40000 ALTER TABLE `purchase_bill_items` DISABLE KEYS */;
+INSERT INTO `purchase_bill_items` VALUES (1,1,1,300.00,20.00,6000.00,18.00,1080.00,7080.00);
+/*!40000 ALTER TABLE `purchase_bill_items` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -58,4 +59,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-17 16:01:06
+-- Dump completed on 2026-03-18  3:36:25

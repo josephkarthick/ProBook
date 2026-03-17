@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,33 +16,35 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `purchase_orders`
+-- Table structure for table `payments`
 --
 
-DROP TABLE IF EXISTS `purchase_orders`;
+DROP TABLE IF EXISTS `payments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `purchase_orders` (
+CREATE TABLE `payments` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `po_number` varchar(50) DEFAULT NULL,
-  `vendor_id` int DEFAULT NULL,
-  `po_date` date DEFAULT NULL,
-  `total_amount` decimal(12,2) DEFAULT NULL,
-  `status` varchar(20) DEFAULT NULL,
+  `invoice_id` int DEFAULT NULL,
+  `amount` decimal(15,2) NOT NULL,
+  `mode` varchar(20) DEFAULT NULL,
+  `notes` varchar(255) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `date` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `vendor_id` (`vendor_id`),
-  CONSTRAINT `purchase_orders_ibfk_1` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `invoice_id` (`invoice_id`),
+  KEY `ix_payments_id` (`id`),
+  CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`invoice_id`) REFERENCES `sales_invoices` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `purchase_orders`
+-- Dumping data for table `payments`
 --
 
-LOCK TABLES `purchase_orders` WRITE;
-/*!40000 ALTER TABLE `purchase_orders` DISABLE KEYS */;
-INSERT INTO `purchase_orders` VALUES (1,'PO-1773726897',1,'2026-03-15',29.50,'PARTIAL');
-/*!40000 ALTER TABLE `purchase_orders` ENABLE KEYS */;
+LOCK TABLES `payments` WRITE;
+/*!40000 ALTER TABLE `payments` DISABLE KEYS */;
+INSERT INTO `payments` VALUES (1,3,30.00,'Cash','Test','2026-03-17 21:17:44','2026-03-18 02:47:44'),(2,3,11.30,'Cash','Test','2026-03-17 21:36:56','2026-03-18 03:06:56');
+/*!40000 ALTER TABLE `payments` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -54,4 +56,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-17 16:01:06
+-- Dump completed on 2026-03-18  3:36:24

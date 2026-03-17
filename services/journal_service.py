@@ -67,6 +67,50 @@ def create_sales_journal(db, invoice):
         ))
 
     db.commit()
+    
+def create_payment_journal(db, payment, invoice):
+
+    cash = db.query(Account).filter(
+        Account.name == "Cash",
+        Account.company_id == invoice.company_id
+    ).first()
+
+    receivable = db.query(Account).filter(
+        Account.name == "Accounts Receivable",
+        Account.company_id == invoice.company_id
+    ).first()
+
+    if not cash or not receivable:
+        raise Exception("Accounts not found")
+
+    journal = JournalEntry(
+        company_id=invoice.company_id,
+        reference_no=f"PAY-{invoice.invoice_no}",
+        date=payment.date,
+        narration=f"Payment received for {invoice.invoice_no}",
+        status="POSTED"
+    )
+
+    db.add(journal)
+    db.flush()
+
+    # DR Cash
+    db.add(JournalLine(
+        journal_id=journal.id,
+        account_id=cash.id,
+        debit=payment.amount,
+        credit=0
+    ))
+
+    # CR Receivable
+    db.add(JournalLine(
+        journal_id=journal.id,
+        account_id=receivable.id,
+        debit=0,
+        credit=payment.amount
+    ))
+
+    db.commit()   
 
 def create_journal(db: Session, data: JournalEntryCreate, company_id: int):
 

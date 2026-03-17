@@ -42,9 +42,9 @@ from routers.ui.grn_ui_router import router as grn_ui_router
 from routers.grn_router import router as grn_router
 from routers.purchase_order_router import router as po_router
 from routers.ui.po_ui_router import router as po_ui_router
-
-
-
+from routers.sales_payment_router import router as sales_payment_router
+from routers.customer_ledger_router import router as customer_ledger_router
+from routers.ui.customer_ledger_ui_router import router as customer_ledger_ui_router
 
 
 
@@ -121,6 +121,14 @@ app.include_router(grn_router)
 
 app.include_router(po_router)
 app.include_router(po_ui_router)
+
+app.include_router(sales_payment_router)
+
+
+app.include_router(customer_ledger_router)
+
+
+app.include_router(customer_ledger_ui_router)
 
 # ======================
 # Home Page

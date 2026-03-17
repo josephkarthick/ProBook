@@ -51,12 +51,43 @@ def create_item(db: Session, data: ItemCreate, company_id: int):
     return item
 
 
-def list_items(db: Session, company_id):
+from sqlalchemy import func
+from models.item import Item
+from models.stock_movement import StockMovement
 
-    return db.query(Item)\
-        .filter(Item.company_id == company_id)\
-        .filter(Item.is_active == True)\
-        .all()
+
+def list_items(db, company_id):
+
+    items = db.query(
+        Item.id,
+        Item.name,
+        Item.selling_price,
+        Item.gst_rate,
+        func.coalesce(func.sum(StockMovement.qty), 0).label("stock")
+    ).outerjoin(
+        StockMovement,
+        (StockMovement.item_id == Item.id) &
+        (StockMovement.company_id == company_id)
+    ).filter(
+        Item.company_id == company_id,
+        Item.is_active == True
+    ).group_by(
+        Item.id,
+        Item.name,
+        Item.selling_price,
+        Item.gst_rate
+    ).all()
+
+    return [
+        {
+            "id": i.id,
+            "name": i.name,
+            "selling_price": float(i.selling_price or 0),
+            "gst_rate": float(i.gst_rate or 0),
+            "stock": float(i.stock or 0)
+        }
+        for i in items
+    ]
 
 
 def update_item(db: Session, item_id: int, data: ItemUpdate, company_id: int):

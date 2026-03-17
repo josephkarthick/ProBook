@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,43 +16,39 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `purchase_payments`
+-- Table structure for table `goods_receipts`
 --
 
-DROP TABLE IF EXISTS `purchase_payments`;
+DROP TABLE IF EXISTS `goods_receipts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `purchase_payments` (
+CREATE TABLE `goods_receipts` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `company_id` int DEFAULT NULL,
-  `vendor_id` int DEFAULT NULL,
-  `purchase_bill_id` int DEFAULT NULL,
-  `reference_no` varchar(30) DEFAULT NULL,
-  `payment_date` date DEFAULT NULL,
-  `bill_total` decimal(15,2) DEFAULT NULL,
-  `amount_paid` decimal(15,2) DEFAULT NULL,
-  `balance_after` decimal(15,2) DEFAULT NULL,
-  `payment_method` varchar(50) DEFAULT NULL,
+  `company_id` int NOT NULL,
+  `vendor_id` int NOT NULL,
+  `po_id` int NOT NULL,
+  `grn_no` varchar(50) NOT NULL,
+  `receipt_date` date DEFAULT NULL,
+  `status` varchar(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `reference_no` (`reference_no`),
   KEY `company_id` (`company_id`),
   KEY `vendor_id` (`vendor_id`),
-  KEY `purchase_bill_id` (`purchase_bill_id`),
-  KEY `ix_purchase_payments_id` (`id`),
-  CONSTRAINT `purchase_payments_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
-  CONSTRAINT `purchase_payments_ibfk_2` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`),
-  CONSTRAINT `purchase_payments_ibfk_3` FOREIGN KEY (`purchase_bill_id`) REFERENCES `purchase_bills` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `po_id` (`po_id`),
+  KEY `ix_goods_receipts_id` (`id`),
+  CONSTRAINT `goods_receipts_ibfk_1` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`),
+  CONSTRAINT `goods_receipts_ibfk_2` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`),
+  CONSTRAINT `goods_receipts_ibfk_3` FOREIGN KEY (`po_id`) REFERENCES `purchase_orders` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `purchase_payments`
+-- Dumping data for table `goods_receipts`
 --
 
-LOCK TABLES `purchase_payments` WRITE;
-/*!40000 ALTER TABLE `purchase_payments` DISABLE KEYS */;
-INSERT INTO `purchase_payments` VALUES (1,1,1,1,'PAY-00001','2026-03-17',29.50,29.50,0.00,'Cash');
-/*!40000 ALTER TABLE `purchase_payments` ENABLE KEYS */;
+LOCK TABLES `goods_receipts` WRITE;
+/*!40000 ALTER TABLE `goods_receipts` DISABLE KEYS */;
+INSERT INTO `goods_receipts` VALUES (1,1,1,1,'GRN-00001','2026-03-16','RECEIVED'),(2,1,1,1,'GRN-00002','2026-03-16','RECEIVED'),(3,1,1,1,'GRN-00003','2026-03-17','RECEIVED');
+/*!40000 ALTER TABLE `goods_receipts` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -64,4 +60,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-17 16:01:06
+-- Dump completed on 2026-03-18  3:36:24

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.orm import Session
-
+from num2words import num2words
 from database import get_db
 from models.sales_invoice import SalesInvoice
 from models.customer import Customer
@@ -27,7 +27,7 @@ def list_sales(request: Request, db: Session = Depends(get_db)):
         SalesInvoice.invoice_no,
         SalesInvoice.invoice_date,
         SalesInvoice.grand_total,
-        SalesInvoice.status,
+        SalesInvoice.payment_status,   # ✅ FIXED
         Customer.name.label("customer_name")
     ).join(
         Customer, Customer.id == SalesInvoice.customer_id
@@ -37,15 +37,18 @@ def list_sales(request: Request, db: Session = Depends(get_db)):
         SalesInvoice.id.desc()
     ).all()
 
-    # Convert to JSON-safe dict
     result = []
+
     for s in sales:
         result.append({
             "id": s.id,
             "invoice_no": s.invoice_no,
-            "invoice_date": s.invoice_date,
+            "invoice_date": s.invoice_date.strftime("%Y-%m-%d"),
             "grand_total": float(s.grand_total),
-            "status": s.status,
+
+            # ✅ IMPORTANT FIX
+            "payment_status": s.payment_status if s.payment_status else "UNPAID",
+
             "customer_name": s.customer_name
         })
 

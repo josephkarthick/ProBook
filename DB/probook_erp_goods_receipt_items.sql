@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
 -- Host: localhost    Database: probook_erp
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.39
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -32,7 +32,7 @@ CREATE TABLE `goods_receipt_items` (
   KEY `item_id` (`item_id`),
   CONSTRAINT `goods_receipt_items_ibfk_1` FOREIGN KEY (`grn_id`) REFERENCES `goods_receipts` (`id`),
   CONSTRAINT `goods_receipt_items_ibfk_2` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,7 +41,7 @@ CREATE TABLE `goods_receipt_items` (
 
 LOCK TABLES `goods_receipt_items` WRITE;
 /*!40000 ALTER TABLE `goods_receipt_items` DISABLE KEYS */;
-INSERT INTO `goods_receipt_items` VALUES (1,1,1,1.00);
+INSERT INTO `goods_receipt_items` VALUES (1,1,1,100.00),(2,2,1,100.00),(3,3,1,100.00);
 /*!40000 ALTER TABLE `goods_receipt_items` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -54,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-03-17 16:01:07
+-- Dump completed on 2026-03-18  3:36:25

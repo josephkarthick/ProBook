@@ -1,108 +1,280 @@
 {% extends "ProBook/Base/base.html" %}
-
 {% block title %}View Invoice{% endblock %}
 
 {% block content %}
-
 <div class="content">
 
-<div class="d-flex justify-content-between mb-4">
+    <!-- ================= HEADER ================= -->
+    <div class="d-flex justify-content-between mb-4">
+        <h3>Invoice {{ invoice.invoice_no }}</h3>
 
-<h3>Invoice {{ invoice.invoice_no }}</h3>
+        <div>
+            <a href="/sales-print/{{ invoice.id }}" class="btn btn-secondary">Print</a>
+            <a href="/sales" class="btn btn-light">Back</a>
+        </div>
+    </div>
 
-<div>
 
-<a href="/sales-print/{{ invoice.id }}" class="btn btn-secondary">
-Print
-</a>
+    <!-- ================= MAIN CARD ================= -->
+    <div class="card">
+        <div class="card-body">
 
-<a href="/sales" class="btn btn-light">
-Back
-</a>
+            <p><b>Date:</b> {{ invoice.invoice_date }}</p>
+            <p><b>Customer:</b> {{ invoice.customer.name if invoice.customer else '' }}</p>
+
+            <!-- ================= ITEM TABLE ================= -->
+            <table class="table table-bordered mt-4">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th width="100">Qty</th>
+                        <th width="120">Price</th>
+                        <th width="150">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ item.item.name if item.item else '' }}</td>
+                        <td>{{ item.qty }}</td>
+                        <td>{{ item.price }}</td>
+                        <td>{{ item.total }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <hr>
+
+            <!-- ================= TOTALS ================= -->
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Grand Total: {{ invoice.grand_total }}</h5>
+                    <h5 class="text-success">Paid: {{ invoice.paid_amount }}</h5>
+                    <h5 class="text-danger">Balance: {{ invoice.balance_amount }}</h5>
+                </div>
+
+                <div class="col-md-6 text-end">
+                    <h5>
+                        Status:
+                        <span class="badge
+                            {% if invoice.payment_status == 'PAID' %}
+                                bg-success
+                            {% elif invoice.payment_status == 'PARTIAL' %}
+                                bg-warning
+                            {% else %}
+                                bg-danger
+                            {% endif %}
+                        ">
+                            {{ invoice.payment_status }}
+                        </span>
+                    </h5>
+
+                    <!-- ✅ FIXED BUTTON -->
+                    <button class="btn btn-success mt-2"
+                            onclick="openPaymentModal({{ invoice.balance_amount }})">
+                        Add Payment
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================= PAYMENT HISTORY ================= -->
+            <hr>
+            <h5>Payment History</h5>
+
+            <table class="table table-bordered" id="paymentTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Mode</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- ================= SUMMARY ================= -->
+            <div class="row justify-content-end mt-4">
+                <div class="col-md-4">
+                    <table class="table">
+                        <tr>
+                            <th>Subtotal</th>
+                            <td>{{ invoice.total_amount }}</td>
+                        </tr>
+                        <tr>
+                            <th>GST</th>
+                            <td>{{ invoice.tax_amount }}</td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <th>Grand Total</th>
+                            <td>{{ invoice.grand_total }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
 
 </div>
 
+
+<!-- ================= PAYMENT MODAL ================= -->
+<div class="modal fade" id="paymentModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5>Add Payment</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <input type="hidden" id="invoiceId" value="{{ invoice.id }}">
+
+                <div class="mb-3">
+                    <label>Amount</label>
+                    <input type="number" id="payAmount" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label>Mode</label>
+                    <select id="payMode" class="form-select">
+                        <option value="Cash">Cash</option>
+                        <option value="UPI">UPI</option>
+                        <option value="Bank">Bank</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label>Notes</label>
+                    <input type="text" id="payNotes" class="form-control">
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="savePayment()">Save</button>
+            </div>
+
+        </div>
+    </div>
 </div>
 
 
-<div class="card">
+<!-- ================= JAVASCRIPT ================= -->
+<script>
 
-<div class="card-body">
+    /* ✅ FIXED: OPEN MODAL WITH BALANCE */
+    function openPaymentModal(balanceAmount) {
 
-<p><b>Date:</b> {{ invoice.invoice_date }}</p>
+        document.getElementById("payAmount").value = balanceAmount;
 
-<p><b>Customer:</b>
-{{ invoice.customer.name if invoice.customer else '' }}
-</p>
+        const modal = new bootstrap.Modal(document.getElementById("paymentModal"));
+        modal.show();
 
-
-<table class="table table-bordered mt-4">
-
-<thead>
-
-<tr>
-<th>Item</th>
-<th>Qty</th>
-<th>Price</th>
-<th>Total</th>
-</tr>
-
-</thead>
-
-<tbody>
-
-{% for item in items %}
-
-<tr>
-
-<td>{{ item.item.name if item.item else '' }}</td>
-
-<td>{{ item.qty }}</td>
-
-<td>{{ item.price }}</td>
-
-<td>{{ item.total }}</td>
-
-</tr>
-
-{% endfor %}
-
-</tbody>
-
-</table>
+        setTimeout(() => {
+            const input = document.getElementById("payAmount");
+            input.focus();
+            input.select();
+        }, 300);
+    }
 
 
-<div class="row justify-content-end mt-4">
+    /* ================= SAVE PAYMENT ================= */
+    async function savePayment() {
 
-<div class="col-md-4">
+        const invoiceId = document.getElementById("invoiceId").value;
+        const amount = Number(document.getElementById("payAmount").value);
+        const mode = document.getElementById("payMode").value;
+        const notes = document.getElementById("payNotes").value;
 
-<table class="table">
+        const balance = {{ invoice.balance_amount }};
 
-<tr>
-<th>Subtotal</th>
-<td>{{ invoice.total_amount }}</td>
-</tr>
+        if (!amount || amount <= 0) {
+            Swal.fire("Enter valid amount", "", "warning");
+            return;
+        }
 
-<tr>
-<th>GST</th>
-<td>{{ invoice.tax_amount }}</td>
-</tr>
+        if (amount > balance) {
+            Swal.fire("Amount exceeds balance", "", "warning");
+            return;
+        }
 
-<tr class="fw-bold">
-<th>Grand Total</th>
-<td>{{ invoice.grand_total }}</td>
-</tr>
+        const res = await fetch("/api/payments/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                invoice_id: Number(invoiceId),
+                amount: amount,
+                mode: mode,
+                notes: notes
+            })
+        });
 
-</table>
+        const data = await res.json();
 
-</div>
+        if (!res.ok) {
+            Swal.fire(data.detail || "Error", "", "error");
+            return;
+        }
 
-</div>
+        Swal.fire("Success", "Payment added", "success");
 
-</div>
+        bootstrap.Modal.getInstance(document.getElementById("paymentModal")).hide();
 
-</div>
+        loadPayments();
 
-</div>
+        setTimeout(() => location.reload(), 800);
+    }
+
+
+    /* ================= LOAD PAYMENTS ================= */
+    async function loadPayments() {
+
+        const invoiceId = document.getElementById("invoiceId").value;
+
+        const res = await fetch(`/api/payments/${invoiceId}`);
+        const data = await res.json();
+
+        const tbody = document.querySelector("#paymentTable tbody");
+        tbody.innerHTML = "";
+
+        if (!data.length) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center">No payments</td>
+                </tr>
+            `;
+            return;
+        }
+
+        data.forEach(p => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${p.date}</td>
+                    <td>${p.amount.toFixed(2)}</td>
+                    <td>${p.mode}</td>
+                    <td>${p.notes || ''}</td>
+                </tr>
+            `;
+        });
+    }
+
+
+    /* ================= INIT ================= */
+    document.addEventListener("DOMContentLoaded", function () {
+        loadPayments();
+    });
+
+</script>
 
 {% endblock %}

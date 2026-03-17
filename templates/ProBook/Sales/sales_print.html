@@ -29,6 +29,11 @@ text-align:right;
 text-align:center;
 font-size:22px;
 font-weight:bold;
+margin-bottom:10px;
+}
+
+.status-badge{
+text-align:center;
 margin-bottom:15px;
 }
 
@@ -92,38 +97,45 @@ Print Invoice
 </button>
 
 <!-- HEADER -->
-
 <div class="header">
+    <div>
+        <img src="/static/logo.png" height="60">
+    </div>
 
-<div>
-
-<img src="/static/logo.png" height="60">
-
-</div>
-
-<div class="company-info">
-
-<strong>ProBook ERP Pvt Ltd</strong><br>
-No 12, Business Street<br>
-Chennai, Tamil Nadu - 600001<br>
-GSTIN: 33ABCDE1234F1Z5
-
-</div>
-
+    <div class="company-info">
+        <strong>ProBook ERP Pvt Ltd</strong><br>
+        No 12, Business Street<br>
+        Chennai, Tamil Nadu - 600001<br>
+        GSTIN: 33ABCDE1234F1Z5
+    </div>
 </div>
 
 <div class="invoice-title">
-
 TAX INVOICE
+</div>
 
+<!-- ================= STATUS ================= -->
+<div class="status-badge">
+    <span style="
+        padding:6px 15px;
+        border-radius:5px;
+        color:#fff;
+        background:
+        {% if invoice.payment_status == 'PAID' %}
+            green
+        {% elif invoice.payment_status == 'PARTIAL' %}
+            orange
+        {% else %}
+            red
+        {% endif %}
+    ">
+        {{ invoice.payment_status if invoice.payment_status != 'UNPAID' else 'PENDING' }}
+    </span>
 </div>
 
 <!-- INVOICE INFO -->
-
 <table>
-
 <tr>
-
 <td>
 <b>Invoice No:</b> {{ invoice.invoice_no }}<br>
 <b>Invoice Date:</b> {{ invoice.invoice_date }}
@@ -131,27 +143,17 @@ TAX INVOICE
 
 <td>
 <b>Customer:</b><br>
-
 {{ invoice.customer.name if invoice.customer else '' }}<br>
-
 {{ invoice.customer.address if invoice.customer else '' }}<br>
-
 GSTIN: {{ invoice.customer.gst_number if invoice.customer else '' }}
-
 </td>
-
 </tr>
-
 </table>
 
 <!-- ITEMS -->
-
 <table style="margin-top:20px;">
-
 <thead>
-
 <tr>
-
 <th>#</th>
 <th>Item</th>
 <th>HSN</th>
@@ -161,105 +163,88 @@ GSTIN: {{ invoice.customer.gst_number if invoice.customer else '' }}
 <th>CGST</th>
 <th>SGST</th>
 <th>Total</th>
-
 </tr>
-
 </thead>
 
 <tbody>
-
 {% for item in items %}
-
 <tr>
-
 <td>{{ loop.index }}</td>
-
 <td>{{ item.item.name if item.item else '' }}</td>
-
 <td>{{ item.item.hsn_code if item.item else '' }}</td>
-
 <td>{{ item.qty }}</td>
-
 <td>{{ item.price }}</td>
-
 <td>{{ item.amount }}</td>
-
 <td>{{ item.gst_amount/2 }}</td>
-
 <td>{{ item.gst_amount/2 }}</td>
-
 <td>{{ item.total }}</td>
-
 </tr>
-
 {% endfor %}
-
 </tbody>
-
 </table>
 
 <!-- TOTALS -->
-
 <div class="totals">
-
 <table>
 
 <tr>
-
 <td>Subtotal</td>
 <td>{{ invoice.total_amount }}</td>
-
 </tr>
 
 <tr>
-
 <td>Total GST</td>
 <td>{{ invoice.tax_amount }}</td>
-
 </tr>
 
 <tr>
-
 <td>Grand Total</td>
-<td>{{ invoice.grand_total }}</td>
+<td>{{ "%.2f"|format(invoice.grand_total) }}</td>
+</tr>
 
+<tr>
+<td class="text-success">Paid</td>
+<td>{{ invoice.paid_amount }}</td>
+</tr>
+
+<tr>
+<td class="text-danger">Balance</td>
+<td>{{ invoice.balance_amount }}</td>
 </tr>
 
 </table>
-
 </div>
 
-<!-- AMOUNT IN WORDS -->
-
+<!-- ================= AMOUNT IN WORDS ================= -->
 <p style="margin-top:15px;">
 <b>Amount in Words:</b>
 {{ invoice.grand_total }} Rupees Only
 </p>
 
-<!-- FOOTER -->
+<!-- ================= PAYMENT NOTE ================= -->
+{% if invoice.payment_status != "PAID" %}
+<p style="color:red; font-weight:bold;">
+⚠ Pending Amount: {{ invoice.balance_amount }} Rupees
+</p>
+{% endif %}
 
+<!-- FOOTER -->
 <div class="footer">
 
 <div>
-
 <b>Terms & Conditions</b><br>
 Goods once sold cannot be returned.<br>
 Subject to Chennai jurisdiction.
-
 </div>
 
 <div style="text-align:right;">
-
 For ProBook ERP Pvt Ltd<br><br><br>
-
 Authorized Signatory
-
 </div>
 
 </div>
 
 </div>
-
 </div>
 
 {% endblock %}
