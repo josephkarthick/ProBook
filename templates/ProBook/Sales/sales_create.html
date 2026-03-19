@@ -238,15 +238,15 @@ function addRow(){
 
     const tbody = document.querySelector("#salesTable tbody")
 
-    const options = items.map(i=>`
-    <option value="${i.id}" 
-    data-price="${i.selling_price}" 
-    data-gst="${i.gst_rate}" 
-    data-stock="${i.stock}"
-    ${i.stock <= 0 ? 'disabled' : ''}>
-    ${i.name} (${i.stock <= 0 ? 'Out of Stock' : 'Stock: ' + i.stock})
-    </option>
-    `).join("")
+	const options = items.map(i=>`
+	<option value="${i.id}" 
+	data-price="${Number(i.selling_price) || 0}" 
+	data-gst="${Number(i.gst_rate) || 0}" 
+	data-stock="${Number(i.stock) || 0}"
+	${i.stock <= 0 ? 'disabled' : ''}>
+	${i.name} (${i.stock <= 0 ? 'Out of Stock' : 'Stock: ' + i.stock})
+	</option>
+	`).join("")
 
     const row = document.createElement("tr")
 
@@ -289,13 +289,15 @@ function itemChanged(select){
     const row = select.closest("tr")
     const option = select.options[select.selectedIndex]
 
-    row.querySelector(".price").value = option.dataset.price || 0
-    row.querySelector(".gst").value = option.dataset.gst || 0
+    const price = parseFloat(option.getAttribute("data-price")) || 0
+    const gst = parseFloat(option.getAttribute("data-gst")) || 0
+    const stock = parseInt(option.getAttribute("data-stock")) || 0
 
-    row.querySelector(".qty").max = Number(option.dataset.stock || 0)
+    row.querySelector(".price").value = price
+    row.querySelector(".gst").value = gst
+    row.querySelector(".qty").max = stock
 
     calculateRow(row.querySelector(".price"))
-
 }
 
 /* ===============================

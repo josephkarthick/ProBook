@@ -52,7 +52,7 @@ def create_sales_invoice(db: Session, data, company_id):
         grand_total=0,
 
         paid_amount=0,
-        balance_amount = grand_total,
+        balance_amount = 0,
         payment_status="UNPAID"
     )
 
