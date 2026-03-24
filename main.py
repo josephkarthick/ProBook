@@ -45,6 +45,13 @@ from routers.ui.po_ui_router import router as po_ui_router
 from routers.sales_payment_router import router as sales_payment_router
 from routers.customer_ledger_router import router as customer_ledger_router
 from routers.ui.customer_ledger_ui_router import router as customer_ledger_ui_router
+# API routers
+from routers.sales_order_router import router as sales_order_router
+from routers.sales_delivery_router import router as sales_delivery_router
+
+# UI routers
+from routers.ui.sales_order_ui_router import router as sales_order_ui_router
+from routers.ui.sales_delivery_ui_router import router as sales_delivery_ui_router
 
 
 
@@ -129,6 +136,11 @@ app.include_router(customer_ledger_router)
 
 
 app.include_router(customer_ledger_ui_router)
+
+app.include_router(sales_order_router)
+app.include_router(sales_delivery_router)
+app.include_router(sales_order_ui_router)
+app.include_router(sales_delivery_ui_router)
 
 # ======================
 # Home Page

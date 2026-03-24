@@ -32,8 +32,22 @@ Save Invoice
 <label>Invoice Date</label>
 <input type="date" id="invoiceDate" class="form-control">
 </div>
-
+<div class="col-md-3">
+<label>Invoice Type</label>
+<select id="invoiceType" class="form-select" onchange="handleInvoiceType()">
+    <option value="manual">Manual</option>
+    <option value="sales_order">From Sales Order</option>
+    <option value="delivery">From Delivery</option>
+</select>
 </div>
+
+<div class="col-md-4 d-none" id="sourceWrapper">
+<label>Select Source</label>
+<select id="sourceSelect" class="form-select"></select>
+</div>
+</div>
+
+
 
 
 <table class="table table-bordered" id="salesTable">
@@ -130,69 +144,183 @@ let items = []
 let customers = []
 
 /* ===============================
-SWEET ALERT HELPER
+ALERT
 =============================== */
-function showAlert(message, type = "info") {
+function showAlert(message, type="info"){
     Swal.fire({
         text: message,
         icon: type,
         timer: 1800,
         showConfirmButton: false
-    });
+    })
+}
+
+/* ===============================
+INVOICE TYPE
+=============================== */
+async function handleInvoiceType(){
+
+    const type = invoiceType.value
+    sourceWrapper.classList.add("d-none")
+    sourceSelect.innerHTML = ""
+
+    if(type === "sales_order"){
+        sourceWrapper.classList.remove("d-none")
+        await loadSalesOrders()
+    }
+
+    if(type === "delivery"){
+        sourceWrapper.classList.remove("d-none")
+        await loadDeliveries()
+    }
+}
+
+/* ===============================
+LOAD SALES ORDERS
+=============================== */
+async function loadSalesOrders(){
+
+    const res = await fetch("/api/sales-orders?status=pending")
+    const data = await res.json()
+
+    sourceSelect.innerHTML = `<option value="">Select Sales Order</option>`
+
+    data.forEach(so=>{
+        sourceSelect.innerHTML += `
+        <option value="${so.id}">
+            ${so.order_no} - ${so.customer_name || ''}
+        </option>`
+    })
+}
+
+/* ===============================
+LOAD DELIVERIES
+=============================== */
+async function loadDeliveries(){
+
+    const res = await fetch("/api/deliveries?status=pending_invoice")
+    const data = await res.json()
+
+    sourceSelect.innerHTML = `<option value="">Select Delivery</option>`
+
+    data.forEach(d=>{
+        sourceSelect.innerHTML += `
+        <option value="${d.id}">
+            ${d.delivery_no}
+        </option>`
+    })
+}
+
+/* ===============================
+SOURCE SELECT
+=============================== */
+sourceSelect.addEventListener("change", async function(){
+
+    const id = this.value
+    const type = invoiceType.value
+
+    if(!id) return
+
+    if(type === "sales_order"){
+        await loadFromSalesOrder(id)
+    }
+
+    if(type === "delivery"){
+        await loadFromDelivery(id)
+    }
+})
+
+/* ===============================
+LOAD FROM SALES ORDER
+=============================== */
+async function loadFromSalesOrder(id){
+
+    const res = await fetch(`/api/sales-orders/${id}`)
+    const data = await res.json()
+
+    customerSelect.value = data.customer_id
+
+    const tbody = document.querySelector("#salesTable tbody")
+    tbody.innerHTML = ""
+
+    data.items.forEach(item=>{
+
+        addRow()
+        const row = tbody.lastChild
+
+        row.querySelector(".item-select").value = item.item_id
+        row.querySelector(".qty").value = item.qty
+        row.querySelector(".price").value = item.price
+        row.querySelector(".gst").value = item.gst_rate
+
+        calculateRow(row.querySelector(".price"))
+    })
+}
+
+/* ===============================
+LOAD FROM DELIVERY
+=============================== */
+async function loadFromDelivery(id){
+
+    const res = await fetch(`/api/deliveries/${id}`)
+    const data = await res.json()
+
+    customerSelect.value = data.customer_id
+
+    const tbody = document.querySelector("#salesTable tbody")
+    tbody.innerHTML = ""
+
+    data.items.forEach(item=>{
+
+        addRow()
+        const row = tbody.lastChild
+
+        row.querySelector(".item-select").value = item.item_id
+        row.querySelector(".qty").value = item.qty
+        row.querySelector(".qty").readOnly = true   // 🔥 lock qty
+        row.querySelector(".price").value = item.price
+        row.querySelector(".gst").value = item.gst_rate
+
+        calculateRow(row.querySelector(".price"))
+    })
 }
 
 /* ===============================
 CUSTOMER
 =============================== */
 function openCustomerModal(){
-    new bootstrap.Modal(document.getElementById("customerModal")).show()
+    new bootstrap.Modal(customerModal).show()
 }
 
 async function saveCustomer(){
 
     const name = custName.value.trim()
-    const phone = custPhone.value.trim()
-    const email = custEmail.value.trim()
-    const gst_number = custGST.value.trim()
 
     if(!name){
-        showAlert("Customer name is required", "warning")
+        showAlert("Customer name required","warning")
         return
     }
 
     const res = await fetch("/api/customers/",{
         method:"POST",
         headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({
+        body:JSON.stringify({
             name,
-            phone,
-            email: email || null,
-            gst_number: gst_number || null
+            phone:custPhone.value,
+            email:custEmail.value || null,
+            gst_number:custGST.value || null
         })
     })
 
     const data = await res.json()
 
     if(res.ok){
-
-        customers.push(data)
-
         customerSelect.innerHTML += `<option value="${data.id}">${data.name}</option>`
         customerSelect.value = data.id
 
-        custName.value = ""
-        custPhone.value = ""
-        custEmail.value = ""
-        custGST.value = ""
-
         bootstrap.Modal.getInstance(customerModal).hide()
-
-        showAlert("Customer added successfully", "success")
-
-    }else{
-        showAlert(data.detail || "Error creating customer", "error")
+        showAlert("Customer added","success")
     }
-
 }
 
 /* ===============================
@@ -208,7 +336,6 @@ async function loadCustomers(){
     customers.forEach(c=>{
         customerSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`
     })
-
 }
 
 /* ===============================
@@ -217,13 +344,7 @@ LOAD ITEMS
 async function loadItems(){
 
     const res = await fetch("/api/items")
-    const data = await res.json()
-
-    items = data.map(i => ({
-        ...i,
-        stock: i.stock ?? 0
-    }))
-
+    items = await res.json()
 }
 
 /* ===============================
@@ -231,93 +352,42 @@ ADD ROW
 =============================== */
 function addRow(){
 
-    if(items.length === 0){
-        showAlert("No items found", "warning")
-        return
-    }
-
-    const tbody = document.querySelector("#salesTable tbody")
-
-	const options = items.map(i=>`
-	<option value="${i.id}" 
-	data-price="${Number(i.selling_price) || 0}" 
-	data-gst="${Number(i.gst_rate) || 0}" 
-	data-stock="${Number(i.stock) || 0}"
-	${i.stock <= 0 ? 'disabled' : ''}>
-	${i.name} (${i.stock <= 0 ? 'Out of Stock' : 'Stock: ' + i.stock})
-	</option>
-	`).join("")
+    const options = items.map(i=>`
+    <option value="${i.id}" data-price="${i.selling_price}" data-gst="${i.gst_rate}">
+    ${i.name}
+    </option>`).join("")
 
     const row = document.createElement("tr")
 
     row.innerHTML = `
-    <td>
-    <select class="form-select item-select" onchange="itemChanged(this)">
-    <option value="">Select Item</option>
-    ${options}
-    </select>
-    </td>
-
-    <td>
-    <input type="number" class="form-control qty" value="1" min="1" oninput="validateQty(this)">
-    </td>
-
-    <td>
-    <input type="number" class="form-control price" value="0" step="0.01" oninput="calculateRow(this)">
-    </td>
-
-    <td>
-    <input type="number" class="form-control gst" value="0" step="0.01" oninput="calculateRow(this)">
-    </td>
-
+    <td><select class="form-select item-select" onchange="itemChanged(this)">
+    <option value="">Select Item</option>${options}</select></td>
+    <td><input type="number" class="form-control qty" value="1" min="1" oninput="calculateRow(this)"></td>
+    <td><input type="number" class="form-control price" step="0.01" oninput="calculateRow(this)"></td>
+    <td><input type="number" class="form-control gst" step="0.01" oninput="calculateRow(this)"></td>
     <td class="rowTotal">0.00</td>
-
-    <td>
-    <button class="btn btn-sm btn-danger" onclick="removeRow(this)">✕</button>
-    </td>
+    <td><button class="btn btn-danger btn-sm" onclick="removeRow(this)">✕</button></td>
     `
 
-    tbody.appendChild(row)
-
+    document.querySelector("#salesTable tbody").appendChild(row)
 }
 
 /* ===============================
-ITEM SELECT
+ITEM CHANGE
 =============================== */
 function itemChanged(select){
 
     const row = select.closest("tr")
-    const option = select.options[select.selectedIndex]
+    const opt = select.options[select.selectedIndex]
 
-    const price = parseFloat(option.getAttribute("data-price")) || 0
-    const gst = parseFloat(option.getAttribute("data-gst")) || 0
-    const stock = parseInt(option.getAttribute("data-stock")) || 0
-
-    row.querySelector(".price").value = price
-    row.querySelector(".gst").value = gst
-    row.querySelector(".qty").max = stock
+    row.querySelector(".price").value = opt.getAttribute("data-price") || 0
+    row.querySelector(".gst").value = opt.getAttribute("data-gst") || 0
 
     calculateRow(row.querySelector(".price"))
 }
 
 /* ===============================
-VALIDATE QTY
-=============================== */
-function validateQty(input){
-
-    const max = Number(input.max || 0)
-
-    if(Number(input.value) > max){
-        input.value = max
-        showAlert("Cannot exceed available stock", "error")
-    }
-
-    calculateRow(input)
-
-}
-
-/* ===============================
-REMOVE ROW
+REMOVE
 =============================== */
 function removeRow(btn){
     btn.closest("tr").remove()
@@ -325,7 +395,7 @@ function removeRow(btn){
 }
 
 /* ===============================
-ROW CALCULATION
+ROW CALC
 =============================== */
 function calculateRow(input){
 
@@ -335,84 +405,70 @@ function calculateRow(input){
     const price = Number(row.querySelector(".price").value)
     const gst = Number(row.querySelector(".gst").value)
 
-    const subtotal = qty * price
-    const tax = subtotal * gst / 100
-    const total = subtotal + tax
+    const sub = qty * price
+    const tax = sub * gst / 100
 
-    row.querySelector(".rowTotal").innerText = total.toFixed(2)
+    row.querySelector(".rowTotal").innerText = (sub + tax).toFixed(2)
 
     calculateTotals()
-
 }
 
 /* ===============================
-TOTAL CALCULATION
+TOTAL
 =============================== */
 function calculateTotals(){
 
-    let subtotal = 0
-    let taxTotal = 0
+    let sub = 0
+    let tax = 0
 
-    document.querySelectorAll("#salesTable tbody tr").forEach(row=>{
+    document.querySelectorAll("#salesTable tbody tr").forEach(r=>{
+        const q = Number(r.querySelector(".qty").value)
+        const p = Number(r.querySelector(".price").value)
+        const g = Number(r.querySelector(".gst").value)
 
-        const qty = Number(row.querySelector(".qty").value)
-        const price = Number(row.querySelector(".price").value)
-        const gst = Number(row.querySelector(".gst").value)
-
-        const sub = qty * price
-        const tax = sub * gst / 100
-
-        subtotal += sub
-        taxTotal += tax
-
+        sub += q*p
+        tax += (q*p*g/100)
     })
 
-    document.getElementById("subtotal").innerText = subtotal.toFixed(2)
-    document.getElementById("taxTotal").innerText = taxTotal.toFixed(2)
-    document.getElementById("grandTotal").innerText = (subtotal + taxTotal).toFixed(2)
-
+    subtotal.innerText = sub.toFixed(2)
+    taxTotal.innerText = tax.toFixed(2)
+    grandTotal.innerText = (sub+tax).toFixed(2)
 }
 
 /* ===============================
-SAVE SALES
+SAVE
 =============================== */
 async function saveSales(){
 
     if(!customerSelect.value){
-        showAlert("Select customer", "warning")
+        showAlert("Select customer","warning")
         return
     }
 
     let invoiceItems = []
 
-    document.querySelectorAll("#salesTable tbody tr").forEach(row=>{
+    document.querySelectorAll("#salesTable tbody tr").forEach(r=>{
+        const id = r.querySelector(".item-select").value
 
-        const item = row.querySelector(".item-select").value
-
-        if(item){
+        if(id){
             invoiceItems.push({
-                item_id:Number(item),
-                quantity:Number(row.querySelector(".qty").value),
-                price:Number(row.querySelector(".price").value),
-                gst_rate:Number(row.querySelector(".gst").value)
+                item_id:Number(id),
+                quantity:Number(r.querySelector(".qty").value),
+                price:Number(r.querySelector(".price").value),
+                gst_rate:Number(r.querySelector(".gst").value)
             })
         }
-
     })
 
     if(invoiceItems.length === 0){
-        showAlert("Add items first", "warning")
+        showAlert("Add items first","warning")
         return
     }
 
-    /* CONFIRM */
     const confirm = await Swal.fire({
-        title: "Save Invoice?",
-        text: "Do you want to create this invoice?",
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonText: "Yes, Save",
-        cancelButtonText: "Cancel"
+        title:"Save Invoice?",
+        icon:"question",
+        showCancelButton:true
     })
 
     if(!confirm.isConfirmed) return
@@ -423,35 +479,24 @@ async function saveSales(){
         body:JSON.stringify({
             customer_id:Number(customerSelect.value),
             invoice_date:invoiceDate.value,
+            source_type:invoiceType.value,
+            source_id:sourceSelect.value || null,
             items:invoiceItems
         })
     })
 
-    const data = await res.json()
-
-    if(!res.ok){
-        showAlert(data.detail || "Error", "error")
-        return
+    if(res.ok){
+        showAlert("Invoice Created","success")
+        setTimeout(()=>location.href="/sales",1200)
+    }else{
+        showAlert("Error creating invoice","error")
     }
-
-    Swal.fire({
-        title: "Success!",
-        text: "Invoice Created Successfully",
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false
-    })
-
-    setTimeout(()=>{
-        window.location.href="/sales"
-    }, 1500)
-
 }
 
 /* ===============================
 INIT
 =============================== */
-document.addEventListener("DOMContentLoaded", async function(){
+document.addEventListener("DOMContentLoaded", async ()=>{
 
     invoiceDate.value = new Date().toISOString().split("T")[0]
 
@@ -459,7 +504,6 @@ document.addEventListener("DOMContentLoaded", async function(){
     await loadItems()
 
     addRow()
-
 })
 
 </script>
