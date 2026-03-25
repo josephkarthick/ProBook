@@ -166,9 +166,19 @@ def home(request: Request):
 def company_page(request: Request):
 
     return render_template(
-        "ProBook/settings/companies.html",
+        "ProBook/Settings/companies.html",
         request
     )
+
+
+@app.get("/sales/orders", include_in_schema=False)
+def sales_orders_legacy_redirect():
+    return RedirectResponse("/sales-order", status_code=307)
+
+
+@app.get("/sales_order_page", include_in_schema=False)
+def sales_order_page_legacy_redirect():
+    return RedirectResponse("/sales-order", status_code=307)
 
 
 # ======================

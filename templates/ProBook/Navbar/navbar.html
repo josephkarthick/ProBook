@@ -4,17 +4,17 @@
                 <div class="d-flex align-items-center gap-2">
 
                     <!-- Logo -->
-                    <a href="index-2.html" class="logo">
+                    <a href="/" class="logo">
 
                         <!-- Logo Normal -->
                         <span class="logo-light">
-                            <span class="logo-lg"><img src="assets/img/logo.svg" alt="logo"></span>
-                            <span class="logo-sm"><img src="assets/img/logo-small.svg" alt="small logo"></span>
+                            <span class="logo-lg"><img src="{{ url_for('static', path='assets/img/logo.svg') }}" alt="logo"></span>
+                            <span class="logo-sm"><img src="{{ url_for('static', path='assets/img/logo-small.svg') }}" alt="small logo"></span>
                         </span>
 
                         <!-- Logo Dark -->
                         <span class="logo-dark">
-                            <span class="logo-lg"><img src="assets/img/logo-white.svg" alt="dark logo"></span>
+                            <span class="logo-lg"><img src="{{ url_for('static', path='assets/img/logo-white.svg') }}" alt="dark logo"></span>
                         </span>
                     </a>
 

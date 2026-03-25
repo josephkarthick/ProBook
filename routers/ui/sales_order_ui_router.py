@@ -1,14 +1,28 @@
 from fastapi import APIRouter, Request
-from fastapi.templating import Jinja2Templates
 
-templates = Jinja2Templates(directory="templates")
+from core.template_engine import render_template
 
-router = APIRouter(prefix="/sales-order", tags=["Sales Order UI"])
+router = APIRouter(tags=["Sales Order UI"])
 
 
-@router.get("/")
-def sales_order_page(request: Request):
-    return templates.TemplateResponse(
-        "sales/sales_order.html",
-        {"request": request}
+def _render_sales_order_page(request: Request):
+    return render_template(
+        "ProBook/Sales/sales_create.html",
+        request
     )
+
+
+@router.get("/sales-order")
+@router.get("/sales-order/", include_in_schema=False)
+def sales_order_page(request: Request):
+    return _render_sales_order_page(request)
+
+
+@router.get("/sales/orders", include_in_schema=False)
+def sales_order_orders_alias(request: Request):
+    return _render_sales_order_page(request)
+
+
+@router.get("/sales_order_page", include_in_schema=False)
+def sales_order_flat_alias(request: Request):
+    return _render_sales_order_page(request)

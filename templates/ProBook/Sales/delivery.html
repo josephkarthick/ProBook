@@ -1,0 +1,106 @@
+{% extends "ProBook/Base/base.html" %}
+{% block title %}Delivery Notes | ProBook{% endblock %}
+
+{% block content %}
+<div class="content">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+<h3>Delivery Notes</h3>
+</div>
+
+<div class="card">
+<div class="card-body">
+
+<div class="alert alert-info mb-4">
+This delivery page now renders correctly. It provides a simple entry point for the delivery API until a fuller workflow is added.
+</div>
+
+<div class="row mb-3">
+<div class="col-md-4">
+<label>Customer ID</label>
+<input class="form-control" id="customer_id" type="number" min="1">
+</div>
+<div class="col-md-4">
+<label>Delivery Date</label>
+<input class="form-control" id="delivery_date" type="date">
+</div>
+<div class="col-md-4">
+<label>Reference</label>
+<input class="form-control" id="reference" type="text">
+</div>
+</div>
+
+<div class="row mb-3">
+<div class="col-md-4">
+<label>Item ID</label>
+<input class="form-control" id="item_id" type="number" min="1">
+</div>
+<div class="col-md-4">
+<label>Quantity</label>
+<input class="form-control" id="qty" type="number" min="1" value="1">
+</div>
+<div class="col-md-4">
+<label>Price</label>
+<input class="form-control" id="price" type="number" step="0.01" min="0">
+</div>
+</div>
+
+<button class="btn btn-primary" onclick="createDelivery()">Create Delivery</button>
+
+<pre class="mt-4 p-3 bg-light border rounded" id="resultBox">No request sent yet.</pre>
+
+</div>
+</div>
+
+</div>
+
+<script>
+async function createDelivery(){
+const payload = {
+customer_id: Number(document.getElementById("customer_id").value),
+delivery_date: document.getElementById("delivery_date").value,
+reference: document.getElementById("reference").value,
+items: [{
+item_id: Number(document.getElementById("item_id").value),
+qty: Number(document.getElementById("qty").value),
+price: Number(document.getElementById("price").value)
+}]
+};
+
+if(!payload.customer_id || !payload.items[0].item_id){
+Swal.fire({
+icon:"warning",
+title:"Required Fields Missing",
+text:"Customer ID and Item ID are required"
+});
+return;
+}
+
+const res = await fetch("/api/deliveries/", {
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify(payload)
+});
+
+const data = await res.json();
+document.getElementById("resultBox").textContent = JSON.stringify(data, null, 2);
+
+if(res.ok){
+Swal.fire({
+icon:"success",
+title:"Delivery Created"
+});
+}else{
+Swal.fire({
+icon:"error",
+title:"Create Failed",
+text:data.detail || "Unable to create delivery"
+});
+}
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+document.getElementById("delivery_date").value = new Date().toISOString().split("T")[0];
+});
+</script>
+{% endblock %}

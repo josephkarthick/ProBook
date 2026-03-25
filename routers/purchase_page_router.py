@@ -25,7 +25,7 @@ def purchase_page(request: Request, db: Session = Depends(get_db)):
     ).all()
 
     return render_template(
-        "ProBook/Purchase/purchase.html",
+        "ProBook/Purchase/purchase_bill.html",
         request,
         {
             "vendors": vendors,

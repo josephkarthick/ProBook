@@ -1,0 +1,143 @@
+{% extends "ProBook/Base/base.html" %}
+{% block title %}Add Vendor{% endblock %}
+
+{% block content %}
+<div class="content">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+<h3>Add Vendor</h3>
+<a href="/vendors/list" class="btn btn-light">Back to Vendors</a>
+</div>
+
+<div class="card">
+<div class="card-body">
+
+<div class="row mb-3">
+<div class="col-md-6">
+<label>Vendor Code *</label>
+<input class="form-control" id="vendor_code">
+</div>
+<div class="col-md-6">
+<label>Name *</label>
+<input class="form-control" id="name">
+</div>
+</div>
+
+<div class="row mb-3">
+<div class="col-md-6">
+<label>Contact Person</label>
+<input class="form-control" id="contact_person">
+</div>
+<div class="col-md-6">
+<label>Phone *</label>
+<input class="form-control" id="phone">
+</div>
+</div>
+
+<div class="row mb-3">
+<div class="col-md-6">
+<label>Email</label>
+<input class="form-control" id="email">
+</div>
+<div class="col-md-6">
+<label>GST Number</label>
+<input class="form-control" id="gst_number">
+</div>
+</div>
+
+<div class="mb-3">
+<label>Address</label>
+<textarea class="form-control" id="address"></textarea>
+</div>
+
+<div class="row mb-4">
+<div class="col-md-4">
+<label>City</label>
+<input class="form-control" id="city">
+</div>
+<div class="col-md-4">
+<label>State</label>
+<input class="form-control" id="state">
+</div>
+<div class="col-md-4">
+<label>Pincode</label>
+<input class="form-control" id="pincode">
+</div>
+</div>
+
+<button class="btn btn-success" onclick="createVendor()">
+Save Vendor
+</button>
+
+</div>
+</div>
+
+</div>
+
+<script>
+async function createVendor(){
+
+const vendorCode = document.getElementById("vendor_code").value.trim();
+const name = document.getElementById("name").value.trim();
+const phone = document.getElementById("phone").value.trim();
+
+if(!vendorCode || !name || !phone){
+Swal.fire({
+icon:"warning",
+title:"Required Fields Missing",
+text:"Vendor code, name, and phone are required"
+});
+return;
+}
+
+try{
+const res = await fetch("/vendors/", {
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+vendor_code: vendorCode,
+name: name,
+contact_person: document.getElementById("contact_person").value,
+phone: phone,
+email: document.getElementById("email").value,
+gst_number: document.getElementById("gst_number").value,
+address: document.getElementById("address").value,
+city: document.getElementById("city").value,
+state: document.getElementById("state").value,
+pincode: document.getElementById("pincode").value
+})
+});
+
+const data = await res.json();
+
+if(res.ok){
+Swal.fire({
+icon:"success",
+title:"Vendor Created",
+timer:1500,
+showConfirmButton:false
+});
+
+setTimeout(() => {
+window.location.href = "/vendors/list";
+}, 1500);
+}else{
+Swal.fire({
+icon:"error",
+title:"Create Failed",
+text:data.detail || "Failed to create vendor"
+});
+}
+}catch(err){
+Swal.fire({
+icon:"error",
+title:"Server Error",
+text:"Please try again later"
+});
+}
+
+}
+</script>
+{% endblock %}

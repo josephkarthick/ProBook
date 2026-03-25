@@ -1,0 +1,119 @@
+{% extends "ProBook/Base/base.html" %}
+{% block title %}Stock Adjustment | ProBook{% endblock %}
+
+{% block content %}
+<div class="content">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+<h3>Stock Adjustment</h3>
+<a href="/stock/summary" class="btn btn-light">Back to Summary</a>
+</div>
+
+<div class="card">
+<div class="card-body">
+
+<div class="row mb-3">
+<div class="col-md-6">
+<label>Item</label>
+<select class="form-select" id="item_id"></select>
+</div>
+<div class="col-md-6">
+<label>Type</label>
+<select class="form-select" id="type">
+<option value="IN">Increase (IN)</option>
+<option value="OUT">Decrease (OUT)</option>
+</select>
+</div>
+</div>
+
+<div class="row mb-3">
+<div class="col-md-6">
+<label>Quantity</label>
+<input type="number" step="0.01" class="form-control" id="qty">
+</div>
+<div class="col-md-6">
+<label>Reason</label>
+<input type="text" class="form-control" id="reason">
+</div>
+</div>
+
+<button class="btn btn-success" onclick="saveAdjustment()">
+Save Adjustment
+</button>
+
+</div>
+</div>
+
+</div>
+
+<script>
+async function loadItems(){
+const res = await fetch("/api/items");
+const items = await res.json();
+
+const select = document.getElementById("item_id");
+select.innerHTML = '<option value="">Select Item</option>';
+
+items.forEach(item => {
+select.innerHTML += `<option value="${item.id}">${item.name}</option>`;
+});
+}
+
+async function saveAdjustment(){
+const itemId = document.getElementById("item_id").value;
+const qty = document.getElementById("qty").value;
+const type = document.getElementById("type").value;
+const reason = document.getElementById("reason").value;
+
+if(!itemId || !qty){
+Swal.fire({
+icon:"warning",
+title:"Required Fields Missing",
+text:"Please select an item and enter quantity"
+});
+return;
+}
+
+try{
+const res = await fetch("/api/stock/adjustment", {
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+item_id: Number(itemId),
+qty: qty,
+type: type,
+reason: reason
+})
+});
+
+const data = await res.json();
+
+if(res.ok){
+Swal.fire({
+icon:"success",
+title:"Stock Updated",
+text:data.message || "Adjustment saved successfully"
+});
+document.getElementById("qty").value = "";
+document.getElementById("reason").value = "";
+}else{
+Swal.fire({
+icon:"error",
+title:"Adjustment Failed",
+text:data.detail || data.message || "Unable to save adjustment"
+});
+}
+}catch(err){
+Swal.fire({
+icon:"error",
+title:"Server Error",
+text:"Please try again later"
+});
+}
+}
+
+document.addEventListener("DOMContentLoaded", loadItems);
+</script>
+{% endblock %}

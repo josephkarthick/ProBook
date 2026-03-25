@@ -1,0 +1,149 @@
+{% extends "ProBook/Base/base.html" %}
+{% block title %}Edit Customer{% endblock %}
+
+{% block content %}
+<div class="content">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+<h3>Edit Customer</h3>
+<a href="/customers" class="btn btn-light">Back to Customers</a>
+</div>
+
+<div class="card">
+<div class="card-body">
+
+<div class="row mb-3">
+<div class="col-md-6">
+<label>Name *</label>
+<input class="form-control" id="name">
+</div>
+
+<div class="col-md-6">
+<label>Phone</label>
+<input class="form-control" id="phone">
+</div>
+</div>
+
+<div class="row mb-3">
+<div class="col-md-6">
+<label>Email</label>
+<input class="form-control" id="email">
+</div>
+
+<div class="col-md-6">
+<label>GST Number</label>
+<input class="form-control" id="gst">
+</div>
+</div>
+
+<div class="mb-3">
+<label>Address</label>
+<textarea class="form-control" id="address"></textarea>
+</div>
+
+<button class="btn btn-primary" onclick="updateCustomer()">
+Update Customer
+</button>
+
+</div>
+</div>
+
+</div>
+
+<script>
+const customerId = {{ customer_id }};
+
+async function loadCustomer(){
+
+try{
+const res = await fetch("/api/customers/");
+const customers = await res.json();
+const customer = customers.find(c => Number(c.id) === customerId);
+
+if(!customer){
+Swal.fire({
+icon:"error",
+title:"Customer Not Found",
+text:"Unable to load the selected customer"
+}).then(() => {
+window.location.href = "/customers";
+});
+return;
+}
+
+document.getElementById("name").value = customer.name || "";
+document.getElementById("phone").value = customer.phone || "";
+document.getElementById("email").value = customer.email || "";
+document.getElementById("gst").value = customer.gst_number || "";
+document.getElementById("address").value = customer.address || "";
+}catch(err){
+Swal.fire({
+icon:"error",
+title:"Server Error",
+text:"Failed to load customer details"
+});
+}
+
+}
+
+async function updateCustomer(){
+
+const name = document.getElementById("name").value.trim();
+
+if(!name){
+Swal.fire({
+icon:"warning",
+title:"Name Required",
+text:"Please enter customer name"
+});
+return;
+}
+
+try{
+const res = await fetch(`/api/customers/${customerId}`, {
+method:"PUT",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+name: name,
+phone: document.getElementById("phone").value,
+email: document.getElementById("email").value,
+address: document.getElementById("address").value,
+gst_number: document.getElementById("gst").value
+})
+});
+
+const data = await res.json();
+
+if(res.ok){
+Swal.fire({
+icon:"success",
+title:"Customer Updated",
+timer:1500,
+showConfirmButton:false
+});
+
+setTimeout(() => {
+window.location.href = "/customers";
+}, 1500);
+}else{
+Swal.fire({
+icon:"error",
+title:"Update Failed",
+text:data.detail || "Failed to update customer"
+});
+}
+}catch(err){
+Swal.fire({
+icon:"error",
+title:"Server Error",
+text:"Please try again later"
+});
+}
+
+}
+
+document.addEventListener("DOMContentLoaded", loadCustomer);
+</script>
+{% endblock %}
