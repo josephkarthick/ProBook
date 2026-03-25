@@ -1,11 +1,16 @@
 from fastapi import APIRouter, Request
 from core.template_engine import render_template
 
-router = APIRouter(tags=["Customer UI"])
+router = APIRouter(
+    prefix="/customers",
+    tags=["Customer UI"]
+)
 
 
-# Customer List Page
-@router.get("/customers")
+# ===============================
+# CUSTOMER LIST
+# ===============================
+@router.get("/list")
 def customers_page(request: Request):
     return render_template(
         "ProBook/Contacts/customer_list.html",
@@ -13,8 +18,10 @@ def customers_page(request: Request):
     )
 
 
-# Create Page
-@router.get("/customer-create")
+# ===============================
+# CUSTOMER CREATE
+# ===============================
+@router.get("/create")
 def customer_create_page(request: Request):
     return render_template(
         "ProBook/Contacts/customer_create.html",
@@ -22,10 +29,11 @@ def customer_create_page(request: Request):
     )
 
 
-# Edit Page
-@router.get("/customer-edit/{customer_id}")
+# ===============================
+# CUSTOMER EDIT
+# ===============================
+@router.get("/{customer_id}/edit")
 def customer_edit_page(request: Request, customer_id: int):
-
     return render_template(
         "ProBook/Contacts/customer_edit.html",
         request,

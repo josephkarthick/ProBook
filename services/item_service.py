@@ -1,6 +1,9 @@
 from sqlalchemy.orm import Session
 from models.item import Item
 from schemas.item_schema import ItemCreate, ItemUpdate
+from models.item_category import ItemCategory 
+from sqlalchemy import func
+from models.stock_movement import StockMovement
 
 
 def generate_item_code(db, company_id):
@@ -51,44 +54,62 @@ def create_item(db: Session, data: ItemCreate, company_id: int):
     return item
 
 
-from sqlalchemy import func
-from models.item import Item
-from models.stock_movement import StockMovement
-
-
 def list_items(db, company_id):
 
     items = db.query(
         Item.id,
+        Item.item_code,
         Item.name,
+        Item.unit,
+        Item.purchase_price,
         Item.selling_price,
         Item.gst_rate,
+        Item.min_stock_level,
+        ItemCategory.name.label("category_name"),  # ✅ FIXED
+
         func.coalesce(func.sum(StockMovement.qty), 0).label("stock")
+
     ).outerjoin(
         StockMovement,
         (StockMovement.item_id == Item.id) &
         (StockMovement.company_id == company_id)
+
+    ).outerjoin(   # ✅ FIXED BRACKET
+        ItemCategory,
+        ItemCategory.id == Item.category_id
+
     ).filter(
         Item.company_id == company_id,
         Item.is_active == True
+
     ).group_by(
         Item.id,
+        Item.item_code,
         Item.name,
+        Item.unit,
+        Item.purchase_price,
         Item.selling_price,
-        Item.gst_rate
+        Item.gst_rate,
+        Item.min_stock_level,
+        ItemCategory.name   # ✅ FIXED
+
     ).all()
 
     return [
         {
             "id": i.id,
+            "item_code": i.item_code,
             "name": i.name,
+            "unit": i.unit,
+            "purchase_price": float(i.purchase_price or 0),
             "selling_price": float(i.selling_price or 0),
             "gst_rate": float(i.gst_rate or 0),
-            "stock": float(i.stock or 0)
+            "min_stock_level": float(i.min_stock_level or 0),
+            "stock": float(i.stock or 0),
+            "category_name": i.category_name or ""
         }
         for i in items
     ]
-
 
 def update_item(db: Session, item_id: int, data: ItemUpdate, company_id: int):
 

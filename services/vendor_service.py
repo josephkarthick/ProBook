@@ -72,11 +72,27 @@ def create_vendor(db: Session, data: VendorCreate, company_id: int):
 
 def list_vendors(db: Session, company_id: int):
 
-    return db.query(Vendor)\
+    vendors = db.query(Vendor)\
         .filter(Vendor.company_id == company_id)\
         .filter(Vendor.is_active == True)\
         .order_by(Vendor.name)\
         .all()
+
+    return [
+        {
+            "id": v.id,
+            "vendor_code": v.vendor_code,
+            "name": v.name,
+            "phone": v.phone,
+            "email": v.email,
+            "gst_number": v.gst_number,
+            "address": v.address,
+            "city": v.city,
+            "state": v.state,
+            "pincode": v.pincode
+        }
+        for v in vendors
+    ]
 
 
 def update_vendor(db: Session, vendor_id: int, data: VendorUpdate):

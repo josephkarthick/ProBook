@@ -1,0 +1,162 @@
+{% extends "ProBook/Base/base.html" %}
+
+{% block title %}Sales Orders{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex justify-content-between mb-4">
+<h3>Sales Orders</h3>
+
+<a href="/sales/order/create" class="btn btn-primary">
+Create Sales Order
+</a>
+</div>
+
+<div class="card">
+<div class="card-body">
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th width="150">SO Number</th>
+<th width="150">Date</th>
+<th>Customer</th>
+<th width="150">Total</th>
+<th width="120">Status</th>
+<th width="180" class="text-center">Action</th>
+</tr>
+</thead>
+
+<tbody id="soBody">
+
+<tr>
+<td colspan="6" class="text-center text-muted">
+Loading sales orders...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+
+/* =========================
+LOAD SALES ORDERS
+========================= */
+
+async function loadSO(){
+
+try{
+
+const res = await fetch("/api/sales-orders/")
+const data = await res.json()
+
+const body = document.getElementById("soBody")
+
+body.innerHTML = ""
+
+if(!data.length){
+
+body.innerHTML = `
+<tr>
+<td colspan="6" class="text-center text-muted">
+No sales orders found
+</td>
+</tr>
+`
+return
+}
+
+data.forEach(so=>{
+
+body.innerHTML += `
+
+<tr>
+
+<td>
+<a href="/sales/so/view/${so.id}">
+${so.so_number}
+</a>
+</td>
+
+<td>${so.order_date ?? ''}</td>
+
+<td>${so.customer_name ?? so.customer_id}</td>
+
+<td class="text-end">
+${Number(so.total_amount || 0).toFixed(2)}
+</td>
+
+<td>
+
+<span class="badge ${
+so.status === "DELIVERED"
+? "bg-success"
+: so.status === "PENDING"
+? "bg-warning text-dark"
+: so.status === "CANCELLED"
+? "bg-danger"
+: "bg-secondary"
+}">
+${so.status || "PENDING"}
+</span>
+
+</td>
+
+<td class="text-center">
+
+<a href="/sales/so/view/${so.id}"
+class="btn btn-sm btn-info">
+View
+</a>
+
+<a href="/sales/so/edit/${so.id}"
+class="btn btn-sm btn-warning">
+Edit
+</a>
+
+</td>
+
+</tr>
+
+`
+
+})
+
+}catch(err){
+
+Swal.fire({
+icon:"error",
+title:"Error",
+text:"Unable to load sales orders"
+})
+
+}
+
+}
+
+
+/* =========================
+PAGE INIT
+========================= */
+
+document.addEventListener("DOMContentLoaded",function(){
+
+loadSO()
+
+})
+
+</script>
+
+{% endblock %}

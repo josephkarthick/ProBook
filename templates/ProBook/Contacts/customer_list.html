@@ -8,7 +8,8 @@
     <div class="d-flex justify-content-between mb-4">
         <h3>Customers</h3>
 
-        <a href="/customer-create" class="btn btn-primary">
+        <!-- ✅ FIXED -->
+        <a href="/customers/create" class="btn btn-primary">
             Add Customer
         </a>
     </div>
@@ -79,14 +80,14 @@ async function loadCustomers(){
 
             <td>
 
-                <!-- 🔥 LEDGER BUTTON -->
-                <a href="/customer-ledger/${c.id}" 
+                <!-- ✅ FIXED LEDGER -->
+                <a href="/customers/${c.id}/ledger" 
                    class="btn btn-sm btn-info me-1">
                     Ledger
                 </a>
 
-                <!-- EDIT -->
-                <a href="/customer-edit/${c.id}" 
+                <!-- ✅ FIXED EDIT -->
+                <a href="/customers/${c.id}/edit" 
                    class="btn btn-sm btn-light me-1" title="Edit">
                     <i class="icon-pencil"></i>
                 </a>

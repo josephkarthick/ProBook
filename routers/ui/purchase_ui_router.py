@@ -2,43 +2,73 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from core.template_engine import render_template
 
-router = APIRouter()
+router = APIRouter(prefix="/purchase", tags=["Purchase UI"])
 
 
-# Purchase Bill Page
+# ==========================
+# PURCHASE ORDER (PO)
+# ==========================
 
-@router.get("/purchase/create")
-def purchase_create_page(request: Request):
-
+# LIST
+@router.get("/order", response_class=HTMLResponse)
+def po_list_page(request: Request):
     return render_template(
-        "ProBook/Purchase/purchase_bill.html",
+        "ProBook/Purchase/po_list.html",
         request
     )
 
 
-# Purchase List Page (optional for later)
-@router.get("/purchase/bills")
-def purchase_list_page(request: Request):
-
+# CREATE
+@router.get("/order/create", response_class=HTMLResponse)
+def po_create_page(request: Request):
     return render_template(
-        "ProBook/Purchase/purchase_list.html",
+        "ProBook/Purchase/po_create.html",
         request
     )
 
-@router.get("/purchase/po/view/{po_id}")
+
+# VIEW
+@router.get("/order/{po_id}", response_class=HTMLResponse)
 def view_po_page(request: Request, po_id: int):
-
     return render_template(
         "ProBook/Purchase/po_view.html",
         request,
         {"po_id": po_id}
     )
 
-@router.get("/purchase/po/edit/{po_id}")
-def edit_po_page(request: Request, po_id: int):
 
+# EDIT
+@router.get("/order/{po_id}/edit", response_class=HTMLResponse)
+def edit_po_page(request: Request, po_id: int):
     return render_template(
-        "ProBook/Purchase/po_edit.html",
+        "ProBook/Purchase/po_create.html",
         request,
-        {"po_id": po_id}
-    )   
+        {
+            "po_id": po_id,
+            "mode": "edit"
+        }
+    )
+
+
+
+
+# ==========================
+# PURCHASE BILL
+# ==========================
+
+# LIST
+@router.get("/bill", response_class=HTMLResponse)
+def purchase_list_page(request: Request):
+    return render_template(
+        "ProBook/Purchase/purchase_list.html",
+        request
+    )
+
+
+# CREATE
+@router.get("/bill/create", response_class=HTMLResponse)
+def purchase_create_page(request: Request):
+    return render_template(
+        "ProBook/Purchase/purchase_bill.html",
+        request
+    )

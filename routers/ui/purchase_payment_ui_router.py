@@ -2,13 +2,16 @@ from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from core.template_engine import render_template
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/purchase",
+    tags=["Purchase UI"]
+)
 
 
 # =========================
-# Purchase Payment Page
+# PURCHASE PAYMENT LIST
 # =========================
-@router.get("/purchase/payments", response_class=HTMLResponse)
+@router.get("/payment", response_class=HTMLResponse)
 def purchase_payment_page(request: Request):
 
     return render_template(

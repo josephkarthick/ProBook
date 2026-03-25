@@ -7,14 +7,17 @@ from core.template_engine import render_template
 from models.sales_invoice import SalesInvoice
 from models.sales_invoice_item import SalesInvoiceItem
 
-router = APIRouter(tags=["Sales UI"])
+router = APIRouter(
+    prefix="/sales",
+    tags=["Sales UI"]
+)
 
 
 # ===============================
-# SALES LIST
+# INVOICE LIST
 # ===============================
-@router.get("/sales")
-def sales_list_page(request: Request):
+@router.get("/invoice")
+def invoice_list_page(request: Request):
 
     return render_template(
         "ProBook/Sales/sales_list.html",
@@ -23,10 +26,10 @@ def sales_list_page(request: Request):
 
 
 # ===============================
-# SALES CREATE
+# INVOICE CREATE
 # ===============================
-@router.get("/sales-create")
-def sales_create_page(request: Request):
+@router.get("/invoice/create")
+def invoice_create_page(request: Request):
 
     return render_template(
         "ProBook/Sales/sales_create.html",
@@ -35,10 +38,10 @@ def sales_create_page(request: Request):
 
 
 # ===============================
-# SALES VIEW
+# INVOICE VIEW
 # ===============================
-@router.get("/sales-view/{invoice_id}")
-def sales_view(
+@router.get("/invoice/{invoice_id}")
+def invoice_view(
     invoice_id: int,
     request: Request,
     db: Session = Depends(get_db)
@@ -63,10 +66,10 @@ def sales_view(
 
 
 # ===============================
-# SALES PRINT
+# INVOICE PRINT
 # ===============================
-@router.get("/sales-print/{invoice_id}")
-def sales_print(
+@router.get("/invoice/{invoice_id}/print")
+def invoice_print(
     invoice_id: int,
     request: Request,
     db: Session = Depends(get_db)

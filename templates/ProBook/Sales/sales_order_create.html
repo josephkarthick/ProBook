@@ -1,0 +1,248 @@
+{% extends "ProBook/Base/base.html" %}
+{% block title %}Sales Order | ProBook{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex justify-content-between mb-4">
+<div>
+<h3>Sales Order</h3>
+<p class="text-muted mb-0">Create and manage customer orders.</p>
+</div>
+
+<button class="btn btn-success" onclick="saveSales()">Save Order</button>
+</div>
+
+<div class="card">
+<div class="card-body">
+
+<div class="row mb-4">
+
+<div class="col-md-6">
+<label>Customer</label>
+<div class="d-flex">
+<select class="form-select me-2" id="customerSelect"></select>
+<button class="btn btn-primary" onclick="openCustomerModal()">+</button>
+</div>
+</div>
+
+<div class="col-md-4">
+<label>Order Date</label>
+<input type="date" id="invoiceDate" class="form-control">
+</div>
+
+</div>
+
+<table class="table table-bordered" id="salesTable">
+<thead>
+<tr>
+<th>Item</th>
+<th>Qty</th>
+<th>Price</th>
+<th>GST %</th>
+<th>Total</th>
+<th></th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+<br>
+<button class="btn btn-sm btn-primary" onclick="addRow()">+ Add Item</button>
+
+<hr>
+
+<div class="row justify-content-end">
+<div class="col-md-4">
+<table class="table">
+<tr><th>Subtotal</th><td id="subtotal">0.00</td></tr>
+<tr><th>GST</th><td id="taxTotal">0.00</td></tr>
+<tr class="fw-bold"><th>Total</th><td id="grandTotal">0.00</td></tr>
+</table>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+
+<!-- Customer Modal -->
+<div class="modal fade" id="customerModal">
+<div class="modal-dialog">
+<div class="modal-content">
+
+<div class="modal-header">
+<h5>Add Customer</h5>
+<button class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+<input class="form-control mb-2" id="custName" placeholder="Customer Name *">
+<input class="form-control mb-2" id="custPhone" placeholder="Phone">
+<input class="form-control mb-2" id="custEmail" placeholder="Email">
+<input class="form-control mb-2" id="custGST" placeholder="GST Number">
+</div>
+
+<div class="modal-footer">
+<button class="btn btn-success" onclick="saveCustomer()">Save</button>
+</div>
+
+</div>
+</div>
+</div>
+
+<script>
+let items = [];
+
+const customerSelect = document.getElementById("customerSelect");
+const invoiceDate = document.getElementById("invoiceDate");
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+    invoiceDate.value = new Date().toISOString().split("T")[0];
+
+    await loadCustomers();
+    await loadItems();
+
+    addRow();
+});
+
+/* ================= LOAD ================= */
+
+async function loadCustomers(){
+    const res = await fetch("/api/customers/");
+    const data = await res.json();
+
+    customerSelect.innerHTML = '<option value="">Select Customer</option>';
+    data.forEach(c=>{
+        customerSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+    });
+}
+
+async function loadItems(){
+    const res = await fetch("/api/items");
+    items = await res.json();
+}
+
+/* ================= ROW ================= */
+
+function addRow(){
+    const options = items.map(i => 
+        `<option value="${i.id}" data-price="${i.selling_price}" data-gst="${i.gst_rate}">${i.name}</option>`
+    ).join("");
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+    <td><select class="form-select item-select">${options}</select></td>
+    <td><input type="number" class="form-control qty" value="1"></td>
+    <td><input type="number" class="form-control price"></td>
+    <td><input type="number" class="form-control gst"></td>
+    <td class="rowTotal">0.00</td>
+    <td><button class="btn btn-danger btn-sm">X</button></td>
+    `;
+
+    row.querySelector(".item-select").onchange = e => itemChanged(e.target);
+    row.querySelector(".qty").oninput = e => calculateRow(e.target);
+    row.querySelector(".price").oninput = e => calculateRow(e.target);
+    row.querySelector(".gst").oninput = e => calculateRow(e.target);
+    row.querySelector("button").onclick = () => {
+        row.remove();
+        calculateTotals();
+    };
+
+    document.querySelector("#salesTable tbody").appendChild(row);
+}
+
+function itemChanged(select){
+    const row = select.closest("tr");
+    const opt = select.options[select.selectedIndex];
+
+    row.querySelector(".price").value = opt.dataset.price || 0;
+    row.querySelector(".gst").value = opt.dataset.gst || 0;
+
+    calculateRow(select);
+}
+
+function calculateRow(input){
+    const row = input.closest("tr");
+
+    const qty = +row.querySelector(".qty").value || 0;
+    const price = +row.querySelector(".price").value || 0;
+    const gst = +row.querySelector(".gst").value || 0;
+
+    const sub = qty * price;
+    const tax = sub * gst / 100;
+
+    row.querySelector(".rowTotal").innerText = (sub + tax).toFixed(2);
+
+    calculateTotals();
+}
+
+function calculateTotals(){
+    let sub = 0, tax = 0;
+
+    document.querySelectorAll("#salesTable tbody tr").forEach(row=>{
+        const qty = +row.querySelector(".qty").value || 0;
+        const price = +row.querySelector(".price").value || 0;
+        const gst = +row.querySelector(".gst").value || 0;
+
+        sub += qty * price;
+        tax += qty * price * gst / 100;
+    });
+
+    subtotal.innerText = sub.toFixed(2);
+    taxTotal.innerText = tax.toFixed(2);
+    grandTotal.innerText = (sub + tax).toFixed(2);
+}
+
+/* ================= SAVE ================= */
+
+async function saveSales(){
+
+    if(!customerSelect.value){
+        Swal.fire("Select customer","","warning");
+        return;
+    }
+
+    let itemsData = [];
+
+    document.querySelectorAll("#salesTable tbody tr").forEach(row=>{
+        const id = row.querySelector(".item-select").value;
+
+        if(id){
+            itemsData.push({
+                item_id: +id,
+                quantity: +row.querySelector(".qty").value,
+                price: +row.querySelector(".price").value,
+                gst_rate: +row.querySelector(".gst").value
+            });
+        }
+    });
+
+    if(itemsData.length === 0){
+        Swal.fire("Add items first","","warning");
+        return;
+    }
+
+    const res = await fetch("/api/sales-orders/",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+            customer_id:+customerSelect.value,
+            order_date:invoiceDate.value,
+            items:itemsData
+        })
+    });
+
+    if(res.ok){
+        Swal.fire("Saved","","success");
+        setTimeout(()=>location.reload(),1000);
+    }else{
+        Swal.fire("Error","","error");
+    }
+}
+</script>
+
+{% endblock %}
