@@ -98,6 +98,7 @@ let items = [];
 const customerSelect = document.getElementById("customerSelect");
 const invoiceDate = document.getElementById("invoiceDate");
 
+/* ================= INIT ================= */
 document.addEventListener("DOMContentLoaded", async () => {
 
     invoiceDate.value = new Date().toISOString().split("T")[0];
@@ -128,49 +129,123 @@ async function loadItems(){
 /* ================= ROW ================= */
 
 function addRow(){
+
     const options = items.map(i => 
-        `<option value="${i.id}" data-price="${i.selling_price}" data-gst="${i.gst_rate}">${i.name}</option>`
+        `<option value="${i.id}" 
+            data-price="${i.selling_price}" 
+            data-gst="${i.gst_rate}"
+            data-stock="${i.stock || 0}">
+            ${i.name} (Stock: ${i.stock || 0})
+        </option>`
     ).join("");
 
     const row = document.createElement("tr");
 
     row.innerHTML = `
-    <td><select class="form-select item-select">${options}</select></td>
-    <td><input type="number" class="form-control qty" value="1"></td>
-    <td><input type="number" class="form-control price"></td>
-    <td><input type="number" class="form-control gst"></td>
+    <td>
+        <select class="form-select item-select">
+            <option value="">Select Item</option>
+            ${options}
+        </select>
+    </td>
+
+    <td>
+        <input type="number" class="form-control qty" value="1" min="1">
+        <small class="text-muted stock-label"></small>
+    </td>
+
+    <td><input type="number" class="form-control price" step="0.01"></td>
+    <td><input type="number" class="form-control gst" step="0.01"></td>
+
     <td class="rowTotal">0.00</td>
+
     <td><button class="btn btn-danger btn-sm">X</button></td>
     `;
 
-    row.querySelector(".item-select").onchange = e => itemChanged(e.target);
-    row.querySelector(".qty").oninput = e => calculateRow(e.target);
-    row.querySelector(".price").oninput = e => calculateRow(e.target);
-    row.querySelector(".gst").oninput = e => calculateRow(e.target);
-    row.querySelector("button").onclick = () => {
+    /* EVENTS */
+    row.querySelector(".item-select").addEventListener("change", function(){
+        itemChanged(this);
+    });
+
+    row.querySelector(".qty").addEventListener("input", function(){
+        validateStock(this);
+        calculateRow(this);
+    });
+
+    row.querySelector(".price").addEventListener("input", function(){
+        calculateRow(this);
+    });
+
+    row.querySelector(".gst").addEventListener("input", function(){
+        calculateRow(this);
+    });
+
+    row.querySelector("button").addEventListener("click", function(){
         row.remove();
         calculateTotals();
-    };
+    });
 
     document.querySelector("#salesTable tbody").appendChild(row);
 }
 
+/* ================= ITEM CHANGE ================= */
+
 function itemChanged(select){
+
     const row = select.closest("tr");
     const opt = select.options[select.selectedIndex];
 
-    row.querySelector(".price").value = opt.dataset.price || 0;
-    row.querySelector(".gst").value = opt.dataset.gst || 0;
+    if(!opt || !opt.value){
+        return;
+    }
 
+    const price = opt.getAttribute("data-price");
+    const gst = opt.getAttribute("data-gst");
+    const stock = Number(opt.getAttribute("data-stock") || 0);
+
+    row.querySelector(".price").value = price || 0;
+    row.querySelector(".gst").value = gst || 0;
+
+    row.dataset.stock = stock;
+
+    row.querySelector(".stock-label").innerText = `Available: ${stock}`;
+
+    validateStock(row.querySelector(".qty"));
     calculateRow(select);
 }
 
+/* ================= STOCK VALIDATION ================= */
+
+function validateStock(input){
+
+    const row = input.closest("tr");
+    const stock = Number(row.dataset.stock || 0);
+    const qty = Number(input.value || 0);
+
+    if(qty > stock){
+
+        input.value = stock;
+
+        Swal.fire({
+            icon: "warning",
+            text: `Only ${stock} items available in stock`
+        });
+
+        row.querySelector(".qty").classList.add("is-invalid");
+    }else{
+        row.querySelector(".qty").classList.remove("is-invalid");
+    }
+}
+
+/* ================= ROW CALC ================= */
+
 function calculateRow(input){
+
     const row = input.closest("tr");
 
-    const qty = +row.querySelector(".qty").value || 0;
-    const price = +row.querySelector(".price").value || 0;
-    const gst = +row.querySelector(".gst").value || 0;
+    const qty = Number(row.querySelector(".qty").value) || 0;
+    const price = Number(row.querySelector(".price").value) || 0;
+    const gst = Number(row.querySelector(".gst").value) || 0;
 
     const sub = qty * price;
     const tax = sub * gst / 100;
@@ -180,16 +255,23 @@ function calculateRow(input){
     calculateTotals();
 }
 
+/* ================= TOTAL ================= */
+
 function calculateTotals(){
-    let sub = 0, tax = 0;
+
+    let sub = 0;
+    let tax = 0;
 
     document.querySelectorAll("#salesTable tbody tr").forEach(row=>{
-        const qty = +row.querySelector(".qty").value || 0;
-        const price = +row.querySelector(".price").value || 0;
-        const gst = +row.querySelector(".gst").value || 0;
+        const qty = Number(row.querySelector(".qty").value) || 0;
+        const price = Number(row.querySelector(".price").value) || 0;
+        const gst = Number(row.querySelector(".gst").value) || 0;
 
-        sub += qty * price;
-        tax += qty * price * gst / 100;
+        const rowSub = qty * price;
+        const rowTax = rowSub * gst / 100;
+
+        sub += rowSub;
+        tax += rowTax;
     });
 
     subtotal.innerText = sub.toFixed(2);
@@ -207,38 +289,51 @@ async function saveSales(){
     }
 
     let itemsData = [];
+    let hasError = false;
 
     document.querySelectorAll("#salesTable tbody tr").forEach(row=>{
         const id = row.querySelector(".item-select").value;
+        const qty = Number(row.querySelector(".qty").value);
+        const stock = Number(row.dataset.stock || 0);
+
+        if(qty > stock){
+            hasError = true;
+        }
 
         if(id){
             itemsData.push({
-                item_id: +id,
-                quantity: +row.querySelector(".qty").value,
-                price: +row.querySelector(".price").value,
-                gst_rate: +row.querySelector(".gst").value
+                item_id: Number(id),
+                quantity: qty,
+                price: Number(row.querySelector(".price").value),
+                gst_rate: Number(row.querySelector(".gst").value)
             });
         }
     });
+
+    if(hasError){
+        Swal.fire("Stock exceeded!","","error");
+        return;
+    }
 
     if(itemsData.length === 0){
         Swal.fire("Add items first","","warning");
         return;
     }
 
-    const res = await fetch("/api/sales-orders/",{
+    // ✅ ALWAYS SALES ORDER API
+    const res = await fetch("/api/sales-orders/", {
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({
-            customer_id:+customerSelect.value,
+            customer_id:Number(customerSelect.value),
             order_date:invoiceDate.value,
             items:itemsData
         })
     });
 
     if(res.ok){
-        Swal.fire("Saved","","success");
-        setTimeout(()=>location.reload(),1000);
+        Swal.fire("Sales Order Created","","success");
+        setTimeout(()=>location.href="/sales/order",1000);
     }else{
         Swal.fire("Error","","error");
     }

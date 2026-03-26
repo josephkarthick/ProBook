@@ -6,14 +6,13 @@ from models.goods_receipt_item import GoodsReceiptItem
 from models.purchase_order import PurchaseOrder
 from models.purchase_order_item import PurchaseOrderItem
 from models.vendor import Vendor
-
+from services.stock_service import add_stock_purchase
 
 def create_grn(db: Session, data: dict):
 
-    # ------------------------------------------------
+    # -------------------------------
     # Get Purchase Order
-    # ------------------------------------------------
-
+    # -------------------------------
     po = db.query(PurchaseOrder)\
         .filter(PurchaseOrder.id == data["po_id"])\
         .first()
@@ -21,15 +20,12 @@ def create_grn(db: Session, data: dict):
     if not po:
         raise ValueError("Purchase Order not found")
 
-    # Prevent GRN if PO already closed
     if po.status == "CLOSED":
         raise ValueError("Purchase Order already fully received")
 
-
-    # ------------------------------------------------
+    # -------------------------------
     # Get Vendor
-    # ------------------------------------------------
-
+    # -------------------------------
     vendor = db.query(Vendor)\
         .filter(Vendor.id == po.vendor_id)\
         .first()
@@ -39,27 +35,22 @@ def create_grn(db: Session, data: dict):
 
     company_id = vendor.company_id
 
-
-    # ------------------------------------------------
+    # -------------------------------
     # Generate GRN Number
-    # ------------------------------------------------
-
+    # -------------------------------
     last_grn = db.query(GoodsReceipt)\
         .filter(GoodsReceipt.company_id == company_id)\
         .order_by(GoodsReceipt.id.desc())\
         .first()
 
     next_no = int(last_grn.grn_no.split("-")[1]) + 1 if last_grn else 1
-
     grn_no = f"GRN-{next_no:05d}"
-
 
     try:
 
-        # ------------------------------------------------
+        # -------------------------------
         # Create GRN
-        # ------------------------------------------------
-
+        # -------------------------------
         grn = GoodsReceipt(
             company_id=company_id,
             vendor_id=vendor.id,
@@ -71,11 +62,9 @@ def create_grn(db: Session, data: dict):
         db.add(grn)
         db.flush()
 
-
-        # ------------------------------------------------
-        # Insert GRN Items
-        # ------------------------------------------------
-
+        # -------------------------------
+        # Process Items
+        # -------------------------------
         for item in data["items"]:
 
             po_item = db.query(PurchaseOrderItem)\
@@ -88,8 +77,9 @@ def create_grn(db: Session, data: dict):
             if not po_item:
                 raise ValueError("PO item not found")
 
-
-            # Total already received for this item
+            # -------------------------------
+            # Check received qty
+            # -------------------------------
             received_qty = db.query(
                 func.coalesce(func.sum(GoodsReceiptItem.qty_received), 0)
             )\
@@ -102,13 +92,14 @@ def create_grn(db: Session, data: dict):
 
             remaining_qty = po_item.quantity - received_qty
 
-
             if item["qty"] > remaining_qty:
                 raise ValueError(
                     f"Cannot receive more than remaining qty ({remaining_qty})"
                 )
 
-
+            # -------------------------------
+            # Create GRN Item
+            # -------------------------------
             grn_item = GoodsReceiptItem(
                 grn_id=grn.id,
                 item_id=item["item_id"],
@@ -117,17 +108,24 @@ def create_grn(db: Session, data: dict):
 
             db.add(grn_item)
 
+            # -------------------------------
+            # 🔥 ADD STOCK HERE (CORRECT PLACE)
+            # -------------------------------
+            add_stock_purchase(
+                db=db,
+                company_id=company_id,
+                purchase_id=grn.id,   # reference
+                item_id=item["item_id"],
+                qty=item["qty"],
+                cost=po_item.price or 0   # or item["price"]
+            )
 
-        # ------------------------------------------------
-        # Recalculate PO totals
-        # ------------------------------------------------
-
+        # -------------------------------
+        # Update PO Status
+        # -------------------------------
         total_order = db.query(
             func.coalesce(func.sum(PurchaseOrderItem.quantity), 0)
-        )\
-        .filter(PurchaseOrderItem.po_id == po.id)\
-        .scalar()
-
+        ).filter(PurchaseOrderItem.po_id == po.id).scalar()
 
         total_received = db.query(
             func.coalesce(func.sum(GoodsReceiptItem.qty_received), 0)
@@ -136,16 +134,7 @@ def create_grn(db: Session, data: dict):
         .filter(GoodsReceipt.po_id == po.id)\
         .scalar()
 
-
-        # ------------------------------------------------
-        # Update PO Status
-        # ------------------------------------------------
-
-        if total_received >= total_order:
-            po.status = "CLOSED"
-        else:
-            po.status = "PARTIAL"
-
+        po.status = "CLOSED" if total_received >= total_order else "PARTIAL"
 
         db.commit()
 
@@ -154,8 +143,6 @@ def create_grn(db: Session, data: dict):
             "grn_no": grn_no
         }
 
-
     except Exception as e:
-
         db.rollback()
         raise e

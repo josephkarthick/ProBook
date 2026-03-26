@@ -33,31 +33,34 @@ def create_sales_invoice(db: Session, data, company_id):
 
     invoice_no = generate_invoice_no(db, company_id)
 
-    # ✅ FIX: extract from request
     customer_id = data.customer_id
     invoice_date = data.invoice_date
 
     total_amount = Decimal("0")
     tax_amount = Decimal("0")
 
-    # ✅ CREATE EMPTY INVOICE FIRST
     invoice = SalesInvoice(
         company_id=company_id,
         customer_id=customer_id,
         invoice_no=invoice_no,
         invoice_date=invoice_date,
-
         total_amount=0,
         tax_amount=0,
         grand_total=0,
-
         paid_amount=0,
-        balance_amount = 0,
+        balance_amount=0,
         payment_status="UNPAID"
     )
 
     db.add(invoice)
-    db.flush()   # get invoice.id
+    db.flush()
+
+    # ✅ FINAL SOURCE DETECTION (SAFE)
+    source_type = (data.source_type or "").strip().lower()
+    source_id = data.source_id
+
+    print("SOURCE TYPE:", source_type)
+    print("SOURCE ID:", source_id)
 
     # ===============================
     # ADD ITEMS
@@ -85,14 +88,15 @@ def create_sales_invoice(db: Session, data, company_id):
 
         db.add(invoice_item)
 
-        # 🔥 STOCK REDUCTION
-        reduce_stock_sale(
-            db,
-            company_id,
-            item.item_id,
-            item.quantity,
-            invoice.id
-        )
+        # ✅ FINAL STOCK LOGIC (CORRECT ERP LOGIC)
+        if source_type != "delivery":
+            reduce_stock_sale(
+                db=db,
+                company_id=company_id,
+                item_id=item.item_id,
+                qty=item.quantity,
+                reference_id=invoice.id
+            )
 
         total_amount += subtotal
         tax_amount += tax
@@ -100,23 +104,23 @@ def create_sales_invoice(db: Session, data, company_id):
     # ===============================
     # FINAL TOTALS
     # ===============================
-    grand_total = total_amount + tax_amount
-
     invoice.total_amount = total_amount
     invoice.tax_amount = tax_amount
-    invoice.grand_total = grand_total
+    invoice.grand_total = total_amount + tax_amount
 
     # ===============================
     # PAYMENT INIT
     # ===============================
     invoice.paid_amount = Decimal("0")
-    invoice.balance_amount = grand_total
+    invoice.balance_amount = invoice.grand_total
     invoice.payment_status = "UNPAID"
 
     db.commit()
     db.refresh(invoice)
 
-    # 🔥 ACCOUNTING ENTRY
+    # ===============================
+    # ACCOUNTING ENTRY
+    # ===============================
     create_sales_journal(db, invoice)
 
     return invoice

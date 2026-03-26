@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from decimal import Decimal
-from typing import List
+from typing import List, Optional
 from datetime import date
 
 
@@ -16,6 +16,10 @@ class PurchaseBillCreate(BaseModel):
 
     vendor_id: int
     bill_date: date
+
+    # 🔥 ADD THIS LINE
+    po_id: Optional[int] = None
+
     items: List[PurchaseItemCreate]
 
 

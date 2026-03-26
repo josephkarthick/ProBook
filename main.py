@@ -9,7 +9,7 @@ from core.template_engine import render_template
 from routers.auth_router import router as auth_router
 from routers.company_router import router as company_router
 from routers.account_router import router as account_router
-from routers.account_page_router import router as account_page_router
+from routers. ui.account_ui_router import router as account_ui_router
 from routers.journal_router import router as journal_router
 from routers.ledger_router import router as ledger_router
 from routers.trial_balance_router import router as trial_balance_router
@@ -47,11 +47,12 @@ from routers.customer_ledger_router import router as customer_ledger_router
 from routers.ui.customer_ledger_ui_router import router as customer_ledger_ui_router
 # API routers
 from routers.sales_order_router import router as sales_order_router
-from routers.sales_delivery_router import router as sales_delivery_router
-
 # UI routers
 from routers.ui.sales_order_ui_router import router as sales_order_ui_router
 from routers.ui.sales_delivery_ui_router import router as sales_delivery_ui_router
+
+from routers.delivery_router import router as delivery_api_router
+from routers.ui.delivery_ui_router import router as delivery_ui_router
 
 
 
@@ -79,7 +80,7 @@ app.include_router(auth_router)
 app.include_router(company_router)
 
 app.include_router(account_router)
-app.include_router(account_page_router)
+app.include_router(account_ui_router)
 
 app.include_router(journal_router)
 app.include_router(ledger_router)
@@ -138,9 +139,13 @@ app.include_router(customer_ledger_router)
 app.include_router(customer_ledger_ui_router)
 
 app.include_router(sales_order_router)
-app.include_router(sales_delivery_router)
+
 app.include_router(sales_order_ui_router)
 app.include_router(sales_delivery_ui_router)
+
+app.include_router(delivery_api_router)
+app.include_router(delivery_ui_router)
+
 
 # ======================
 # Home Page

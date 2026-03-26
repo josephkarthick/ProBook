@@ -1,9 +1,13 @@
 from fastapi import APIRouter, Request
+from fastapi.responses import HTMLResponse
 from core.template_engine import render_template
 
-router = APIRouter()
+router = APIRouter(prefix="/accounting", tags=["Accounting"])
 
-@router.get("/profit-loss")
+# ==========================
+# Profit & Loss
+# ==========================
+@router.get("/profit-loss", response_class=HTMLResponse)
 def profit_loss_page(request: Request):
 
     return render_template(

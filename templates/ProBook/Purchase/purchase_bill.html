@@ -388,6 +388,7 @@ document.getElementById("grandTotal").innerText=(subtotal+taxTotal).toFixed(2)
 
 async function savePurchase(){
 
+const po = document.getElementById("poSelect").value
 const vendor=document.getElementById("vendorSelect").value
 const billDate=document.getElementById("billDate").value
 const invoiceNo=document.getElementById("invoiceNo").value
@@ -430,13 +431,15 @@ headers:{
 "Content-Type":"application/json"
 },
 
-body:JSON.stringify({
+body: JSON.stringify({
 
-vendor_id:Number(vendor),
-invoice_no:invoiceNo,
-bill_date:billDate,
-items:billItems
+    vendor_id: Number(vendor),
+    invoice_no: invoiceNo,
+    bill_date: billDate,
 
+    po_id: po ? Number(po) : null,   // 🔥 KEY FIX
+
+    items: billItems
 })
 
 })

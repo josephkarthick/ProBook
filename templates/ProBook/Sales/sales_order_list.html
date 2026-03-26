@@ -23,10 +23,10 @@ Create Sales Order
 <tr>
 <th width="150">SO Number</th>
 <th width="150">Date</th>
-<th>Customer</th>
+<th style="width:180px;">Customer</th>
 <th width="150">Total</th>
 <th width="120">Status</th>
-<th width="180" class="text-center">Action</th>
+<th width="220" class="text-center">Action</th>
 </tr>
 </thead>
 
@@ -57,93 +57,152 @@ LOAD SALES ORDERS
 
 async function loadSO(){
 
-try{
+    const body = document.getElementById("soBody")
 
-const res = await fetch("/api/sales-orders/")
-const data = await res.json()
+    try{
 
-const body = document.getElementById("soBody")
+        const res = await fetch("/api/sales-orders/")
+        const data = await res.json()
 
-body.innerHTML = ""
+        console.log("Sales Orders:", data)
 
-if(!data.length){
+        body.innerHTML = ""
 
-body.innerHTML = `
-<tr>
-<td colspan="6" class="text-center text-muted">
-No sales orders found
-</td>
-</tr>
-`
-return
+        if(!Array.isArray(data) || data.length === 0){
+            body.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center text-muted">
+                    No sales orders found
+                </td>
+            </tr>`
+            return
+        }
+
+        let rows = ""
+
+        data.forEach(so => {
+
+            const total = Number(so.total_amount ?? 0)
+
+            const statusClass =
+                so.status === "CONFIRMED" ? "bg-success" :
+                so.status === "PENDING" ? "bg-warning text-dark" :
+                so.status === "CANCELLED" ? "bg-danger" :
+                "bg-secondary"
+
+            rows += `
+            <tr>
+
+                <td>
+                    <a href="/sales/order/${so.id}">
+                        ${so.so_number || ""}
+                    </a>
+                </td>
+
+                <td>${so.order_date || ''}</td>
+
+                <td>${so.customer_name || so.customer_id || ''}</td>
+
+                <td class="text-end">
+                    ${total.toFixed(2)}
+                </td>
+
+                <td>
+                    <span class="badge ${statusClass}">
+                        ${so.status || "PENDING"}
+                    </span>
+                </td>
+
+				<td class="text-center">
+				
+					<div class="d-flex justify-content-center flex-wrap gap-1">
+				
+						<a href="/sales/order/${so.id}"
+						class="btn btn-sm btn-info">
+						View
+						</a>
+				
+						${
+							so.status === "PENDING"
+							? `<a href="/sales/order/${so.id}"
+							class="btn btn-sm btn-warning">
+							Edit
+							</a>`
+							: `<button class="btn btn-sm btn-secondary" disabled>
+							Edit
+							</button>`
+						}
+				
+						${
+							so.status === "PENDING"
+							? `<button class="btn btn-sm btn-success"
+								onclick="confirmSO(${so.id})">
+								Confirm
+							</button>`
+							: ""
+						}
+				
+					</div>
+				
+				</td>
+
+            </tr>`
+        })
+
+        body.innerHTML = rows
+
+    }catch(err){
+
+        console.error(err)
+
+        body.innerHTML = `
+        <tr>
+            <td colspan="6" class="text-center text-danger">
+                Error loading sales orders
+            </td>
+        </tr>`
+
+        Swal.fire({
+            icon:"error",
+            title:"Error",
+            text:"Unable to load sales orders"
+        })
+    }
 }
 
-data.forEach(so=>{
 
-body.innerHTML += `
+/* =========================
+CONFIRM ORDER
+========================= */
 
-<tr>
+async function confirmSO(id){
 
-<td>
-<a href="/sales/so/view/${so.id}">
-${so.so_number}
-</a>
-</td>
+    const confirm = await Swal.fire({
+        title: "Confirm Order?",
+        text: "This will move order to Delivery",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Yes, Confirm"
+    })
 
-<td>${so.order_date ?? ''}</td>
+    if(!confirm.isConfirmed) return
 
-<td>${so.customer_name ?? so.customer_id}</td>
+    try{
 
-<td class="text-end">
-${Number(so.total_amount || 0).toFixed(2)}
-</td>
+        const res = await fetch(`/api/sales-orders/${id}/confirm`, {
+            method: "PUT"
+        })
 
-<td>
+        if(res.ok){
+            Swal.fire("Order Confirmed!", "", "success")
+            loadSO()
+        }else{
+            throw new Error()
+        }
 
-<span class="badge ${
-so.status === "DELIVERED"
-? "bg-success"
-: so.status === "PENDING"
-? "bg-warning text-dark"
-: so.status === "CANCELLED"
-? "bg-danger"
-: "bg-secondary"
-}">
-${so.status || "PENDING"}
-</span>
-
-</td>
-
-<td class="text-center">
-
-<a href="/sales/so/view/${so.id}"
-class="btn btn-sm btn-info">
-View
-</a>
-
-<a href="/sales/so/edit/${so.id}"
-class="btn btn-sm btn-warning">
-Edit
-</a>
-
-</td>
-
-</tr>
-
-`
-
-})
-
-}catch(err){
-
-Swal.fire({
-icon:"error",
-title:"Error",
-text:"Unable to load sales orders"
-})
-
-}
-
+    }catch(err){
+        Swal.fire("Error confirming order","","error")
+    }
 }
 
 
@@ -151,10 +210,8 @@ text:"Unable to load sales orders"
 PAGE INIT
 ========================= */
 
-document.addEventListener("DOMContentLoaded",function(){
-
-loadSO()
-
+document.addEventListener("DOMContentLoaded", function(){
+    loadSO()
 })
 
 </script>

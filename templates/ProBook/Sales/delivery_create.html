@@ -1,0 +1,224 @@
+{% extends "ProBook/Base/base.html" %}
+
+{% block title %}Create Delivery{% endblock %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex justify-content-between mb-4">
+<h3>Create Delivery</h3>
+<button class="btn btn-success" onclick="saveDelivery()">Save Delivery</button>
+</div>
+
+<div class="card">
+<div class="card-body">
+
+<div class="row mb-3">
+
+<div class="col-md-4">
+<label>Sales Order</label>
+<select id="soSelect" class="form-select"></select>
+</div>
+
+<div class="col-md-4">
+<label>Customer</label>
+<input type="text" id="customerName" class="form-control" readonly>
+</div>
+
+<div class="col-md-4">
+<label>Date</label>
+<input type="date" id="deliveryDate" class="form-control">
+</div>
+
+</div>
+
+<table class="table table-bordered" id="deliveryTable">
+<thead>
+<tr>
+<th>Item</th>
+<th>Ordered</th>
+<th>Delivered</th>
+<th>Remaining</th>
+<th>Deliver Now</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+</div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+
+let currentItems = []
+
+/* ================= INIT ================= */
+document.addEventListener("DOMContentLoaded", async () => {
+
+    document.getElementById("deliveryDate").value =
+        new Date().toISOString().split("T")[0]
+
+    await loadSO()
+})
+
+
+/* ================= LOAD SALES ORDERS ================= */
+async function loadSO(){
+
+    const res = await fetch("/api/sales-orders/")
+    const data = await res.json()
+
+    const soSelect = document.getElementById("soSelect")
+
+    soSelect.innerHTML = `<option value="">Select SO</option>`
+
+    data.forEach(o=>{
+        soSelect.innerHTML += `<option value="${o.id}">
+            ${o.so_number} - ${o.customer_name || ''}
+        </option>`
+    })
+
+    soSelect.addEventListener("change", loadSOItems)
+}
+
+
+/* ================= LOAD SO ITEMS ================= */
+async function loadSOItems(){
+
+    const soId = this.value
+
+    if(!soId) return
+
+    const res = await fetch(`/api/sales-orders/${soId}`)
+    const data = await res.json()
+
+    document.getElementById("customerName").value =
+        data.customer_name || ""
+
+    const tbody = document.querySelector("#deliveryTable tbody")
+    tbody.innerHTML = ""
+
+    currentItems = data.items || []
+
+    if(currentItems.length === 0){
+        tbody.innerHTML = `
+        <tr>
+            <td colspan="5" class="text-center text-muted">
+                No items found
+            </td>
+        </tr>`
+        return
+    }
+
+    currentItems.forEach(i=>{
+
+        const ordered = Number(i.quantity || 0)
+        const delivered = Number(i.delivered_qty || 0)
+        const remaining = Math.max(0, ordered - delivered)
+
+        tbody.innerHTML += `
+        <tr>
+
+            <td>${i.item_name}</td>
+
+            <td>${ordered}</td>
+
+            <td>${delivered}</td>
+
+            <td class="text-success fw-bold">${remaining}</td>
+
+            <td>
+                <input type="number"
+                    class="form-control qty"
+                    min="0"
+                    max="${remaining}"
+                    value="${remaining}"
+                    ${remaining === 0 ? "disabled" : ""}
+                >
+            </td>
+
+        </tr>`
+    })
+}
+
+
+/* ================= SAVE DELIVERY ================= */
+async function saveDelivery(){
+
+    const soId = document.getElementById("soSelect").value
+
+    if(!soId){
+        Swal.fire({
+            icon: "warning",
+            text: "Select Sales Order"
+        })
+        return
+    }
+
+    let items = []
+
+    document.querySelectorAll("#deliveryTable tbody tr")
+    .forEach((row, index)=>{
+
+        const qty = Number(row.querySelector(".qty").value)
+
+        if(qty > 0){
+            items.push({
+                order_item_id: currentItems[index].id,
+                quantity: qty
+            })
+        }
+    })
+
+    if(items.length === 0){
+        Swal.fire({
+            icon: "warning",
+            text: "Enter delivery quantity"
+        })
+        return
+    }
+
+    try{
+
+        const res = await fetch("/api/deliveries/", {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({
+                sales_order_id: Number(soId),
+                delivery_date: document.getElementById("deliveryDate").value,
+                items: items
+            })
+        })
+
+        if(res.ok){
+
+            await Swal.fire({
+                icon: "success",
+                title: "Delivery Created!",
+                text: "Stock updated successfully"
+            })
+
+            window.location.href = "/delivery/list"
+
+        }else{
+            throw new Error()
+        }
+
+    }catch(err){
+
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Failed to create delivery"
+        })
+    }
+}
+
+</script>
+
+{% endblock %}

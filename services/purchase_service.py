@@ -37,7 +37,12 @@ def create_purchase_bill(db: Session, data, company_id):
     )
 
     db.add(bill)
-    db.flush()  # get bill.id
+    db.flush()
+
+    # ✅ correct
+    po_id = data.po_id
+
+    print("DEBUG PO:", po_id)
 
     for item in data.items:
 
@@ -62,15 +67,16 @@ def create_purchase_bill(db: Session, data, company_id):
 
         db.add(bill_item)
 
-        # 🔥 Inventory update
-        add_stock_purchase(
-            db,
-            company_id,
-            bill.id,
-            item.item_id,
-            qty,
-            price
-        )
+        # ✅ ONLY manual bill adds stock
+        if not po_id:
+            add_stock_purchase(
+                db=db,
+                company_id=company_id,
+                purchase_id=bill.id,
+                item_id=item.item_id,
+                qty=qty,
+                cost=price
+            )
 
         total_amount += subtotal
         tax_amount += tax
@@ -80,7 +86,6 @@ def create_purchase_bill(db: Session, data, company_id):
     bill.grand_total = total_amount + tax_amount
     bill.status = "POSTED"
 
-    # 🔥 Accounting entry
     create_purchase_journal(db, bill)
 
     db.commit()

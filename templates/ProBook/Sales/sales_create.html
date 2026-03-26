@@ -139,106 +139,368 @@ CUSTOMER MODAL
 </div>
 
 <script>
+let items = [];
 
-let items = []
-let customers = []
+const customerSelect = document.getElementById("customerSelect");
+const invoiceDate = document.getElementById("invoiceDate");
 
-/* ===============================
-ALERT
-=============================== */
-function showAlert(message, type="info"){
-    Swal.fire({
-        text: message,
-        icon: type,
-        timer: 1800,
-        showConfirmButton: false
-    })
+/* ================= INIT ================= */
+document.addEventListener("DOMContentLoaded", async () => {
+
+    invoiceDate.value = new Date().toISOString().split("T")[0];
+
+    await loadCustomers();
+    await loadItems();
+
+    addRow();
+});
+
+/* ================= LOAD ================= */
+
+async function loadCustomers(){
+    const res = await fetch("/api/customers/");
+    const data = await res.json();
+
+    customerSelect.innerHTML = '<option value="">Select Customer</option>';
+    data.forEach(c=>{
+        customerSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+    });
 }
 
+async function loadItems(){
+    const res = await fetch("/api/items");
+    items = await res.json();
+}
+
+/* ================= ROW ================= */
+
+function addRow(){
+
+    const options = items.map(i => 
+        `<option value="${i.id}" 
+            data-price="${i.selling_price}" 
+            data-gst="${i.gst_rate}"
+            data-stock="${i.stock || 0}">
+            ${i.name} (Stock: ${i.stock || 0})
+        </option>`
+    ).join("");
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+    <td>
+        <select class="form-select item-select">
+            <option value="">Select Item</option>
+            ${options}
+        </select>
+    </td>
+
+    <td>
+        <input type="number" class="form-control qty" value="1" min="1">
+        <small class="text-muted stock-label"></small>
+    </td>
+
+    <td><input type="number" class="form-control price" step="0.01"></td>
+    <td><input type="number" class="form-control gst" step="0.01"></td>
+
+    <td class="rowTotal">0.00</td>
+
+    <td><button class="btn btn-danger btn-sm">X</button></td>
+    `;
+
+    /* EVENTS */
+    row.querySelector(".item-select").addEventListener("change", function(){
+        itemChanged(this);
+    });
+
+    row.querySelector(".qty").addEventListener("input", function(){
+        validateStock(this);
+        calculateRow(this);
+    });
+
+    row.querySelector(".price").addEventListener("input", function(){
+        calculateRow(this);
+    });
+
+    row.querySelector(".gst").addEventListener("input", function(){
+        calculateRow(this);
+    });
+
+    row.querySelector("button").addEventListener("click", function(){
+        row.remove();
+        calculateTotals();
+    });
+
+    document.querySelector("#salesTable tbody").appendChild(row);
+}
+
+/* ================= ITEM CHANGE ================= */
+
+function itemChanged(select){
+
+    const row = select.closest("tr");
+    const opt = select.options[select.selectedIndex];
+
+    if(!opt || !opt.value){
+        return;
+    }
+
+    const price = opt.getAttribute("data-price");
+    const gst = opt.getAttribute("data-gst");
+    const stock = Number(opt.getAttribute("data-stock") || 0);
+
+    row.querySelector(".price").value = price || 0;
+    row.querySelector(".gst").value = gst || 0;
+
+    row.dataset.stock = stock;
+
+    row.querySelector(".stock-label").innerText = `Available: ${stock}`;
+
+    validateStock(row.querySelector(".qty"));
+    calculateRow(select);
+}
+
+/* ================= STOCK VALIDATION ================= */
+
+function validateStock(input){
+
+    const row = input.closest("tr");
+    const stock = Number(row.dataset.stock || 0);
+    const qty = Number(input.value || 0);
+
+    if(qty > stock){
+
+        input.value = stock;
+
+        Swal.fire({
+            icon: "warning",
+            text: `Only ${stock} items available in stock`
+        });
+
+        row.querySelector(".qty").classList.add("is-invalid");
+    }else{
+        row.querySelector(".qty").classList.remove("is-invalid");
+    }
+}
+
+/* ================= ROW CALC ================= */
+
+function calculateRow(input){
+
+    const row = input.closest("tr");
+
+    const qty = Number(row.querySelector(".qty").value) || 0;
+    const price = Number(row.querySelector(".price").value) || 0;
+    const gst = Number(row.querySelector(".gst").value) || 0;
+
+    const sub = qty * price;
+    const tax = sub * gst / 100;
+
+    row.querySelector(".rowTotal").innerText = (sub + tax).toFixed(2);
+
+    calculateTotals();
+}
+
+/* ================= TOTAL ================= */
+
+function calculateTotals(){
+
+    let sub = 0;
+    let tax = 0;
+
+    document.querySelectorAll("#salesTable tbody tr").forEach(row=>{
+        const qty = Number(row.querySelector(".qty").value) || 0;
+        const price = Number(row.querySelector(".price").value) || 0;
+        const gst = Number(row.querySelector(".gst").value) || 0;
+
+        const rowSub = qty * price;
+        const rowTax = rowSub * gst / 100;
+
+        sub += rowSub;
+        tax += rowTax;
+    });
+
+    subtotal.innerText = sub.toFixed(2);
+    taxTotal.innerText = tax.toFixed(2);
+    grandTotal.innerText = (sub + tax).toFixed(2);
+}
+
+/* ================= SAVE ================= */
+
+async function saveSales(){
+
+    const type = document.getElementById("invoiceType").value   // ✅ FIX
+    const sourceId = document.getElementById("sourceSelect").value  // ✅ FIX
+
+    if(!customerSelect.value){
+        Swal.fire("Select customer","","warning");
+        return;
+    }
+
+    let itemsData = [];
+    let hasError = false;
+
+    document.querySelectorAll("#salesTable tbody tr").forEach(row=>{
+        const id = row.querySelector(".item-select").value;
+        const qty = Number(row.querySelector(".qty").value);
+        const stock = Number(row.dataset.stock || 0);
+
+        if(qty > stock){
+            hasError = true;
+        }
+
+        if(id){
+            itemsData.push({
+                item_id: Number(id),
+                quantity: qty,
+                price: Number(row.querySelector(".price").value),
+                gst_rate: Number(row.querySelector(".gst").value)
+            });
+        }
+    });
+
+    if(hasError){
+        Swal.fire("Stock exceeded!","","error");
+        return;
+    }
+
+    if(itemsData.length === 0){
+        Swal.fire("Add items first","","warning");
+        return;
+    }
+
+    const res = await fetch("/api/sales/", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+            customer_id: Number(customerSelect.value),
+            invoice_date: invoiceDate.value,
+
+            source_type: type,                      // ✅ now defined
+            source_id: sourceId ? Number(sourceId) : null,
+
+            items: itemsData
+        })
+    });
+
+    if(res.ok){
+        Swal.fire("Saved","","success");
+        setTimeout(()=>location.reload(),1000);
+    }else{
+        Swal.fire("Error","","error");
+    }
+}
+</script>
+
+<script>
+
 /* ===============================
-INVOICE TYPE
+INVOICE TYPE CHANGE
 =============================== */
+
 async function handleInvoiceType(){
 
-    const type = invoiceType.value
-    sourceWrapper.classList.add("d-none")
+    const type = document.getElementById("invoiceType").value
+	const sourceId = document.getElementById("sourceSelect").value
+    const wrapper = document.getElementById("sourceWrapper")
+    const sourceSelect = document.getElementById("sourceSelect")
+
+    wrapper.classList.add("d-none")
     sourceSelect.innerHTML = ""
 
     if(type === "sales_order"){
-        sourceWrapper.classList.remove("d-none")
+        wrapper.classList.remove("d-none")
         await loadSalesOrders()
     }
 
     if(type === "delivery"){
-        sourceWrapper.classList.remove("d-none")
+        wrapper.classList.remove("d-none")
         await loadDeliveries()
     }
 }
 
+
 /* ===============================
 LOAD SALES ORDERS
 =============================== */
+
 async function loadSalesOrders(){
 
-    const res = await fetch("/api/sales-orders?status=pending")
+    const res = await fetch("/api/sales-orders/")
     const data = await res.json()
+
+    const sourceSelect = document.getElementById("sourceSelect")
 
     sourceSelect.innerHTML = `<option value="">Select Sales Order</option>`
 
     data.forEach(so=>{
         sourceSelect.innerHTML += `
         <option value="${so.id}">
-            ${so.order_no} - ${so.customer_name || ''}
+            ${so.so_number} - ${so.customer_name}
         </option>`
     })
 }
 
+
 /* ===============================
-LOAD DELIVERIES
+LOAD DELIVERIES (NEW)
 =============================== */
+
 async function loadDeliveries(){
 
-    const res = await fetch("/api/deliveries?status=pending_invoice")
+    const res = await fetch("/api/deliveries/")   // 🔥 create this API
     const data = await res.json()
+
+    const sourceSelect = document.getElementById("sourceSelect")
 
     sourceSelect.innerHTML = `<option value="">Select Delivery</option>`
 
     data.forEach(d=>{
         sourceSelect.innerHTML += `
         <option value="${d.id}">
-            ${d.delivery_no}
+            ${d.delivery_no} - ${d.customer_name}
         </option>`
     })
 }
 
+
 /* ===============================
-SOURCE SELECT
+ON SELECT SOURCE (FIXED)
 =============================== */
-sourceSelect.addEventListener("change", async function(){
 
-    const id = this.value
-    const type = invoiceType.value
+document.addEventListener("DOMContentLoaded", () => {
 
-    if(!id) return
+    document.getElementById("sourceSelect")
+    .addEventListener("change", async function(){
 
-    if(type === "sales_order"){
-        await loadFromSalesOrder(id)
-    }
+        const id = this.value
+        const type = document.getElementById("invoiceType").value
 
-    if(type === "delivery"){
-        await loadFromDelivery(id)
-    }
+        console.log("Selected:", type, id)
+
+        if(!id) return
+
+        if(type === "sales_order"){
+            await loadFromSalesOrder(id)
+        }
+
+        if(type === "delivery"){
+            await loadFromDelivery(id)
+        }
+    })
 })
+
 
 /* ===============================
 LOAD FROM SALES ORDER
 =============================== */
+
 async function loadFromSalesOrder(id){
 
     const res = await fetch(`/api/sales-orders/${id}`)
     const data = await res.json()
 
-    customerSelect.value = data.customer_id
+    document.getElementById("customerSelect").value = data.customer_id
 
     const tbody = document.querySelector("#salesTable tbody")
     tbody.innerHTML = ""
@@ -246,265 +508,62 @@ async function loadFromSalesOrder(id){
     data.items.forEach(item=>{
 
         addRow()
-        const row = tbody.lastChild
 
-        row.querySelector(".item-select").value = item.item_id
-        row.querySelector(".qty").value = item.qty
-        row.querySelector(".price").value = item.price
-        row.querySelector(".gst").value = item.gst_rate
+        const row = tbody.lastElementChild
+        const itemSelect = row.querySelector(".item-select")
 
-        calculateRow(row.querySelector(".price"))
+        itemSelect.value = item.item_id
+
+        // ✅ VERY IMPORTANT
+        itemChanged(itemSelect)
+
+        // ✅ AFTER itemChanged
+        row.querySelector(".qty").value = item.quantity
+
+        calculateRow(row.querySelector(".qty"))
     })
 }
 
+
 /* ===============================
-LOAD FROM DELIVERY
+LOAD FROM DELIVERY (NEW)
 =============================== */
+
 async function loadFromDelivery(id){
 
-    const res = await fetch(`/api/deliveries/${id}`)
+    const res = await fetch(`/api/deliveries/view/${id}`)   // ✅ FIXED
     const data = await res.json()
 
-    customerSelect.value = data.customer_id
+    console.log("DELIVERY DATA:", data)
+
+    document.getElementById("customerSelect").value = data.customer_id
 
     const tbody = document.querySelector("#salesTable tbody")
     tbody.innerHTML = ""
 
+    if(!data.items || data.items.length === 0){
+        console.warn("No delivery items")
+        return
+    }
+
     data.items.forEach(item=>{
 
         addRow()
-        const row = tbody.lastChild
 
-        row.querySelector(".item-select").value = item.item_id
-        row.querySelector(".qty").value = item.qty
-        row.querySelector(".qty").readOnly = true   // 🔥 lock qty
-        row.querySelector(".price").value = item.price
-        row.querySelector(".gst").value = item.gst_rate
+        const row = tbody.lastElementChild
+        const itemSelect = row.querySelector(".item-select")
 
-        calculateRow(row.querySelector(".price"))
+        itemSelect.value = item.item_id
+
+        // ✅ CRITICAL FIX
+        itemChanged(itemSelect)
+
+        // ✅ set qty AFTER itemChanged
+        row.querySelector(".qty").value = item.quantity
+
+        calculateRow(row.querySelector(".qty"))
     })
 }
-
-/* ===============================
-CUSTOMER
-=============================== */
-function openCustomerModal(){
-    new bootstrap.Modal(customerModal).show()
-}
-
-async function saveCustomer(){
-
-    const name = custName.value.trim()
-
-    if(!name){
-        showAlert("Customer name required","warning")
-        return
-    }
-
-    const res = await fetch("/api/customers/",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify({
-            name,
-            phone:custPhone.value,
-            email:custEmail.value || null,
-            gst_number:custGST.value || null
-        })
-    })
-
-    const data = await res.json()
-
-    if(res.ok){
-        customerSelect.innerHTML += `<option value="${data.id}">${data.name}</option>`
-        customerSelect.value = data.id
-
-        bootstrap.Modal.getInstance(customerModal).hide()
-        showAlert("Customer added","success")
-    }
-}
-
-/* ===============================
-LOAD CUSTOMERS
-=============================== */
-async function loadCustomers(){
-
-    const res = await fetch("/api/customers/")
-    customers = await res.json()
-
-    customerSelect.innerHTML = `<option value="">Select Customer</option>`
-
-    customers.forEach(c=>{
-        customerSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`
-    })
-}
-
-/* ===============================
-LOAD ITEMS
-=============================== */
-async function loadItems(){
-
-    const res = await fetch("/api/items")
-    items = await res.json()
-}
-
-/* ===============================
-ADD ROW
-=============================== */
-function addRow(){
-
-    const options = items.map(i=>`
-    <option value="${i.id}" data-price="${i.selling_price}" data-gst="${i.gst_rate}">
-    ${i.name}
-    </option>`).join("")
-
-    const row = document.createElement("tr")
-
-    row.innerHTML = `
-    <td><select class="form-select item-select" onchange="itemChanged(this)">
-    <option value="">Select Item</option>${options}</select></td>
-    <td><input type="number" class="form-control qty" value="1" min="1" oninput="calculateRow(this)"></td>
-    <td><input type="number" class="form-control price" step="0.01" oninput="calculateRow(this)"></td>
-    <td><input type="number" class="form-control gst" step="0.01" oninput="calculateRow(this)"></td>
-    <td class="rowTotal">0.00</td>
-    <td><button class="btn btn-danger btn-sm" onclick="removeRow(this)">✕</button></td>
-    `
-
-    document.querySelector("#salesTable tbody").appendChild(row)
-}
-
-/* ===============================
-ITEM CHANGE
-=============================== */
-function itemChanged(select){
-
-    const row = select.closest("tr")
-    const opt = select.options[select.selectedIndex]
-
-    row.querySelector(".price").value = opt.getAttribute("data-price") || 0
-    row.querySelector(".gst").value = opt.getAttribute("data-gst") || 0
-
-    calculateRow(row.querySelector(".price"))
-}
-
-/* ===============================
-REMOVE
-=============================== */
-function removeRow(btn){
-    btn.closest("tr").remove()
-    calculateTotals()
-}
-
-/* ===============================
-ROW CALC
-=============================== */
-function calculateRow(input){
-
-    const row = input.closest("tr")
-
-    const qty = Number(row.querySelector(".qty").value)
-    const price = Number(row.querySelector(".price").value)
-    const gst = Number(row.querySelector(".gst").value)
-
-    const sub = qty * price
-    const tax = sub * gst / 100
-
-    row.querySelector(".rowTotal").innerText = (sub + tax).toFixed(2)
-
-    calculateTotals()
-}
-
-/* ===============================
-TOTAL
-=============================== */
-function calculateTotals(){
-
-    let sub = 0
-    let tax = 0
-
-    document.querySelectorAll("#salesTable tbody tr").forEach(r=>{
-        const q = Number(r.querySelector(".qty").value)
-        const p = Number(r.querySelector(".price").value)
-        const g = Number(r.querySelector(".gst").value)
-
-        sub += q*p
-        tax += (q*p*g/100)
-    })
-
-    subtotal.innerText = sub.toFixed(2)
-    taxTotal.innerText = tax.toFixed(2)
-    grandTotal.innerText = (sub+tax).toFixed(2)
-}
-
-/* ===============================
-SAVE
-=============================== */
-async function saveSales(){
-
-    if(!customerSelect.value){
-        showAlert("Select customer","warning")
-        return
-    }
-
-    let invoiceItems = []
-
-    document.querySelectorAll("#salesTable tbody tr").forEach(r=>{
-        const id = r.querySelector(".item-select").value
-
-        if(id){
-            invoiceItems.push({
-                item_id:Number(id),
-                quantity:Number(r.querySelector(".qty").value),
-                price:Number(r.querySelector(".price").value),
-                gst_rate:Number(r.querySelector(".gst").value)
-            })
-        }
-    })
-
-    if(invoiceItems.length === 0){
-        showAlert("Add items first","warning")
-        return
-    }
-
-    const confirm = await Swal.fire({
-        title:"Save Invoice?",
-        icon:"question",
-        showCancelButton:true
-    })
-
-    if(!confirm.isConfirmed) return
-
-    const res = await fetch("/api/sales/",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify({
-            customer_id:Number(customerSelect.value),
-            invoice_date:invoiceDate.value,
-            source_type:invoiceType.value,
-            source_id:sourceSelect.value || null,
-            items:invoiceItems
-        })
-    })
-
-    if(res.ok){
-        showAlert("Invoice Created","success")
-        setTimeout(()=>location.href="/sales",1200)
-    }else{
-        showAlert("Error creating invoice","error")
-    }
-}
-
-/* ===============================
-INIT
-=============================== */
-document.addEventListener("DOMContentLoaded", async ()=>{
-
-    invoiceDate.value = new Date().toISOString().split("T")[0]
-
-    await loadCustomers()
-    await loadItems()
-
-    addRow()
-})
 
 </script>
 

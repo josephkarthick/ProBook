@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, ForeignKey, Numeric, String
 from sqlalchemy.orm import relationship
 from database import Base
-
+from models.item import Item 
 
 class SalesOrderItem(Base):
     __tablename__ = "sales_order_items"
@@ -29,3 +29,4 @@ class SalesOrderItem(Base):
     order = relationship("SalesOrder", back_populates="items")
     
     status = Column(String(20), default="PENDING")
+    item = relationship("Item")

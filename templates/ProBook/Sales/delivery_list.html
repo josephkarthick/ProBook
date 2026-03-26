@@ -1,0 +1,132 @@
+{% extends "ProBook/Base/base.html" %}
+
+{% block content %}
+
+<div class="content">
+
+<div class="d-flex justify-content-between mb-4">
+<h3>Delivery Notes</h3>
+<a href="/delivery/create" class="btn btn-primary">Create Delivery</a>
+</div>
+
+<div class="card">
+<div class="card-body">
+
+<table class="table table-bordered">
+<thead>
+<tr>
+<th width="150">Delivery No</th>
+<th width="150">Date</th>
+<th>Customer</th>
+<th width="150">Status</th>
+</tr>
+</thead>
+
+<tbody id="deliveryBody">
+
+<tr>
+<td colspan="4" class="text-center text-muted">
+Loading deliveries...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+
+/* ================= LOAD DELIVERY LIST ================= */
+
+async function loadDeliveries(){
+
+    const body = document.getElementById("deliveryBody")
+
+    try{
+
+        const res = await fetch("/api/deliveries/")
+        const data = await res.json()
+
+        console.log("Deliveries:", data)
+
+        body.innerHTML = ""
+
+        if(!Array.isArray(data) || data.length === 0){
+            body.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center text-muted">
+                    No deliveries found
+                </td>
+            </tr>`
+            return
+        }
+
+        let rows = ""
+
+        data.forEach(d => {
+
+            const statusClass =
+                d.status === "COMPLETED" ? "bg-success" :
+                d.status === "PARTIAL" ? "bg-warning text-dark" :
+                "bg-secondary"
+
+            rows += `
+            <tr>
+
+                <td>
+                    <a href="/delivery/view/${d.id}">
+                        ${d.delivery_no || ""}
+                    </a>
+                </td>
+
+                <td>${d.delivery_date || ""}</td>
+
+                <td>${d.customer_name || ""}</td>
+
+                <td>
+                    <span class="badge ${statusClass}">
+                        ${d.status || "DRAFT"}
+                    </span>
+                </td>
+
+            </tr>`
+        })
+
+        body.innerHTML = rows
+
+    }catch(err){
+
+        console.error(err)
+
+        body.innerHTML = `
+        <tr>
+            <td colspan="4" class="text-center text-danger">
+                Error loading deliveries
+            </td>
+        </tr>`
+
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Unable to load deliveries"
+        })
+    }
+}
+
+
+/* ================= INIT ================= */
+
+document.addEventListener("DOMContentLoaded", function(){
+    loadDeliveries()
+})
+
+</script>
+
+{% endblock %}

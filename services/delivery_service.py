@@ -32,28 +32,25 @@ def generate_delivery_no(db, company_id):
 # ===============================
 def create_delivery_note(db: Session, data, company_id):
 
+    if not data.get("items"):
+        raise HTTPException(status_code=400, detail="No items provided")
+
     delivery_no = generate_delivery_no(db, company_id)
 
-    sales_order_id = data.sales_order_id
-    delivery_date = data.delivery_date or date.today()
+    sales_order_id = data["sales_order_id"]
+    delivery_date = data.get("delivery_date") or date.today()
 
-    # ===============================
-    # FETCH SALES ORDER
-    # ===============================
     so = db.query(SalesOrder).filter(
         SalesOrder.id == sales_order_id,
         SalesOrder.company_id == company_id
     ).first()
 
     if not so:
-        raise Exception("Sales Order not found")
+        raise HTTPException(status_code=404, detail="Sales Order not found")
 
     if so.status == "COMPLETED":
-        raise Exception("Order already fully delivered")
+        raise HTTPException(status_code=400, detail="Already delivered")
 
-    # ===============================
-    # CREATE DELIVERY
-    # ===============================
     delivery = DeliveryNote(
         company_id=company_id,
         sales_order_id=sales_order_id,
@@ -65,42 +62,32 @@ def create_delivery_note(db: Session, data, company_id):
     db.add(delivery)
     db.flush()
 
-    # ===============================
-    # PROCESS ITEMS
-    # ===============================
-    for item in data.items:
+    for item in data["items"]:
 
         so_item = db.query(SalesOrderItem).filter(
-            SalesOrderItem.id == item.order_item_id
+            SalesOrderItem.id == item["order_item_id"],
+            SalesOrderItem.order_id == sales_order_id
         ).first()
 
         if not so_item:
-            raise Exception("Order item not found")
+            raise HTTPException(status_code=404, detail="Order item not found")
 
-        qty = Decimal(str(item.quantity))
+        qty = Decimal(str(item["quantity"]))
 
-        # 🔥 AVAILABLE QTY CHECK
         remaining_qty = Decimal(str(so_item.qty)) - Decimal(str(so_item.delivered_qty))
 
         if qty > remaining_qty:
-            raise Exception(
-                f"Cannot deliver more than remaining qty ({remaining_qty})"
+            raise HTTPException(
+                status_code=400,
+                detail=f"Max allowed qty is {remaining_qty}"
             )
 
-        # ===============================
-        # CREATE DELIVERY ITEM
-        # ===============================
-        dn_item = DeliveryNoteItem(
+        db.add(DeliveryNoteItem(
             delivery_id=delivery.id,
             item_id=so_item.item_id,
             qty=qty
-        )
+        ))
 
-        db.add(dn_item)
-
-        # ===============================
-        # 🔥 STOCK REDUCTION
-        # ===============================
         reduce_stock_sale(
             db,
             company_id,
@@ -109,25 +96,15 @@ def create_delivery_note(db: Session, data, company_id):
             delivery.id
         )
 
-        # ===============================
-        # UPDATE SALES ORDER ITEM
-        # ===============================
         so_item.delivered_qty = Decimal(str(so_item.delivered_qty)) + qty
 
-    # ===============================
-    # UPDATE SALES ORDER STATUS
-    # ===============================
-    all_delivered = True
+    # status update
+    all_delivered = all(
+        Decimal(str(i.delivered_qty)) >= Decimal(str(i.qty))
+        for i in so.items
+    )
 
-    for so_item in so.items:
-        if Decimal(str(so_item.delivered_qty)) < Decimal(str(so_item.qty)):
-            all_delivered = False
-            break
-
-    if all_delivered:
-        so.status = "COMPLETED"
-    else:
-        so.status = "PARTIAL"
+    so.status = "COMPLETED" if all_delivered else "PARTIAL"
 
     db.commit()
     db.refresh(delivery)
