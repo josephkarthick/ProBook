@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from database import get_db
 from core.template_engine import render_template
 
+from models.company import Company
 from models.sales_invoice import SalesInvoice
 from models.sales_invoice_item import SalesInvoiceItem
 
@@ -47,20 +48,38 @@ def invoice_view(
     db: Session = Depends(get_db)
 ):
 
-    invoice = db.query(SalesInvoice)\
-        .filter(SalesInvoice.id == invoice_id)\
-        .first()
+    # ================= INVOICE =================
+    invoice = db.query(SalesInvoice).filter(
+        SalesInvoice.id == invoice_id
+    ).first()
 
-    items = db.query(SalesInvoiceItem)\
-        .filter(SalesInvoiceItem.invoice_id == invoice_id)\
-        .all()
+    if not invoice:
+        raise HTTPException(
+            status_code=404,
+            detail="Invoice not found"
+        )
+
+    # ================= ITEMS =================
+    items = db.query(SalesInvoiceItem).filter(
+        SalesInvoiceItem.invoice_id == invoice_id
+    ).all()
+
+    # ================= COMPANY =================
+    company = None
+
+    if invoice.company_id:
+
+        company = db.query(Company).filter(
+            Company.id == invoice.company_id
+        ).first()
 
     return render_template(
         "ProBook/Sales/sales_view.html",
         request,
         {
             "invoice": invoice,
-            "items": items
+            "items": items,
+            "company": company
         }
     )
 
@@ -75,19 +94,37 @@ def invoice_print(
     db: Session = Depends(get_db)
 ):
 
-    invoice = db.query(SalesInvoice)\
-        .filter(SalesInvoice.id == invoice_id)\
-        .first()
+    # ================= INVOICE =================
+    invoice = db.query(SalesInvoice).filter(
+        SalesInvoice.id == invoice_id
+    ).first()
 
-    items = db.query(SalesInvoiceItem)\
-        .filter(SalesInvoiceItem.invoice_id == invoice_id)\
-        .all()
+    if not invoice:
+        raise HTTPException(
+            status_code=404,
+            detail="Invoice not found"
+        )
+
+    # ================= ITEMS =================
+    items = db.query(SalesInvoiceItem).filter(
+        SalesInvoiceItem.invoice_id == invoice_id
+    ).all()
+
+    # ================= COMPANY =================
+    company = None
+
+    if invoice.company_id:
+
+        company = db.query(Company).filter(
+            Company.id == invoice.company_id
+        ).first()
 
     return render_template(
         "ProBook/Sales/sales_print.html",
         request,
         {
             "invoice": invoice,
-            "items": items
+            "items": items,
+            "company": company
         }
     )

@@ -6,245 +6,663 @@
 
 <style>
 
-.invoice-container{
-max-width:900px;
-margin:auto;
-background:#fff;
-padding:30px;
-border:1px solid #ddd;
+/* ================= GLOBAL ================= */
+
+body{
+    background:#f4f6f9;
+    font-family:Arial,sans-serif;
 }
 
-.header{
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:25px;
+.invoice-wrapper{
+    max-width:1000px;
+    margin:auto;
+    padding:20px;
 }
 
-.company-info{
-text-align:right;
+.invoice-box{
+    background:#fff;
+    border:1px solid #ddd;
+    padding:30px;
+    min-height:1120px;
+    position:relative;
+    box-sizing:border-box;
 }
+
+/* ================= HEADER ================= */
+
+.invoice-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    border-bottom:2px solid #000;
+    padding-bottom:20px;
+    margin-bottom:25px;
+}
+
+.company-left img{
+    max-height:70px;
+}
+
+.company-name{
+    font-size:32px;
+    font-weight:700;
+}
+
+.company-right{
+    text-align:right;
+    line-height:1.8;
+    font-size:14px;
+}
+
+/* ================= TITLE ================= */
 
 .invoice-title{
-text-align:center;
-font-size:22px;
-font-weight:bold;
-margin-bottom:10px;
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.invoice-title h2{
+    margin:0;
+    font-size:34px;
+    font-weight:700;
 }
 
 .status-badge{
-text-align:center;
-margin-bottom:15px;
+    display:inline-block;
+    margin-top:10px;
+    padding:6px 16px;
+    border-radius:4px;
+    color:#fff;
+    font-size:13px;
+    font-weight:600;
 }
 
-.customer-box{
-margin-top:20px;
-margin-bottom:20px;
+/* ================= TABLES ================= */
+
+.info-table,
+.items-table{
+    width:100%;
+    border-collapse:collapse;
 }
 
-table{
-width:100%;
-border-collapse:collapse;
+.info-table{
+    margin-bottom:25px;
 }
 
-th,td{
-border:1px solid #ccc;
-padding:8px;
-font-size:14px;
+.info-table td{
+    border:1px solid #ddd;
+    padding:12px;
+    vertical-align:top;
+    font-size:14px;
 }
 
-th{
-background:#f5f5f5;
+.items-table th{
+    background:#f3f3f3;
+    border:1px solid #ccc;
+    padding:10px;
+    font-size:14px;
+    text-align:center;
 }
+
+.items-table td{
+    border:1px solid #ccc;
+    padding:10px;
+    font-size:14px;
+}
+
+.text-center{
+    text-align:center;
+}
+
+.text-right{
+    text-align:right;
+}
+
+/* ================= TOTALS ================= */
 
 .totals{
-width:350px;
-margin-left:auto;
-margin-top:20px;
+    width:380px;
+    margin-left:auto;
+    margin-top:25px;
+}
+
+.totals table{
+    width:100%;
+    border-collapse:collapse;
 }
 
 .totals td{
-padding:6px;
+    border:1px solid #ccc;
+    padding:10px;
+    font-size:14px;
 }
 
-.totals tr:last-child{
-font-weight:bold;
-border-top:2px solid #000;
+.grand-total{
+    font-weight:700;
+    background:#f7f7f7;
+    font-size:17px;
 }
 
-.footer{
-margin-top:50px;
-display:flex;
-justify-content:space-between;
+/* ================= FOOTER ================= */
+
+.invoice-footer{
+    margin-top:50px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+
+    width:100%;
+
+    page-break-inside:avoid;
+    break-inside:avoid;
 }
+
+.signature{
+    text-align:right;
+    min-width:260px;
+}
+
+/* ================= PRINT BUTTON ================= */
 
 .print-btn{
-margin-bottom:15px;
+    margin-bottom:20px;
 }
 
+/* ================= PRINT ================= */
+
 @media print{
-.print-btn{display:none;}
+
+    /* HIDE WEBSITE */
+
+    header,
+    nav,
+    aside,
+    .sidebar,
+    .sidebar-wrapper,
+    .menu,
+    .main-menu,
+    .navigation,
+    .navbar,
+    .header,
+    .topbar,
+    .page-header,
+    .main-header,
+    .footer,
+    .footer-area,
+    .breadcrumb,
+    .print-btn,
+    .btn,
+    .toggle-btn,
+    .mobile-menu,
+    .menu-toggle,
+    .layout-menu,
+    .header-navbar,
+    .app-header,
+    .left-sidebar,
+    .right-sidebar,
+    .sidebar-toggle,
+    .sidebar-menu,
+    .header-left,
+    .header-right,
+    .top-header,
+    .layout-navbar,
+    .main-navbar,
+    .nav-toggle{
+
+        display:none !important;
+    }
+
+    body{
+        background:#fff !important;
+        margin:0 !important;
+        padding:0 !important;
+    }
+
+    .content,
+    .main-content,
+    .page-wrapper,
+    .content-wrapper,
+    .layout-page{
+
+        margin:0 !important;
+        padding:0 !important;
+        width:100% !important;
+    }
+
+    .invoice-wrapper{
+        width:100% !important;
+        max-width:100% !important;
+        margin:0 !important;
+        padding:0 !important;
+    }
+
+    .invoice-box{
+
+        width:100% !important;
+        border:none !important;
+        box-shadow:none !important;
+
+        padding:10px !important;
+
+        min-height:auto !important;
+
+        page-break-after:auto;
+    }
+
+    .invoice-footer{
+        margin-top:40px !important;
+        page-break-inside:avoid !important;
+        break-inside:avoid !important;
+    }
+
+    .signature{
+        display:block !important;
+    }
+
+    @page{
+        size:A4;
+        margin:10mm;
+    }
 }
 
 </style>
 
+
 <div class="content">
 
-<div class="invoice-container">
+<div class="invoice-wrapper">
 
-<button onclick="window.print()" class="btn btn-primary print-btn">
-Print Invoice
-</button>
+    <!-- PRINT BUTTON -->
+    <button onclick="window.print()" class="btn btn-primary print-btn">
+        <i class="icon-printer"></i>
+        Print Invoice
+    </button>
 
-<!-- HEADER -->
-<div class="header">
-    <div>
-        <img src="/static/logo.png" height="60">
-    </div>
+    <div class="invoice-box">
 
-    <div class="company-info">
-        <strong>ProBook ERP Pvt Ltd</strong><br>
-        No 12, Business Street<br>
-        Chennai, Tamil Nadu - 600001<br>
-        GSTIN: 33ABCDE1234F1Z5
-    </div>
-</div>
+        <!-- ================= HEADER ================= -->
 
-<div class="invoice-title">
-TAX INVOICE
-</div>
+        <div class="invoice-header">
 
-<!-- ================= STATUS ================= -->
-<div class="status-badge">
-    <span style="
-        padding:6px 15px;
-        border-radius:5px;
-        color:#fff;
-        background:
-        {% if invoice.payment_status == 'PAID' %}
-            green
-        {% elif invoice.payment_status == 'PARTIAL' %}
-            orange
-        {% else %}
-            red
+            <div class="company-left">
+
+                {% if company and company.logo %}
+
+                    <img src="{{ company.logo }}">
+
+                {% else %}
+
+                    <div class="company-name">
+                        {{ company.name }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+            <div class="company-right">
+
+                <strong style="font-size:18px;">
+                    {{ company.name }}
+                </strong><br>
+
+                {{ company.address_line1 or '' }}
+
+                {% if company.address_line2 %}
+                    , {{ company.address_line2 }}
+                {% endif %}
+                <br>
+
+                {{ company.city or '' }}
+
+                {% if company.state %}
+                    , {{ company.state }}
+                {% endif %}
+
+                {% if company.country %}
+                    , {{ company.country }}
+                {% endif %}
+
+                {% if company.pincode %}
+                    - {{ company.pincode }}
+                {% endif %}
+                <br>
+
+                <strong>GSTIN:</strong>
+                {{ company.gst_number or '' }}
+
+                <br>
+
+                {% if company.phone %}
+                    <strong>Phone:</strong>
+                    {{ company.phone }}
+                    <br>
+                {% endif %}
+
+                {% if company.email %}
+                    <strong>Email:</strong>
+                    {{ company.email }}
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- ================= TITLE ================= -->
+
+        <div class="invoice-title">
+
+            <h2>TAX INVOICE</h2>
+
+            <div class="status-badge"
+                 style="
+                 background:
+                 {% if invoice.payment_status == 'PAID' %}
+                    green
+                 {% elif invoice.payment_status == 'PARTIAL' %}
+                    orange
+                 {% else %}
+                    red
+                 {% endif %}
+                 ">
+
+                {{ invoice.payment_status }}
+
+            </div>
+
+        </div>
+
+
+        <!-- ================= CUSTOMER ================= -->
+
+<!-- ================= CUSTOMER INFO ================= -->
+
+<table class="info-table">
+
+    <tr>
+
+        <!-- LEFT -->
+        <td width="50%" style="vertical-align:top; padding:18px;">
+
+            <div style="
+                font-size:15px;
+                font-weight:700;
+                margin-bottom:15px;
+                color:#222;
+            ">
+                Invoice Details
+            </div>
+
+            <table style="width:100%; border:none;">
+
+                <tr>
+                    <td style="
+                        border:none;
+                        padding:4px 0;
+                        width:130px;
+                        font-weight:600;
+                    ">
+                        Invoice No
+                    </td>
+
+                    <td style="border:none; padding:4px 0;">
+                        : {{ invoice.invoice_no }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="
+                        border:none;
+                        padding:4px 0;
+                        font-weight:600;
+                    ">
+                        Invoice Date
+                    </td>
+
+                    <td style="border:none; padding:4px 0;">
+                        : {{ invoice.invoice_date }}
+                    </td>
+                </tr>
+
+            </table>
+
+        </td>
+
+
+        <!-- RIGHT -->
+        <td width="50%" style="vertical-align:top; padding:18px;">
+
+            <div style="
+                font-size:15px;
+                font-weight:700;
+                margin-bottom:15px;
+                color:#222;
+            ">
+                Bill To
+            </div>
+
+            <div style="
+                line-height:1.9;
+                font-size:14px;
+            ">
+
+                <strong style="font-size:16px;">
+                    {{ invoice.customer.name if invoice.customer else '' }}
+                </strong>
+
+                <br>
+
+                {{ invoice.customer.address if invoice.customer else '' }}
+
+                <br>
+
+                {% if invoice.customer and invoice.customer.phone %}
+                    <strong>Phone:</strong>
+                    {{ invoice.customer.phone }}
+                    <br>
+                {% endif %}
+
+                {% if invoice.customer and invoice.customer.email %}
+                    <strong>Email:</strong>
+                    {{ invoice.customer.email }}
+                    <br>
+                {% endif %}
+
+                <strong>GSTIN:</strong>
+
+                {{ invoice.customer.gst_number if invoice.customer else '' }}
+
+            </div>
+
+        </td>
+
+    </tr>
+
+</table>
+
+
+        <!-- ================= ITEMS ================= -->
+
+        <table class="items-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>#</th>
+                    <th>Item</th>
+                    <th>HSN</th>
+                    <th>Qty</th>
+                    <th>Rate</th>
+                    <th>Taxable</th>
+                    <th>CGST</th>
+                    <th>SGST</th>
+                    <th>Total</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for item in items %}
+
+                <tr>
+
+                    <td class="text-center">
+                        {{ loop.index }}
+                    </td>
+
+                    <td>
+                        {{ item.item.name if item.item else '' }}
+                    </td>
+
+                    <td class="text-center">
+                        {{ item.item.hsn_code if item.item else '' }}
+                    </td>
+
+                    <td class="text-center">
+                        {{ item.qty }}
+                    </td>
+
+                    <td class="text-right">
+                        {{ "%.2f"|format(item.price) }}
+                    </td>
+
+                    <td class="text-right">
+                        {{ "%.2f"|format(item.amount) }}
+                    </td>
+
+                    <td class="text-right">
+                        {{ "%.2f"|format(item.gst_amount / 2) }}
+                    </td>
+
+                    <td class="text-right">
+                        {{ "%.2f"|format(item.gst_amount / 2) }}
+                    </td>
+
+                    <td class="text-right">
+                        {{ "%.2f"|format(item.total) }}
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+
+        <!-- ================= TOTALS ================= -->
+
+        <div class="totals">
+
+            <table>
+
+                <tr>
+                    <td>Subtotal</td>
+                    <td class="text-right">
+                        {{ "%.2f"|format(invoice.total_amount) }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Total GST</td>
+                    <td class="text-right">
+                        {{ "%.2f"|format(invoice.tax_amount) }}
+                    </td>
+                </tr>
+
+                <tr class="grand-total">
+                    <td>Grand Total</td>
+                    <td class="text-right">
+                        {{ "%.2f"|format(invoice.grand_total) }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="color:green;">Paid</td>
+                    <td class="text-right">
+                        {{ "%.2f"|format(invoice.paid_amount) }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="color:red;">Balance</td>
+                    <td class="text-right">
+                        {{ "%.2f"|format(invoice.balance_amount) }}
+                    </td>
+                </tr>
+
+            </table>
+
+        </div>
+
+
+        <!-- ================= AMOUNT WORDS ================= -->
+
+        <div style="margin-top:20px;">
+
+            <strong>Amount in Words:</strong><br>
+
+            {{ "%.2f"|format(invoice.grand_total) }}
+            Rupees Only
+
+        </div>
+
+
+        <!-- ================= PENDING ================= -->
+
+        {% if invoice.payment_status != "PAID" %}
+
+        <div style="
+            margin-top:15px;
+            color:red;
+            font-weight:bold;
+        ">
+
+            Pending Amount:
+            {{ "%.2f"|format(invoice.balance_amount) }}
+
+        </div>
+
         {% endif %}
-    ">
-        {{ invoice.payment_status if invoice.payment_status != 'UNPAID' else 'PENDING' }}
-    </span>
-</div>
 
-<!-- INVOICE INFO -->
-<table>
-<tr>
-<td>
-<b>Invoice No:</b> {{ invoice.invoice_no }}<br>
-<b>Invoice Date:</b> {{ invoice.invoice_date }}
-</td>
 
-<td>
-<b>Customer:</b><br>
-{{ invoice.customer.name if invoice.customer else '' }}<br>
-{{ invoice.customer.address if invoice.customer else '' }}<br>
-GSTIN: {{ invoice.customer.gst_number if invoice.customer else '' }}
-</td>
-</tr>
-</table>
+        <!-- ================= FOOTER ================= -->
 
-<!-- ITEMS -->
-<table style="margin-top:20px;">
-<thead>
-<tr>
-<th>#</th>
-<th>Item</th>
-<th>HSN</th>
-<th>Qty</th>
-<th>Price</th>
-<th>Taxable</th>
-<th>CGST</th>
-<th>SGST</th>
-<th>Total</th>
-</tr>
-</thead>
+        <div class="invoice-footer">
 
-<tbody>
-{% for item in items %}
-<tr>
-<td>{{ loop.index }}</td>
-<td>{{ item.item.name if item.item else '' }}</td>
-<td>{{ item.item.hsn_code if item.item else '' }}</td>
-<td>{{ item.qty }}</td>
-<td>{{ item.price }}</td>
-<td>{{ item.amount }}</td>
-<td>{{ item.gst_amount/2 }}</td>
-<td>{{ item.gst_amount/2 }}</td>
-<td>{{ item.total }}</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
+            <div>
 
-<!-- TOTALS -->
-<div class="totals">
-<table>
+                <strong>Terms & Conditions</strong><br>
 
-<tr>
-<td>Subtotal</td>
-<td>{{ invoice.total_amount }}</td>
-</tr>
+                Goods once sold cannot be returned.
 
-<tr>
-<td>Total GST</td>
-<td>{{ invoice.tax_amount }}</td>
-</tr>
+            </div>
 
-<tr>
-<td>Grand Total</td>
-<td>{{ "%.2f"|format(invoice.grand_total) }}</td>
-</tr>
+            <div class="signature">
 
-<tr>
-<td class="text-success">Paid</td>
-<td>{{ invoice.paid_amount }}</td>
-</tr>
+                For {{ company.name }}
 
-<tr>
-<td class="text-danger">Balance</td>
-<td>{{ invoice.balance_amount }}</td>
-</tr>
+                <br><br><br>
 
-</table>
-</div>
+                _______________________
 
-<!-- ================= AMOUNT IN WORDS ================= -->
-<p style="margin-top:15px;">
-<b>Amount in Words:</b>
-{{ invoice.grand_total }} Rupees Only
-</p>
+                <br>
 
-<!-- ================= PAYMENT NOTE ================= -->
-{% if invoice.payment_status != "PAID" %}
-<p style="color:red; font-weight:bold;">
-⚠ Pending Amount: {{ invoice.balance_amount }} Rupees
-</p>
-{% endif %}
+                Authorized Signatory
 
-<!-- FOOTER -->
-<div class="footer">
+            </div>
 
-<div>
-<b>Terms & Conditions</b><br>
-Goods once sold cannot be returned.<br>
-Subject to Chennai jurisdiction.
-</div>
+        </div>
 
-<div style="text-align:right;">
-For ProBook ERP Pvt Ltd<br><br><br>
-Authorized Signatory
-</div>
+    </div>
 
 </div>
 
-</div>
 </div>
 
 {% endblock %}

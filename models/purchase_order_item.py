@@ -13,8 +13,20 @@ class PurchaseOrderItem(Base):
     item_id = Column(Integer, ForeignKey("items.id"))
 
     quantity = Column(Numeric(12,2))
+
+    # Unit Price
     price = Column(Numeric(12,2))
+
+    # GST %
     gst_rate = Column(Numeric(5,2))
+
+    # Before GST
+    taxable_amount = Column(Numeric(12,2))
+
+    # GST Amount
+    gst_amount = Column(Numeric(12,2))
+
+    # Final Total
     total = Column(Numeric(12,2))
 
     # relationship

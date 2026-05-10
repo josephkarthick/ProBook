@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 from database import Base
 from models.sales_payment import Payment
 
+
 class SalesInvoice(Base):
 
     __tablename__ = "sales_invoices"
@@ -12,8 +13,12 @@ class SalesInvoice(Base):
     company_id = Column(Integer, ForeignKey("companies.id"))
     customer_id = Column(Integer, ForeignKey("customers.id"))
 
-    # 🔗 LINK TO SALES ORDER (NEW)
-    sales_order_id = Column(Integer, ForeignKey("sales_orders.id"), nullable=True)
+    # 🔗 LINK TO SALES ORDER
+    sales_order_id = Column(
+        Integer,
+        ForeignKey("sales_orders.id"),
+        nullable=True
+    )
 
     invoice_no = Column(String(20))
     invoice_date = Column(Date)
@@ -31,18 +36,27 @@ class SalesInvoice(Base):
     # 📌 STATUS
     status = Column(String(20), default="POSTED")
 
-    # 🔗 RELATIONSHIPS
+    # ================= RELATIONSHIPS =================
+
+    # CUSTOMER RELATION
+    customer = relationship("Customer")
+
+    # PAYMENTS
     payments = relationship(
         Payment,
         back_populates="invoice",
         cascade="all, delete-orphan"
     )
 
+    # ITEMS
     items = relationship(
         "SalesInvoiceItem",
         back_populates="invoice",
         cascade="all, delete-orphan"
     )
 
-    # 🔗 OPTIONAL RELATION TO SALES ORDER
-    sales_order = relationship("SalesOrder", backref="invoices")
+    # SALES ORDER
+    sales_order = relationship(
+        "SalesOrder",
+        backref="invoices"
+    )
